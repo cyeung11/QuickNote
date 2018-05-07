@@ -1,0 +1,22 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/widget_margin"
+    android:background="@android:color/white"
+    android:fillViewport="true">
+
+
+        <TextView
+            android:id="@+id/preview_note"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="top"
+            android:layout_margin="8dp"
+            android:background="@android:color/transparent"
+            android:text="@string/widget_note"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
+
+
+
+</RelativeLayout>
