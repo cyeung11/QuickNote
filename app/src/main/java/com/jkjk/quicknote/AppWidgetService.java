@@ -39,12 +39,15 @@ public class AppWidgetService extends IntentService {
                     InputStreamReader in = new InputStreamReader(openFileInput("noteSaved"));
                     BufferedReader reader = new BufferedReader(in);
                     String mNote = reader.readLine();
-                    reader.close();
-                    if (mNote != null) {
-                        views.setTextViewText(R.id.preview_note, mNote);
+                    if (mNote!=null){
+                        String mNoteNotNull = mNote.replaceAll("<br>","\n");
+                        views.setTextViewText(R.id.widgetText, mNoteNotNull);
+                    }else {
+                        views.setTextViewText(R.id.widgetText, "");
                     }
+                    reader.close();
                 } catch (Exception e) {
-                    views.setTextViewText(R.id.preview_note, getString(R.string.error_text));
+                    views.setTextViewText(R.id.widgetText, getString(R.string.error_text));
                 }
             }
         }
@@ -53,7 +56,7 @@ public class AppWidgetService extends IntentService {
         startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.MainActivity");
         startAppIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,0,startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
-        views.setOnClickPendingIntent(R.id.preview_note, pendingIntent);
+        views.setOnClickPendingIntent(R.id.widget, pendingIntent);
 
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
         ComponentName name = new ComponentName(getApplication(),NotePreview.class);

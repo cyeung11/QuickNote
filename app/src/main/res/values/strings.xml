@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Quick Note</string>
     <string name="done">done</string>
-    <string name="error_text">error</string>
+    <string name="error_text">ERROR</string>
     <string name="text_here">Jot down your note here.</string>
     <string name="widget_note">YOUR NOTE HERE</string>
     <string name="add_widget">Note preview</string>

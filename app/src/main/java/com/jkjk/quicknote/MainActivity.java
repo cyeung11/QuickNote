@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.view.*;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -37,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         //Saving everything in the EditText into noteSaved with OutputStreamWriter
         try {
             OutputStreamWriter writer = new OutputStreamWriter(openFileOutput("noteSaved", Context.MODE_PRIVATE));
-            writer.write(note.getText().toString());
+            writer.write(note.getText().toString().replaceAll("\n", "<br>"));
             writer.flush();
             writer.close();
         } catch (Exception e) {
@@ -59,13 +58,20 @@ public class MainActivity extends AppCompatActivity {
             if ((getFileStreamPath("noteSaved").canRead())) {
                 InputStreamReader in = new InputStreamReader(openFileInput("noteSaved"));
                 BufferedReader reader = new BufferedReader(in);
-                note.setText(reader.readLine());
+                String mNote = reader.readLine();
+                if (mNote!=null){
+                    String mNoteNotNull = mNote.replaceAll("<br>","\n");
+                    note.setText(mNoteNotNull);
+                }else {
+                    note.setText("");
+                }
                 reader.close();
-        }
-        }catch(Exception e){
+            }
+        }catch(Exception e) {
             Toast.makeText(this, R.string.error_text, Toast.LENGTH_SHORT).show();
         }
     }
+
 
 
     @Override
