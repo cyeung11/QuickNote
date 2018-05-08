@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         //Saving everything in the EditText into noteSaved with OutputStreamWriter
         try {
             OutputStreamWriter writer = new OutputStreamWriter(openFileOutput("noteSaved", Context.MODE_PRIVATE));
-            writer.write(note.getText().toString().replaceAll("\n", "<br>"));
+            writer.write(note.getText().toString().replaceAll("\n", "</uniqueString/>"));
             writer.flush();
             writer.close();
         } catch (Exception e) {
@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
                 BufferedReader reader = new BufferedReader(in);
                 String mNote = reader.readLine();
                 if (mNote!=null){
-                    String mNoteNotNull = mNote.replaceAll("<br>","\n");
+                    String mNoteNotNull = mNote.replaceAll("</uniqueString/>","\n");
                     note.setText(mNoteNotNull);
                 }else {
                     note.setText("");

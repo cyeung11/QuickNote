@@ -40,7 +40,7 @@ public class AppWidgetService extends IntentService {
                     BufferedReader reader = new BufferedReader(in);
                     String mNote = reader.readLine();
                     if (mNote!=null){
-                        String mNoteNotNull = mNote.replaceAll("<br>","\n");
+                        String mNoteNotNull = mNote.replaceAll("</uniqueString/>","\n");
                         views.setTextViewText(R.id.widgetText, mNoteNotNull);
                     }else {
                         views.setTextViewText(R.id.widgetText, "");
