@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 import static com.jkjk.quicknote.MainActivity.ACTION_UPDATE_NOTE;
@@ -31,6 +32,7 @@ public class NotePreview extends AppWidgetProvider {
             try { pendingIntent.send();
             } catch (Exception e){
                 Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
+                Log.e("widget","error",e);
             }
 
         }

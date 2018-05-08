@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.*;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -36,11 +37,13 @@ public class MainActivity extends AppCompatActivity {
         //Saving everything in the EditText into noteSaved with OutputStreamWriter
         try {
             OutputStreamWriter writer = new OutputStreamWriter(openFileOutput("noteSaved", Context.MODE_PRIVATE));
-            writer.write(note.getText().toString().replaceAll("\n", "</uniqueString/>"));
+            writer.write(note.getText().toString());
             writer.flush();
             writer.close();
+            Toast.makeText(this, R.string.saved, Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            Toast.makeText(this, R.string.error_text, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.error_saving, Toast.LENGTH_SHORT).show();
+            Log.e("main","error",e);
         }
 
         Intent intent = new Intent(getBaseContext(),AppWidgetService.class);
@@ -49,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         try { pendingIntent.send();
         } catch (Exception e){
             Toast.makeText(this, R.string.error_text, Toast.LENGTH_SHORT).show();
+            Log.e("main","error",e);
         }
     }
 
@@ -58,17 +62,21 @@ public class MainActivity extends AppCompatActivity {
             if ((getFileStreamPath("noteSaved").canRead())) {
                 InputStreamReader in = new InputStreamReader(openFileInput("noteSaved"));
                 BufferedReader reader = new BufferedReader(in);
-                String mNote = reader.readLine();
-                if (mNote!=null){
-                    String mNoteNotNull = mNote.replaceAll("</uniqueString/>","\n");
-                    note.setText(mNoteNotNull);
-                }else {
-                    note.setText("");
+                StringBuilder stringBuilder = new StringBuilder();
+                String readLine;
+                while ((readLine = reader.readLine()) != null) {
+                    stringBuilder.append(readLine).append("\n");
                 }
                 reader.close();
+                if (stringBuilder.length() != 0) {
+                    stringBuilder.delete(stringBuilder.length() - 1, stringBuilder.length() + 1);
+                }
+                String mNote = stringBuilder.toString();
+                note.setText(mNote);
             }
         }catch(Exception e) {
-            Toast.makeText(this, R.string.error_text, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.error_loading, Toast.LENGTH_SHORT).show();
+            Log.e("main","error",e);
         }
     }
 

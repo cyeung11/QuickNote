@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.RemoteViews;
 
 import java.io.BufferedReader;
@@ -38,16 +39,20 @@ public class AppWidgetService extends IntentService {
                 try {
                     InputStreamReader in = new InputStreamReader(openFileInput("noteSaved"));
                     BufferedReader reader = new BufferedReader(in);
-                    String mNote = reader.readLine();
-                    if (mNote!=null){
-                        String mNoteNotNull = mNote.replaceAll("</uniqueString/>","\n");
-                        views.setTextViewText(R.id.widgetText, mNoteNotNull);
-                    }else {
-                        views.setTextViewText(R.id.widgetText, "");
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String readLine;
+                    while ((readLine = reader.readLine()) != null) {
+                        stringBuilder.append(readLine).append("\n");
                     }
                     reader.close();
+                    if (stringBuilder.length() != 0) {
+                        stringBuilder.delete(stringBuilder.length() - 1, stringBuilder.length() + 1);
+                    }
+                    String mNote = stringBuilder.toString();
+                    views.setTextViewText(R.id.widgetText, mNote);
                 } catch (Exception e) {
-                    views.setTextViewText(R.id.widgetText, getString(R.string.error_text));
+                    views.setTextViewText(R.id.widgetText, getString(R.string.error_loading));
+                    Log.e("widget_service","error",e);
                 }
             }
         }

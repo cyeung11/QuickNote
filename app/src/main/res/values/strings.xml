@@ -1,9 +1,11 @@
 <resources>
     <string name="app_name">Quick Note</string>
-    <string name="done">done</string>
-    <string name="error_text">ERROR</string>
-    <string name="text_here">Jot down your note here.</string>
-    <string name="widget_note">YOUR NOTE HERE</string>
+    <string name="done">Done</string>
+    <string name="saved">Note saved</string>
+    <string name="error_text">Error</string>
+    <string name="error_loading">Error loading note</string>
+    <string name="error_saving">Error saving note</string>
+    <string name="text_here">Jot down your note here</string>
     <string name="add_widget">Note preview</string>
 
 </resources>
