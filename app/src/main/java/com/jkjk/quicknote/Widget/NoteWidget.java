@@ -1,4 +1,4 @@
-package com.jkjk.quicknote;
+package com.jkjk.quicknote.Widget;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -8,12 +8,16 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
-import static com.jkjk.quicknote.MainActivity.ACTION_UPDATE_NOTE;
+
+import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.Service.AppWidgetService;
+
+import static com.jkjk.quicknote.NoteList.ACTION_UPDATE_NOTE;
 
 /**
  * Implementation of App Widget functionality.
  */
-public class NotePreview extends AppWidgetProvider {
+public class NoteWidget extends AppWidgetProvider {
 
 
     @Override
@@ -32,7 +36,7 @@ public class NotePreview extends AppWidgetProvider {
             try { pendingIntent.send();
             } catch (Exception e){
                 Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
-                Log.e("widget","error",e);
+                Log.e(this.getClass().getName(),"error",e);
             }
 
         }

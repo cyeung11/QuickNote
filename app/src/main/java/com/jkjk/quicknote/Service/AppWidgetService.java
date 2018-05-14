@@ -1,4 +1,4 @@
-package com.jkjk.quicknote;
+package com.jkjk.quicknote.Service;
 
 import android.app.IntentService;
 import android.app.PendingIntent;
@@ -8,10 +8,13 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.Widget.NoteWidget;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-import static com.jkjk.quicknote.MainActivity.ACTION_UPDATE_NOTE;
+import static com.jkjk.quicknote.NoteList.ACTION_UPDATE_NOTE;
 
 
 /**
@@ -40,31 +43,30 @@ public class AppWidgetService extends IntentService {
                     InputStreamReader in = new InputStreamReader(openFileInput("noteSaved"));
                     BufferedReader reader = new BufferedReader(in);
                     StringBuilder stringBuilder = new StringBuilder();
-                    String readLine;
-                    while ((readLine = reader.readLine()) != null) {
-                        stringBuilder.append(readLine).append("\n");
+                    String mReadLine;
+                    while ((mReadLine = reader.readLine()) != null) {
+                        stringBuilder.append(mReadLine).append("\n");
                     }
                     reader.close();
                     if (stringBuilder.length() != 0) {
                         stringBuilder.delete(stringBuilder.length() - 1, stringBuilder.length() + 1);
                     }
-                    String mNote = stringBuilder.toString();
-                    views.setTextViewText(R.id.widgetText, mNote);
+                    views.setTextViewText(R.id.widgetText, stringBuilder.toString());
                 } catch (Exception e) {
                     views.setTextViewText(R.id.widgetText, getString(R.string.error_loading));
-                    Log.e("widget_service","error",e);
+                    Log.e(this.getClass().getName(),"error",e);
                 }
             }
         }
 
         Intent startAppIntent = new Intent();
-        startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.MainActivity");
+        startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.Note");
         startAppIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,0,startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
         views.setOnClickPendingIntent(R.id.widget, pendingIntent);
 
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-        ComponentName name = new ComponentName(getApplication(),NotePreview.class);
+        ComponentName name = new ComponentName(getApplication(),NoteWidget.class);
         appWidgetManager.updateAppWidget(name, views);
     }
 
