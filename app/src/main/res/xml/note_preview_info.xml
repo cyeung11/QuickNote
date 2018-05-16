@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="com.jkjk.quicknote.Widget.NoteWidgetConfigureActivity"
     android:initialKeyguardLayout="@layout/note_preview"
     android:initialLayout="@layout/note_preview"
     android:minHeight="110dp"

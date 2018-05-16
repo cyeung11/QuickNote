@@ -6,7 +6,6 @@
     <string name="error_loading">Error loading note</string>
     <string name="error_saving">Error saving note</string>
     <string name="text_here">Jot down your note here</string>
-    <string name="add_widget">Note preview</string>
     <string name="title_here">Title</string>
     <string name="yesterday">Yesterday</string>
     <string name="untitled">Untitled Note</string>
@@ -21,5 +20,8 @@
     <string name="select_all">Select all</string>
     <string name="deselect_all">Deselect all</string>
     <string name="back">Back</string>
-
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="configure">Configure</string>
+    <string name="add_widget">Note preview</string>
+    <string name="select_note_instruction">Select note to display</string>
 </resources>

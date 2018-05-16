@@ -10,7 +10,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Note">
+
+        <activity android:name=".Note"></activity>
+
+        <service
+            android:name=".Service.AppWidgetService"
+            android:exported="false" />
+
+        <activity android:name=".NoteList">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
         <receiver android:name=".Widget.NoteWidget">
@@ -23,15 +35,9 @@
                 android:resource="@xml/note_preview_info" />
         </receiver>
 
-        <service
-            android:name=".Service.AppWidgetService"
-            android:exported="false" />
-
-        <activity android:name=".NoteList">
+        <activity android:name=".Widget.NoteWidgetConfigureActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
     </application>
