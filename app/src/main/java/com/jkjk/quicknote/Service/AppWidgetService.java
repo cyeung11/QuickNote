@@ -14,7 +14,7 @@ import com.jkjk.quicknote.Widget.NoteWidget;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-import static com.jkjk.quicknote.NoteList.ACTION_UPDATE_NOTE;
+import static com.jkjk.quicknote.Fragment.NoteListFragment.ACTION_UPDATE_NOTE;
 
 
 /**

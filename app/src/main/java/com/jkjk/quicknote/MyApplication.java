@@ -25,4 +25,5 @@ public class MyApplication extends Application {
         super.onTerminate();
         helper.close();
     }
+
 }

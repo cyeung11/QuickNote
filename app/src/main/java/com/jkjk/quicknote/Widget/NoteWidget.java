@@ -12,7 +12,7 @@ import android.widget.Toast;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.Service.AppWidgetService;
 
-import static com.jkjk.quicknote.NoteList.ACTION_UPDATE_NOTE;
+import static com.jkjk.quicknote.Fragment.NoteListFragment.ACTION_UPDATE_NOTE;
 
 /**
  * Implementation of App Widget functionality.
