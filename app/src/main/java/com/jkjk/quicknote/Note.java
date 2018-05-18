@@ -12,15 +12,15 @@ import android.widget.Toast;
 
 import com.jkjk.quicknote.Fragment.NoteEditFragment;
 
+import static com.jkjk.quicknote.Fragment.NoteEditFragment.EXTRA_NOTE_ID;
 import static com.jkjk.quicknote.Fragment.NoteEditFragment.hasNoteSave;
-import static com.jkjk.quicknote.Fragment.NoteListFragment.EXTRA_NOTE_ID;
 
 
 public class Note extends AppCompatActivity {
 
     final String fragmentTag = NoteEditFragment.DEFAULT_FRAGMENT_TAG;
 
-    Long noteId = null;
+    long noteId;
     NoteEditFragment noteEditFragment;
 
 
@@ -105,8 +105,7 @@ public class Note extends AppCompatActivity {
     protected void onPause() {
         //when user quit the app without choosing save or discard, save the note
         if (!hasNoteSave){
-            NoteEditFragment fragment = (NoteEditFragment) getSupportFragmentManager().findFragmentByTag(fragmentTag);
-            fragment.saveNote();
+            noteEditFragment.saveNote();
             Toast.makeText(this,R.string.saved, Toast.LENGTH_SHORT).show();
         }
         super.onPause();

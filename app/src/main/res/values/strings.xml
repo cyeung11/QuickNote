@@ -9,8 +9,8 @@
     <string name="title_here">Title</string>
     <string name="yesterday">Yesterday</string>
     <string name="untitled">Untitled Note</string>
-    <string name="confirm_discard">Do you want to discard this note?</string>
-    <string name="discard_title">Discard Note</string>
+    <string name="confirm_discard">Do you want to discard the change to this note?</string>
+    <string name="discard_title">Discard Change</string>
     <string name="discard">Discard</string>
     <string name="save_instead">Save instead</string>
     <string name="cancel">Cancel</string>
@@ -24,4 +24,6 @@
     <string name="configure">Configure</string>
     <string name="add_widget">Note preview</string>
     <string name="select_note_instruction">Select note to display</string>
+    <string name="just_now">Just now</string>
+    <string name="note_preview">Note preview</string>
 </resources>

@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
@@ -15,39 +16,40 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
-import com.jkjk.quicknote.Service.AppWidgetService;
 
-import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
+import java.util.Calendar;
+
+import static android.app.Activity.RESULT_CANCELED;
+import static android.content.Context.MODE_PRIVATE;
 import static com.jkjk.quicknote.Adapter.NoteListAdapter.isYesterday;
 import static com.jkjk.quicknote.DatabaseHelper.DATABASE_NAME;
-import static com.jkjk.quicknote.Widget.NoteWidget.SELECT_NOTE_ID;
 
 public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder> {
 
-    private int itemCount;
-    Activity activity;
-    int mAppWidgetId;
+    private Activity activity;
+    private int mAppWidgetId;
     private static Cursor cursorForWidget;
-    public static final String NEW_WIDGET = "isNewWidget";
 
 
     public WidgetAdapter(Activity activity, int mAppWidgetId){
         this.activity = activity;
         this.mAppWidgetId = mAppWidgetId;
+        //There can only be one widget to be create for each adapter , so create an array with only one widget Id to send back to widget for update
     }
 
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         CardView cardView;
         TextView noteTitle, noteTime, noteContent;
-        Long noteId;
+        long noteId;
 
-        public ViewHolder(CardView card) {
+        private ViewHolder(CardView card) {
             super(card);
             cardView = card;
             noteTitle = (TextView) card.findViewById(R.id.note_title);
@@ -57,9 +59,13 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
     }
 
     @Override
-    public WidgetAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public WidgetAdapter.ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
         CardView v = (CardView) LayoutInflater.from(parent.getContext()).inflate(R.layout.card_note, parent, false);
         final ViewHolder holder = new ViewHolder(v);
+
+
+        // Set the result to CANCELED.  This will cause the widget host to cancel out of the widget placement if the user presses the back button.
+        activity.setResult(RESULT_CANCELED);
 
         v.setCardBackgroundColor(Color.WHITE);
 
@@ -69,23 +75,27 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
             public void onClick(View view) {
                 final Context context = activity;
 
-                cursorForWidget.moveToPosition(holder.getAdapterPosition());
-                long id = cursorForWidget.getLong(0);
+                RemoteViews remoteViews = new RemoteViews("com.jkjk.quicknote", R.layout.note_preview);
 
-                Intent intent = new Intent(context,AppWidgetService.class);
-                intent.putExtra(EXTRA_APPWIDGET_ID, mAppWidgetId);
-                intent.putExtra(SELECT_NOTE_ID, id);
-                intent.putExtra(NEW_WIDGET, true);
-                PendingIntent pendingIntent = PendingIntent.getService(context,12546345,intent,PendingIntent.FLAG_UPDATE_CURRENT);
-                try { pendingIntent.send();
-                } catch (Exception e){
-                    Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
-                    Log.e(this.getClass().getName(),"error",e);
-                }
+                //Obtain correspond data according to the position the user click. As both the recyclerview and cursor are sorted chronically, position equals to cursor index
+                cursorForWidget.moveToPosition(holder.getAdapterPosition());
+                remoteViews.setTextViewText(R.id.widget_title, cursorForWidget.getString(1));
+                remoteViews.setTextViewText(R.id.widget_content, cursorForWidget.getString(2));
+
+                Intent startAppIntent = new Intent();
+                startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.NoteList");
+                PendingIntent pendingIntent = PendingIntent.getActivity(context,0,startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+                remoteViews.setOnClickPendingIntent(R.id.widget, pendingIntent);
+
+                AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+                appWidgetManager.updateAppWidget(mAppWidgetId, remoteViews);
 
                 Intent resultValue = new Intent();
                 resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
                 activity.setResult(Activity.RESULT_OK, resultValue);
+
+                SharedPreferences pref = context.getSharedPreferences("widget", MODE_PRIVATE);
+                pref.edit().putLong(Integer.toString(mAppWidgetId), cursorForWidget.getLong(0)).commit();
 
                 activity.finish();
             }
@@ -98,8 +108,7 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
     @Override
     public int getItemCount() {
         //Obtain all data from database provided from Application class and get count
-        itemCount = updateCursorForWidget().getCount();
-        return itemCount;
+        return updateCursorForWidget().getCount();
     }
 
     @Override
@@ -119,12 +128,25 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
                 holder.noteContent.setText(cursorForWidget.getString(2).trim());
 
                 //Time formatting
-                Long time = (Long.parseLong(cursorForWidget.getString(3)));
+                long time = (Long.parseLong(cursorForWidget.getString(3)));
                 String shownTime;
-                if (DateUtils.isToday(time)) {
+                // Get current time from Calendar and check how long aga was the note edited
+                long timeSpan = Calendar.getInstance().getTimeInMillis() - time;
+
+                if (timeSpan < 300000L){
+                    //less than 5 minutes
+                    shownTime = holder.cardView.getResources().getString(R.string.just_now);
+
+                } else if (timeSpan < 3600000L){
+                    //less than an hour
+                    shownTime = DateUtils.getRelativeTimeSpanString(time).toString();
+
+                }else if (DateUtils.isToday(time)) {
                     shownTime = DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_TIME);
+
                 } else if (isYesterday(time)){
                     shownTime = holder.cardView.getResources().getString(R.string.yesterday);
+
                 } else {
                     shownTime = DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_DATE);
                 }
@@ -145,7 +167,7 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
     }
 
 
-    public static Cursor updateCursorForWidget(){
+    private static Cursor updateCursorForWidget(){
         cursorForWidget = MyApplication.getDatabase().query(DATABASE_NAME, new String[]{"_id", "title", "content", "time"}, null, null, null
                 , null, "time DESC");
         return cursorForWidget;

@@ -4,9 +4,13 @@ package com.jkjk.quicknote.Fragment;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,14 +19,13 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.jkjk.quicknote.Adapter.NoteListAdapter;
 import com.jkjk.quicknote.MyApplication;
-import com.jkjk.quicknote.NoteListAdapter;
 import com.jkjk.quicknote.R;
 
 import java.util.Calendar;
 
 import static com.jkjk.quicknote.DatabaseHelper.DATABASE_NAME;
-import static com.jkjk.quicknote.Fragment.NoteListFragment.EXTRA_NOTE_ID;
 
 
 /**
@@ -32,13 +35,16 @@ public class NoteEditFragment extends Fragment {
 
     public static final String NOTE_ID = "noteId";
     public static final String DEFAULT_FRAGMENT_TAG = "NoteEditFragment";
+    public final static String EXTRA_NOTE_ID = "extraNoteId";
+
+    final String fragmentTag = NoteEditFragment.DEFAULT_FRAGMENT_TAG;
 
     public static boolean hasNoteSave;
 
-    private ContentValues values = null;
     long noteId, newNoteId ;
-    private EditText titleEditFragment, noteEditFragment;
+    private EditText titleInFragment, contentInFragment;
     boolean newNote;
+    FloatingActionButton done;
 
 
     public NoteEditFragment() {
@@ -52,8 +58,8 @@ public class NoteEditFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_note_edit, container, false);
-        titleEditFragment = (EditText) view.findViewById(R.id.title_edit_fragment);
-        noteEditFragment = (EditText) view.findViewById(R.id.content_edit_fragment);
+        titleInFragment = (EditText) view.findViewById(R.id.title_edit_fragment);
+        contentInFragment = (EditText) view.findViewById(R.id.content_edit_fragment);
         hasNoteSave = false;
 
         if (savedInstanceState !=null) {
@@ -68,22 +74,37 @@ public class NoteEditFragment extends Fragment {
 //                    cursor.moveToPosition((int)position);
                 Cursor tempNote = MyApplication.getDatabase().query(DATABASE_NAME, new String[]{"_id","title", "content", "time"}, "_id='" + noteId +"'",
                       null, null, null, null, null);
-                Log.d("cursor index: ",Long.toString(noteId));
-                if (tempNote.moveToFirst()){
-                    Log.d("cursor info", Integer.toString(tempNote.getColumnCount()));
-                }else {Log.d("no cursor","error");}
-                titleEditFragment.setText(tempNote.getString(1));
-                noteEditFragment.setText(tempNote.getString(2));
+                tempNote.moveToFirst();
+                titleInFragment.setText(tempNote.getString(1));
+                contentInFragment.setText(tempNote.getString(2));
                 tempNote.close();
             } catch (Exception e) {
                 Toast.makeText(container.getContext(), R.string.error_loading, Toast.LENGTH_SHORT).show();
                 Log.e(this.getClass().getName(), "error", e);
             }
         }
+
         return view;
     }
 
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        done = (FloatingActionButton)getActivity().findViewById(R.id.done_fab);
+        done.setImageDrawable(getResources().getDrawable(R.drawable.ic_done_white));
+        done.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff33b5e5")));
+        done.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                NoteEditFragment fragment = (NoteEditFragment) getActivity().getSupportFragmentManager().findFragmentByTag(fragmentTag);
+                fragment.saveNote();
+                fragment.sendResult();
+                Toast.makeText(getContext(),R.string.saved, Toast.LENGTH_SHORT).show();
+                getActivity().finish();
+            }
+        });
+    }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
@@ -97,13 +118,13 @@ public class NoteEditFragment extends Fragment {
     }
 
     public void saveNote(){
-        values = new ContentValues();
-        String noteTitle = titleEditFragment.getText().toString().trim();
+        ContentValues values = new ContentValues();
+        String noteTitle = titleInFragment.getText().toString().trim();
         if (noteTitle.length()<1){
             noteTitle = getActivity().getResources().getString(R.string.untitled);
         }
         values.put("title", noteTitle);
-        values.put("content", noteEditFragment.getText().toString());
+        values.put("content", contentInFragment.getText().toString());
         values.put("time", Long.toString(Calendar.getInstance().getTimeInMillis()));
         if (!newNote) {
             MyApplication.getDatabase().update(DATABASE_NAME, values, "_id='" + noteId +"'", null);

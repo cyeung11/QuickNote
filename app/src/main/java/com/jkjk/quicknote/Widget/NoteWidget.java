@@ -5,13 +5,17 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.Service.AppWidgetService;
 
+import java.util.ArrayList;
+
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Implementation of App Widget functionality.
@@ -19,28 +23,45 @@ import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
  */
 public class NoteWidget extends AppWidgetProvider {
 
-    public final static String SELECT_NOTE_ID = "selectedNoteId";
-    public static int [] existWidgetId;
-
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
 
         // There may be multiple widgets active, so update all of them
+        SharedPreferences pref = context.getSharedPreferences("widget", MODE_PRIVATE);
 
+        //Weird case: onUpdate called before configuration finish. thus generating exception.
+        // Add checking to see if the widget is newly created. If so, id will not send to widget service to prevent calling onUpdate before user selected note
+        ArrayList <Integer> checking = new ArrayList<>();
         for (int appWidgetId : appWidgetIds) {
 
-            context.startService(new Intent(context, AppWidgetService.class));
-
-            Intent intent = new Intent(context,AppWidgetService.class);
-            intent.putExtra(EXTRA_APPWIDGET_ID, appWidgetId);
-            PendingIntent pendingIntent = PendingIntent.getService(context,0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
-            try { pendingIntent.send();
-            } catch (Exception e){
-                Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
-                Log.e(this.getClass().getName(),"error",e);
+            if (pref.contains(Integer.toString(appWidgetId))) {
+                checking.add(appWidgetId);
             }
         }
-    }
-}
+        int [] result = new int [checking.size()];
+        for (int i = 0 ; i<result.length; i++){
+            result[i] = checking.get(i);
+        }
 
+        Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, result);
+        PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        try {
+            pendingIntent.send();
+        } catch (Exception e) {
+            Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
+            Log.e(getClass().getName(), "error",e);
+        }
+    }
+
+
+    @Override
+    public void onDeleted(Context context, int[] appWidgetIds) {
+        SharedPreferences pref = context.getSharedPreferences("widget", MODE_PRIVATE);
+        for (int appWidgetId : appWidgetIds) {
+            pref.edit().remove(Integer.toString(appWidgetId)).commit();
+        }
+        super.onDeleted(context, appWidgetIds);
+    }
+
+}
