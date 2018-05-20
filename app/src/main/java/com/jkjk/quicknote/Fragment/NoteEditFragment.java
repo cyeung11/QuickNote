@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.jkjk.quicknote.Adapter.NoteListAdapter;
@@ -41,7 +42,7 @@ public class NoteEditFragment extends Fragment {
 
     public static boolean hasNoteSave;
 
-    long noteId, newNoteId ;
+    long noteId;
     private EditText titleInFragment, contentInFragment;
     boolean newNote;
     FloatingActionButton done;
@@ -58,20 +59,23 @@ public class NoteEditFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_note_edit, container, false);
-        titleInFragment = (EditText) view.findViewById(R.id.title_edit_fragment);
-        contentInFragment = (EditText) view.findViewById(R.id.content_edit_fragment);
         hasNoteSave = false;
 
         if (savedInstanceState !=null) {
             noteId = savedInstanceState.getLong(NOTE_ID, 0L);
+            newNote = false;
         }else if (getArguments() != null) {
             noteId = getArguments().getLong(EXTRA_NOTE_ID, 0L);
+            newNote = false;
         } else {newNote = true;}
+
+        titleInFragment = (EditText) view.findViewById(R.id.title_edit_fragment);
+        contentInFragment = (EditText) view.findViewById(R.id.content_edit_fragment);
+        ImageButton shareButton = (ImageButton)view.findViewById(R.id.share);
 
         //read data from database and attach them into the fragment
         if (!newNote) {
             try {
-//                    cursor.moveToPosition((int)position);
                 Cursor tempNote = MyApplication.getDatabase().query(DATABASE_NAME, new String[]{"_id","title", "content", "time"}, "_id='" + noteId +"'",
                       null, null, null, null, null);
                 tempNote.moveToFirst();
@@ -83,6 +87,18 @@ public class NoteEditFragment extends Fragment {
                 Log.e(this.getClass().getName(), "error", e);
             }
         }
+
+        shareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.setType("text/plain");
+                shareIntent.putExtra(Intent.EXTRA_TEXT,titleInFragment.getText()+"\n"+contentInFragment.getText());
+                shareIntent.putExtra(Intent.EXTRA_TITLE,R.string.share+" "+titleInFragment.getText());
+                startActivity(shareIntent);
+            }
+        });
 
         return view;
     }
@@ -97,9 +113,8 @@ public class NoteEditFragment extends Fragment {
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                NoteEditFragment fragment = (NoteEditFragment) getActivity().getSupportFragmentManager().findFragmentByTag(fragmentTag);
-                fragment.saveNote();
-                fragment.sendResult();
+                saveNote();
+                sendResult();
                 Toast.makeText(getContext(),R.string.saved, Toast.LENGTH_SHORT).show();
                 getActivity().finish();
             }
@@ -111,6 +126,8 @@ public class NoteEditFragment extends Fragment {
         super.onSaveInstanceState(outState);
         outState.putLong(NOTE_ID, noteId);
     }
+
+
 
 
     public void sendResult(){
@@ -129,11 +146,12 @@ public class NoteEditFragment extends Fragment {
         if (!newNote) {
             MyApplication.getDatabase().update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
         }else {
-            newNoteId = MyApplication.getDatabase().insert(DATABASE_NAME, "",values);
+            noteId = MyApplication.getDatabase().insert(DATABASE_NAME, "",values);
         }
         values.clear();
         NoteListAdapter.updateCursor();
         hasNoteSave = true;
+        newNote = false;
     }
 
 

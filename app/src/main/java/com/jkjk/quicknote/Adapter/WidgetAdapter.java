@@ -3,7 +3,6 @@ package com.jkjk.quicknote.Adapter;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -27,8 +26,11 @@ import java.util.Calendar;
 
 import static android.app.Activity.RESULT_CANCELED;
 import static android.content.Context.MODE_PRIVATE;
+import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
 import static com.jkjk.quicknote.Adapter.NoteListAdapter.isYesterday;
 import static com.jkjk.quicknote.DatabaseHelper.DATABASE_NAME;
+import static com.jkjk.quicknote.Fragment.NoteEditFragment.EXTRA_NOTE_ID;
+import static com.jkjk.quicknote.Service.AppWidgetService.IS_FROM_WIDGET;
 
 public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder> {
 
@@ -73,8 +75,6 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
 
             @Override
             public void onClick(View view) {
-                final Context context = activity;
-
                 RemoteViews remoteViews = new RemoteViews("com.jkjk.quicknote", R.layout.note_preview);
 
                 //Obtain correspond data according to the position the user click. As both the recyclerview and cursor are sorted chronically, position equals to cursor index
@@ -83,18 +83,22 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
                 remoteViews.setTextViewText(R.id.widget_content, cursorForWidget.getString(2));
 
                 Intent startAppIntent = new Intent();
-                startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.NoteList");
-                PendingIntent pendingIntent = PendingIntent.getActivity(context,0,startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+                startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.Note")
+                        .putExtra(EXTRA_NOTE_ID, cursorForWidget.getLong(0)).putExtra(IS_FROM_WIDGET, true)
+                        .setFlags(FLAG_ACTIVITY_CLEAR_TOP);
+                Log.e(getClass().getName(),Long.toString(cursorForWidget.getLong(0)));
+                PendingIntent pendingIntent = PendingIntent.getActivity(activity,(int)cursorForWidget.getLong(0),startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
                 remoteViews.setOnClickPendingIntent(R.id.widget, pendingIntent);
 
-                AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+
+                AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(activity);
                 appWidgetManager.updateAppWidget(mAppWidgetId, remoteViews);
 
                 Intent resultValue = new Intent();
                 resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
                 activity.setResult(Activity.RESULT_OK, resultValue);
 
-                SharedPreferences pref = context.getSharedPreferences("widget", MODE_PRIVATE);
+                SharedPreferences pref = activity.getSharedPreferences("widget", MODE_PRIVATE);
                 pref.edit().putLong(Integer.toString(mAppWidgetId), cursorForWidget.getLong(0)).commit();
 
                 activity.finish();
@@ -113,8 +117,6 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-
-        final Context context = holder.cardView.getContext();
 
         //Extract data from cursor
         if (cursorForWidget != null) {
@@ -142,18 +144,18 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
                     shownTime = DateUtils.getRelativeTimeSpanString(time).toString();
 
                 }else if (DateUtils.isToday(time)) {
-                    shownTime = DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_TIME);
+                    shownTime = DateUtils.formatDateTime(activity, time, DateUtils.FORMAT_SHOW_TIME);
 
                 } else if (isYesterday(time)){
                     shownTime = holder.cardView.getResources().getString(R.string.yesterday);
 
                 } else {
-                    shownTime = DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_DATE);
+                    shownTime = DateUtils.formatDateTime(activity, time, DateUtils.FORMAT_SHOW_DATE);
                 }
                 holder.noteTime.setText(shownTime);
 
             } catch (Exception e) {
-                Toast.makeText(context, R.string.error_loading, Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, R.string.error_loading, Toast.LENGTH_SHORT).show();
                 Log.e(this.getClass().getName(), "error", e);
             }
         }

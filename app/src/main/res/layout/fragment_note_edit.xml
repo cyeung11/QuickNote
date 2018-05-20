@@ -26,17 +26,34 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <EditText
-                    android:id="@+id/title_edit_fragment"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:fontFamily="serif"
-                    android:hint="@string/title_here"
-                    android:inputType="textCapSentences"
-                    android:textSize="22sp" />
+                    android:orientation="horizontal">
 
+                    <EditText
+                        android:id="@+id/title_edit_fragment"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginBottom="4dp"
+                        android:fontFamily="serif"
+                        android:hint="@string/title_here"
+                        android:inputType="textCapSentences"
+                        android:textSize="22sp" />
 
+                    <ImageButton
+                        android:id="@+id/share"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/sharp_share_black_24"
+                        android:background="@android:color/transparent"
+                        android:layout_gravity="center_vertical"
+                        android:focusable="false"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginRight="8dp"/>
+
+                </LinearLayout>
 
                 <EditText
                     android:id="@+id/content_edit_fragment"
@@ -64,7 +81,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginRight="16dp"
+        android:layout_marginRight="8dp"
         android:layout_marginBottom="24dp"
         android:clickable="true" />
 

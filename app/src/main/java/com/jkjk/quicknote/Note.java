@@ -4,10 +4,6 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.jkjk.quicknote.Fragment.NoteEditFragment;
@@ -29,45 +25,19 @@ public class Note extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
 
-        if (getIntent().hasExtra(EXTRA_NOTE_ID)) {
-            noteId = getIntent().getLongExtra(EXTRA_NOTE_ID, 0L);
-            noteEditFragment = NoteEditFragment.newNoteEditFragmentInstance(noteId);
-        } else {
-            noteEditFragment = NoteEditFragment.newNoteEditFragmentInstance();
-        }
         if (savedInstanceState == null) {
+            if (getIntent().hasExtra(EXTRA_NOTE_ID)) {
+                noteId = getIntent().getLongExtra(EXTRA_NOTE_ID, 0L);
+                noteEditFragment = NoteEditFragment.newNoteEditFragmentInstance(noteId);
+            } else {
+                noteEditFragment = NoteEditFragment.newNoteEditFragmentInstance();
+            }
             getSupportFragmentManager().beginTransaction().add(R.id.container, noteEditFragment, fragmentTag).commit();
+        }else {
+            noteEditFragment = (NoteEditFragment) getSupportFragmentManager().findFragmentByTag(fragmentTag);
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main, menu);
-        try {
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
-        }catch (Exception e){
-            Toast.makeText(this, R.string.error_saving, Toast.LENGTH_SHORT).show();
-            Log.e(this.getClass().getName(),"error",e);
-        }
-        return true;
-    }
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        //By pressing the done button on the action bar, call finish and send back edited id to note list activity.
-        switch (item.getItemId()) {
-            case R.id.done:
-                noteEditFragment.saveNote();
-                noteEditFragment.sendResult();
-                Toast.makeText(this,R.string.saved, Toast.LENGTH_SHORT).show();
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
 
     @Override
     public void onBackPressed() {
@@ -102,13 +72,14 @@ public class Note extends AppCompatActivity {
 
 
     @Override
-    protected void onPause() {
+    protected void onStop() {
         //when user quit the app without choosing save or discard, save the note
         if (!hasNoteSave){
             noteEditFragment.saveNote();
             Toast.makeText(this,R.string.saved, Toast.LENGTH_SHORT).show();
         }
-        super.onPause();
+        hasNoteSave = false;
+        super.onStop();
     }
 
 }

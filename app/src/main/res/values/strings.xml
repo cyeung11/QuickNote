@@ -26,4 +26,8 @@
     <string name="select_note_instruction">Select note to display</string>
     <string name="just_now">Just now</string>
     <string name="note_preview">Note preview</string>
+    <string name="share">Share</string>
+    <string name="search">Search</string>
+    <string name="starred">Starred message</string>
+    <string name="setting">Setting</string>
 </resources>

@@ -13,6 +13,7 @@ import com.jkjk.quicknote.R;
 
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
 import static com.jkjk.quicknote.DatabaseHelper.DATABASE_NAME;
+import static com.jkjk.quicknote.Fragment.NoteEditFragment.EXTRA_NOTE_ID;
 
 
 /**
@@ -21,6 +22,8 @@ import static com.jkjk.quicknote.DatabaseHelper.DATABASE_NAME;
  * <p>
  */
 public class AppWidgetService extends IntentService {
+
+    public static final String IS_FROM_WIDGET = "isStartedFromWidget";
 
     public AppWidgetService(){
         super("AppWidgetService");
@@ -48,19 +51,22 @@ public class AppWidgetService extends IntentService {
 
                 views[i] = new RemoteViews("com.jkjk.quicknote", R.layout.note_preview);
 
-                Cursor tempNote = MyApplication.getDatabase().query(DATABASE_NAME, new String[]{"title", "content"}, "_id='"+noteId[i]+"'", null, null
+                Cursor cursorForWidget = MyApplication.getDatabase().query(DATABASE_NAME, new String[]{"_id","title", "content"}, "_id='"+noteId[i]+"'", null, null
                         , null, null);
-                if (tempNote != null) {
-                    tempNote.moveToFirst();
-                    views[i].setTextViewText(R.id.widget_title, tempNote.getString(0));
-                    views[i].setTextViewText(R.id.widget_content, tempNote.getString(1));
+                if (cursorForWidget != null) {
+                    cursorForWidget.moveToFirst();
+                    views[i].setTextViewText(R.id.widget_title, cursorForWidget.getString(1));
+                    views[i].setTextViewText(R.id.widget_content, cursorForWidget.getString(2));
                 }
-                tempNote.close();
 
                 Intent startAppIntent = new Intent();
-                startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.NoteList");
-                PendingIntent pendingIntent = PendingIntent.getActivity(this,0,startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+                startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.Note")
+                        .putExtra(EXTRA_NOTE_ID, cursorForWidget.getLong(0)).putExtra(IS_FROM_WIDGET, true)
+                        .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                PendingIntent pendingIntent = PendingIntent.getActivity(this,(int)cursorForWidget.getLong(0),startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
                 views[i].setOnClickPendingIntent(R.id.widget, pendingIntent);
+
+                cursorForWidget.close();
 
                 AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
                 appWidgetManager.updateAppWidget(appWidgetIds[i], views[i]);

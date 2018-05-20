@@ -6,20 +6,14 @@
     android:layout_height="match_parent"
     tools:context=".NoteList">
 
-    <!--<android.support.v7.widget.Toolbar-->
-    <!--style="?android:actionBarStyle"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:title="@string/app_name"-->
-    <!--android:id="@+id/note_list_menu"/>-->
 
 
-    <fragment
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/note_list"
-        android:name="com.jkjk.quicknote.Fragment.NoteListFragment"
-        tools:layout="@layout/fragment_note_list"/>
+            <fragment
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/note_list"
+                android:name="com.jkjk.quicknote.Fragment.NoteListFragment"
+                tools:layout="@layout/fragment_note_list"/>
 
 
 

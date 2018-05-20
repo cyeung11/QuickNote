@@ -18,6 +18,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -51,6 +53,8 @@ public class NoteListFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        //TODO
+//        setHasOptionsMenu(true);
         noteListAdapter = new NoteListAdapter(this);
     }
 
@@ -62,6 +66,10 @@ public class NoteListFragment extends Fragment {
 //            noteListMenu = (android.support.v7.widget.Toolbar) getActivity().findViewById(R.id.note_list_menu);
 //            ((AppCompatActivity) getActivity()).setSupportActionBar(noteListMenu);
 //        }
+
+        if (savedInstanceState!=null){
+            noteListAdapter.notifyDataSetChanged();
+        }
 
         addNote = (FloatingActionButton)getActivity().findViewById(R.id.add_note);
         addNote.setImageDrawable(getResources().getDrawable(R.drawable.ic_add_white));
@@ -110,6 +118,15 @@ public class NoteListFragment extends Fragment {
         return view;
     }
 
+
+    //TODO
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.note_list, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         //call its fragment notifyitemchange method to update list
@@ -119,12 +136,13 @@ public class NoteListFragment extends Fragment {
             }
     }
 
+
     @Override
-    public void onPause() {
-        if (inActionMode) {
+    public void onStop() {
+        if (mActionMode!=null) {
             mActionMode.finish();
         }
-        super.onPause();
+        super.onStop();
     }
 
     public void onNoteEdit(long noteId) {
