@@ -23,11 +23,14 @@
     <string name="appwidget_text">EXAMPLE</string>
     <string name="configure">Configure</string>
     <string name="add_widget">Note preview</string>
-    <string name="select_note_instruction">Select note to display</string>
+    <string name="select_note_instruction">Select note</string>
     <string name="just_now">Just now</string>
     <string name="note_preview">Note preview</string>
     <string name="share">Share</string>
     <string name="search">Search</string>
     <string name="starred">Starred message</string>
     <string name="setting">Setting</string>
+    <string name="add_shortcut_short_label">Background Color</string>
+    <string name="color_default_title">Background Color</string>
+    <string name="search_hint">Search note</string>
 </resources>

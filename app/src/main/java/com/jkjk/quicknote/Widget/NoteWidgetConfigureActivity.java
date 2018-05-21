@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
 import com.jkjk.quicknote.Adapter.WidgetAdapter;
 import com.jkjk.quicknote.R;
@@ -50,5 +51,8 @@ public class NoteWidgetConfigureActivity extends Activity {
     }
 
 
+    public void onColorSelected(View view) {
+        widgetAdapter.onColorSelected(view);
+    }
 }
 

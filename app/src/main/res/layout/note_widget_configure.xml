@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
+        android:background="@color/colorPrimary"
         app:title="@string/select_note_instruction"
         app:titleTextColor="@android:color/white"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
@@ -17,6 +17,75 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view_widget"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/color_default_title"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="4dp" />
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:id="@+id/color_white"
+            android:onClick="onColorSelected"
+            style="@style/WhiteRadioButtonStyle"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:id="@+id/color_red"
+            android:onClick="onColorSelected"
+            style="@style/RedRadioButtonStyle"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:id="@+id/color_yellow"
+            android:onClick="onColorSelected"
+            style="@style/YellowRadioButtonStyle"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:id="@+id/color_green"
+            android:onClick="onColorSelected"
+            style="@style/GreenRadioButtonStyle"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:id="@+id/color_blue"
+            android:onClick="onColorSelected"
+            style="@style/BlueRadioButtonStyle"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:id="@+id/color_grey"
+            android:onClick="onColorSelected"
+            style="@style/GreyRadioButtonStyle"/>
+
+
+    </RadioGroup>
 
 </LinearLayout>

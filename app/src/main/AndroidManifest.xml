@@ -11,10 +11,16 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".Note"></activity>
+        <activity android:name=".Note">
+            <!--<intent-filter>-->
+                <!--TODO-->
+                <!--<action android:name="android.intent.action.CREATE_SHORTCUT" />-->
+                <!--<category android:name="android.intent.category.DEFAULT" />-->
+            <!--</intent-filter>-->
+        </activity>
 
         <service
-            android:name=".Service.AppWidgetService"
+            android:name=".Widget.AppWidgetService"
             android:exported="false" />
 
         <activity android:name=".NoteList">

@@ -2,6 +2,9 @@ package com.jkjk.quicknote.Fragment;
 
 
 import android.app.Activity;
+import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -23,9 +26,12 @@ import android.widget.Toast;
 import com.jkjk.quicknote.Adapter.NoteListAdapter;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.Widget.AppWidgetService;
+import com.jkjk.quicknote.Widget.NoteWidget;
 
 import java.util.Calendar;
 
+import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
 import static com.jkjk.quicknote.DatabaseHelper.DATABASE_NAME;
 
 
@@ -94,7 +100,7 @@ public class NoteEditFragment extends Fragment {
                 Intent shareIntent = new Intent();
                 shareIntent.setAction(Intent.ACTION_SEND);
                 shareIntent.setType("text/plain");
-                shareIntent.putExtra(Intent.EXTRA_TEXT,titleInFragment.getText()+"\n"+contentInFragment.getText());
+                shareIntent.putExtra(Intent.EXTRA_TEXT,titleInFragment.getText()+"\n\n"+contentInFragment.getText());
                 shareIntent.putExtra(Intent.EXTRA_TITLE,R.string.share+" "+titleInFragment.getText());
                 startActivity(shareIntent);
             }
@@ -114,6 +120,7 @@ public class NoteEditFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 saveNote();
+                updateAllWidget();
                 sendResult();
                 Toast.makeText(getContext(),R.string.saved, Toast.LENGTH_SHORT).show();
                 getActivity().finish();
@@ -152,6 +159,21 @@ public class NoteEditFragment extends Fragment {
         NoteListAdapter.updateCursor();
         hasNoteSave = true;
         newNote = false;
+    }
+
+    public void updateAllWidget(){
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getActivity());
+        ComponentName name = new ComponentName(getActivity().getPackageName(), NoteWidget.class.getName());
+        int [] appWidgetIds = appWidgetManager.getAppWidgetIds(name);
+        Intent intent = new Intent(getContext(), AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, appWidgetIds);
+        PendingIntent pendingIntent = PendingIntent.getService(getContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        try {
+            pendingIntent.send();
+        } catch (Exception e) {
+            Toast.makeText(getContext(), R.string.error_text, Toast.LENGTH_SHORT).show();
+            Log.e(getClass().getName(), "error",e);
+        }
+
     }
 
 

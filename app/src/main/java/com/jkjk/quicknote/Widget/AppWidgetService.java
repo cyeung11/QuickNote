@@ -1,4 +1,4 @@
-package com.jkjk.quicknote.Service;
+package com.jkjk.quicknote.Widget;
 
 import android.app.IntentService;
 import android.app.PendingIntent;
@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.widget.RemoteViews;
 
 import com.jkjk.quicknote.MyApplication;
@@ -38,11 +39,14 @@ public class AppWidgetService extends IntentService {
 
             int[] appWidgetIds = intent.getIntArrayExtra(EXTRA_APPWIDGET_ID);
             int[] noteId  = new int[appWidgetIds.length];
+            int[] color = new int[appWidgetIds.length];
 
             //get the correspond database id with the widget id
-            SharedPreferences pref = getSharedPreferences("widget", MODE_PRIVATE);
+            SharedPreferences idPref = getSharedPreferences("widget_id", MODE_PRIVATE);
+            SharedPreferences colorPref = getSharedPreferences("widget_color", MODE_PRIVATE);
             for (int i = 0; i < appWidgetIds.length; i++) {
-                noteId[i] = (int) pref.getLong(Integer.toString(appWidgetIds[i]), 0);
+                noteId[i] = (int) idPref.getLong(Integer.toString(appWidgetIds[i]), 0);
+                color[i] = colorPref.getInt(Integer.toString(appWidgetIds[i]), Color.parseColor("#FFFFFF"));
             }
 
             RemoteViews [] views = new RemoteViews[appWidgetIds.length];
@@ -57,6 +61,7 @@ public class AppWidgetService extends IntentService {
                     cursorForWidget.moveToFirst();
                     views[i].setTextViewText(R.id.widget_title, cursorForWidget.getString(1));
                     views[i].setTextViewText(R.id.widget_content, cursorForWidget.getString(2));
+                    views[i].setInt(R.id.widget, "setBackgroundColor", color[i]);
                 }
 
                 Intent startAppIntent = new Intent();

@@ -10,7 +10,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.jkjk.quicknote.R;
-import com.jkjk.quicknote.Service.AppWidgetService;
 
 import java.util.ArrayList;
 
@@ -28,14 +27,15 @@ public class NoteWidget extends AppWidgetProvider {
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
 
         // There may be multiple widgets active, so update all of them
-        SharedPreferences pref = context.getSharedPreferences("widget", MODE_PRIVATE);
+        SharedPreferences idPref = context.getSharedPreferences("widget_id", MODE_PRIVATE);
+        SharedPreferences colorPref = context.getSharedPreferences("widget_color", MODE_PRIVATE);
 
         //Weird case: onUpdate called before configuration finish. thus generating exception.
         // Add checking to see if the widget is newly created. If so, id will not send to widget service to prevent calling onUpdate before user selected note
         ArrayList <Integer> checking = new ArrayList<>();
         for (int appWidgetId : appWidgetIds) {
 
-            if (pref.contains(Integer.toString(appWidgetId))) {
+            if (idPref.contains(Integer.toString(appWidgetId))) {
                 checking.add(appWidgetId);
             }
         }
@@ -57,9 +57,11 @@ public class NoteWidget extends AppWidgetProvider {
 
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
-        SharedPreferences pref = context.getSharedPreferences("widget", MODE_PRIVATE);
+        SharedPreferences idPref = context.getSharedPreferences("widget_id", MODE_PRIVATE);
+        SharedPreferences colorPref = context.getSharedPreferences("widget_color", MODE_PRIVATE);
         for (int appWidgetId : appWidgetIds) {
-            pref.edit().remove(Integer.toString(appWidgetId)).commit();
+            idPref.edit().remove(Integer.toString(appWidgetId)).commit();
+            colorPref.edit().remove(Integer.toString(appWidgetId)).commit();
         }
         super.onDeleted(context, appWidgetIds);
     }

@@ -30,12 +30,13 @@ import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
 import static com.jkjk.quicknote.Adapter.NoteListAdapter.isYesterday;
 import static com.jkjk.quicknote.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.Fragment.NoteEditFragment.EXTRA_NOTE_ID;
-import static com.jkjk.quicknote.Service.AppWidgetService.IS_FROM_WIDGET;
+import static com.jkjk.quicknote.Widget.AppWidgetService.IS_FROM_WIDGET;
 
 public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder> {
 
     private Activity activity;
     private int mAppWidgetId;
+    private int color = Color.parseColor("#FFFFFF");
     private static Cursor cursorForWidget;
 
 
@@ -44,6 +45,29 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
         this.mAppWidgetId = mAppWidgetId;
         //There can only be one widget to be create for each adapter , so create an array with only one widget Id to send back to widget for update
     }
+
+    public void onColorSelected(View view) {
+        switch(view.getId()) {
+            case R.id.color_red:
+                color = Color.parseColor("#ffb1b1");
+                break;
+            case R.id.color_yellow:
+                color = Color.parseColor("#fdd782");
+                break;
+            case R.id.color_green:
+                color = Color.parseColor("#a9ddc7");
+                break;
+            case R.id.color_blue:
+                color = Color.parseColor("#a5e3dc");
+                break;
+            case R.id.color_grey:
+                color = Color.parseColor("#eeeeee");
+                break;
+            case R.id.color_white:
+                color = Color.parseColor("#FFFFFF");
+                break;
+        }
+        }
 
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -81,6 +105,7 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
                 cursorForWidget.moveToPosition(holder.getAdapterPosition());
                 remoteViews.setTextViewText(R.id.widget_title, cursorForWidget.getString(1));
                 remoteViews.setTextViewText(R.id.widget_content, cursorForWidget.getString(2));
+                remoteViews.setInt(R.id.widget, "setBackgroundColor", color);
 
                 Intent startAppIntent = new Intent();
                 startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.Note")
@@ -98,8 +123,10 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
                 resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
                 activity.setResult(Activity.RESULT_OK, resultValue);
 
-                SharedPreferences pref = activity.getSharedPreferences("widget", MODE_PRIVATE);
-                pref.edit().putLong(Integer.toString(mAppWidgetId), cursorForWidget.getLong(0)).commit();
+                SharedPreferences idPref = activity.getSharedPreferences("widget_id", MODE_PRIVATE);
+                SharedPreferences colorPref = activity.getSharedPreferences("widget_color", MODE_PRIVATE);
+                idPref.edit().putLong(Integer.toString(mAppWidgetId), cursorForWidget.getLong(0)).commit();
+                colorPref.edit().putInt(Integer.toString(mAppWidgetId), color).commit();
 
                 activity.finish();
             }

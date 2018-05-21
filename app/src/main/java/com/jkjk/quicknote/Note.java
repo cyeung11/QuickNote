@@ -61,6 +61,7 @@ public class Note extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         noteEditFragment.saveNote();
+                        noteEditFragment.updateAllWidget();
                         noteEditFragment.sendResult();
                         Toast.makeText(getBaseContext(),R.string.saved, Toast.LENGTH_SHORT).show();
                         finish();
@@ -76,6 +77,7 @@ public class Note extends AppCompatActivity {
         //when user quit the app without choosing save or discard, save the note
         if (!hasNoteSave){
             noteEditFragment.saveNote();
+            noteEditFragment.updateAllWidget();
             Toast.makeText(this,R.string.saved, Toast.LENGTH_SHORT).show();
         }
         hasNoteSave = false;

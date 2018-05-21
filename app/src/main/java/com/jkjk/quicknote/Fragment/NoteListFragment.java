@@ -1,9 +1,6 @@
 package com.jkjk.quicknote.Fragment;
 
 
-import android.app.PendingIntent;
-import android.appwidget.AppWidgetManager;
-import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -14,23 +11,19 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.jkjk.quicknote.Adapter.NoteListAdapter;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
-import com.jkjk.quicknote.Service.AppWidgetService;
-import com.jkjk.quicknote.Widget.NoteWidget;
 
-import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
 import static com.jkjk.quicknote.Adapter.NoteListAdapter.inActionMode;
 import static com.jkjk.quicknote.Adapter.NoteListAdapter.mActionMode;
 import static com.jkjk.quicknote.DatabaseHelper.DATABASE_NAME;
@@ -54,7 +47,7 @@ public class NoteListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         //TODO
-//        setHasOptionsMenu(true);
+        setHasOptionsMenu(true);
         noteListAdapter = new NoteListAdapter(this);
     }
 
@@ -62,10 +55,10 @@ public class NoteListFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-//        if (!inActionMode) {
-//            noteListMenu = (android.support.v7.widget.Toolbar) getActivity().findViewById(R.id.note_list_menu);
-//            ((AppCompatActivity) getActivity()).setSupportActionBar(noteListMenu);
-//        }
+        if (!inActionMode) {
+            noteListMenu = (android.support.v7.widget.Toolbar) getActivity().findViewById(R.id.note_list_menu);
+            ((AppCompatActivity) getActivity()).setSupportActionBar(noteListMenu);
+        }
 
         if (savedInstanceState!=null){
             noteListAdapter.notifyDataSetChanged();
@@ -132,7 +125,6 @@ public class NoteListFragment extends Fragment {
         //call its fragment notifyitemchange method to update list
         if (data!=null) {
                 noteListAdapter.notifyDataSetChanged();
-                updateAllWidget();
             }
     }
 
@@ -159,19 +151,5 @@ public class NoteListFragment extends Fragment {
         startActivityForResult(startNoteActivity, 1);
     }
 
-    private void updateAllWidget(){
-        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getActivity());
-        ComponentName name = new ComponentName(getActivity().getPackageName(), NoteWidget.class.getName());
-        int [] appWidgetIds = appWidgetManager.getAppWidgetIds(name);
-        Intent intent = new Intent(getContext(), AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, appWidgetIds);
-        PendingIntent pendingIntent = PendingIntent.getService(getContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        try {
-            pendingIntent.send();
-        } catch (Exception e) {
-            Toast.makeText(getContext(), R.string.error_text, Toast.LENGTH_SHORT).show();
-            Log.e(getClass().getName(), "error",e);
-        }
-
-    }
 
 }
