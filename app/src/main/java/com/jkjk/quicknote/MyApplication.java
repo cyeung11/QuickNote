@@ -6,12 +6,8 @@ import android.database.sqlite.SQLiteDatabase;
 
 public class MyApplication extends Application {
 
-    private static SQLiteDatabase database;
+    public static SQLiteDatabase database;
     private DatabaseHelper helper = null;
-
-    public static SQLiteDatabase getDatabase(){
-        return database;
-    }
 
     @Override
     public void onCreate() {

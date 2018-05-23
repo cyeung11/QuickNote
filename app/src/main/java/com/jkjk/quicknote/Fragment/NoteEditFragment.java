@@ -1,7 +1,7 @@
 package com.jkjk.quicknote.Fragment;
 
 
-import android.app.Activity;
+
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
@@ -44,14 +44,14 @@ public class NoteEditFragment extends Fragment {
     public static final String DEFAULT_FRAGMENT_TAG = "NoteEditFragment";
     public final static String EXTRA_NOTE_ID = "extraNoteId";
 
-    final String fragmentTag = NoteEditFragment.DEFAULT_FRAGMENT_TAG;
-
     public static boolean hasNoteSave;
 
     long noteId;
     private EditText titleInFragment, contentInFragment;
     boolean newNote;
     FloatingActionButton done;
+    //initial value not starred
+    private int isStarred = 0;
 
 
     public NoteEditFragment() {
@@ -82,11 +82,12 @@ public class NoteEditFragment extends Fragment {
         //read data from database and attach them into the fragment
         if (!newNote) {
             try {
-                Cursor tempNote = MyApplication.getDatabase().query(DATABASE_NAME, new String[]{"_id","title", "content", "time"}, "_id='" + noteId +"'",
+                Cursor tempNote = MyApplication.database.query(DATABASE_NAME, new String[]{"title", "content", "starred"}, "_id='" + noteId +"'",
                       null, null, null, null, null);
                 tempNote.moveToFirst();
-                titleInFragment.setText(tempNote.getString(1));
-                contentInFragment.setText(tempNote.getString(2));
+                titleInFragment.setText(tempNote.getString(0));
+                contentInFragment.setText(tempNote.getString(1));
+                isStarred = tempNote.getInt(2);
                 tempNote.close();
             } catch (Exception e) {
                 Toast.makeText(container.getContext(), R.string.error_loading, Toast.LENGTH_SHORT).show();
@@ -114,15 +115,15 @@ public class NoteEditFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         done = (FloatingActionButton)getActivity().findViewById(R.id.done_fab);
-        done.setImageDrawable(getResources().getDrawable(R.drawable.ic_done_white));
+        done.setImageDrawable(getResources().getDrawable(R.drawable.sharp_done_24));
         done.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff33b5e5")));
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 saveNote();
-                updateAllWidget();
-                sendResult();
                 Toast.makeText(getContext(),R.string.saved, Toast.LENGTH_SHORT).show();
+                updateAllWidget();
+                hasNoteSave = true;
                 getActivity().finish();
             }
         });
@@ -136,11 +137,6 @@ public class NoteEditFragment extends Fragment {
 
 
 
-
-    public void sendResult(){
-        getActivity().setResult(Activity.RESULT_OK, new Intent());
-    }
-
     public void saveNote(){
         ContentValues values = new ContentValues();
         String noteTitle = titleInFragment.getText().toString().trim();
@@ -150,10 +146,11 @@ public class NoteEditFragment extends Fragment {
         values.put("title", noteTitle);
         values.put("content", contentInFragment.getText().toString());
         values.put("time", Long.toString(Calendar.getInstance().getTimeInMillis()));
+        values.put("starred", isStarred);
         if (!newNote) {
-            MyApplication.getDatabase().update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
+            MyApplication.database.update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
         }else {
-            noteId = MyApplication.getDatabase().insert(DATABASE_NAME, "",values);
+            noteId = MyApplication.database.insert(DATABASE_NAME, "",values);
         }
         values.clear();
         NoteListAdapter.updateCursor();

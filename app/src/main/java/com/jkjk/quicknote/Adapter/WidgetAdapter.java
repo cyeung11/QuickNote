@@ -35,7 +35,7 @@ import static com.jkjk.quicknote.Widget.AppWidgetService.IS_FROM_WIDGET;
 public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder> {
 
     private Activity activity;
-    private int mAppWidgetId;
+    private int mAppWidgetId, itemCount;
     private int color = Color.parseColor("#FFFFFF");
     private static Cursor cursorForWidget;
 
@@ -58,10 +58,10 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
                 color = Color.parseColor("#a9ddc7");
                 break;
             case R.id.color_blue:
-                color = Color.parseColor("#a5e3dc");
+                color = Color.parseColor("#95d3ec");
                 break;
             case R.id.color_grey:
-                color = Color.parseColor("#eeeeee");
+                color = Color.parseColor("#bbbbbb");
                 break;
             case R.id.color_white:
                 color = Color.parseColor("#FFFFFF");
@@ -111,7 +111,6 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
                 startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.Note")
                         .putExtra(EXTRA_NOTE_ID, cursorForWidget.getLong(0)).putExtra(IS_FROM_WIDGET, true)
                         .setFlags(FLAG_ACTIVITY_CLEAR_TOP);
-                Log.e(getClass().getName(),Long.toString(cursorForWidget.getLong(0)));
                 PendingIntent pendingIntent = PendingIntent.getActivity(activity,(int)cursorForWidget.getLong(0),startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
                 remoteViews.setOnClickPendingIntent(R.id.widget, pendingIntent);
 
@@ -139,7 +138,8 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
     @Override
     public int getItemCount() {
         //Obtain all data from database provided from Application class and get count
-        return updateCursorForWidget().getCount();
+        itemCount = cursorForWidget.getCount();
+        return itemCount;
     }
 
     @Override
@@ -196,9 +196,14 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
     }
 
 
-    private static Cursor updateCursorForWidget(){
-        cursorForWidget = MyApplication.getDatabase().query(DATABASE_NAME, new String[]{"_id", "title", "content", "time"}, null, null, null
+    public static Cursor updateCursorForWidget(){
+        cursorForWidget = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time"}, null, null, null
                 , null, "time DESC");
         return cursorForWidget;
+    }
+
+    public static void updateCursorForSearchForWidget(String result){
+        cursorForWidget = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time"}, "_id in ("+result+")", null, null
+                , null, "time DESC");
     }
 }

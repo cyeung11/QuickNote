@@ -41,29 +41,26 @@ public class Note extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-    //confirm to discard dialog
+    //confirm to discard dialog, and ask the note list activity to update its view
         new AlertDialog.Builder(this).setTitle(R.string.discard_title).setMessage(R.string.confirm_discard)
                 .setPositiveButton(R.string.discard, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        if (hasNoteSave){
-                            //if note has been saved during onPaused, send back intent to NoteList for an update of view
-                            noteEditFragment.sendResult();
-                            finish();
-                        }else {
-                            //Note no need to save
+                        if (!hasNoteSave){
+                            //Note no need to save. so override hasNoteSave to true to avoid saving on onStop
                             hasNoteSave = true;
-                            Note.super.onBackPressed();
                         }
+                        Note.super.onBackPressed();
                     }
                 })
                 .setNeutralButton(R.string.save_instead, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        //Save instantly instead of onStop so that when the note list's onResume get called, the note is already update
                         noteEditFragment.saveNote();
-                        noteEditFragment.updateAllWidget();
-                        noteEditFragment.sendResult();
                         Toast.makeText(getBaseContext(),R.string.saved, Toast.LENGTH_SHORT).show();
+                        noteEditFragment.updateAllWidget();
+                        hasNoteSave = true;
                         finish();
                     }
                 })
@@ -80,6 +77,7 @@ public class Note extends AppCompatActivity {
             noteEditFragment.updateAllWidget();
             Toast.makeText(this,R.string.saved, Toast.LENGTH_SHORT).show();
         }
+        // then reset it to not saved for the case when user come back
         hasNoteSave = false;
         super.onStop();
     }

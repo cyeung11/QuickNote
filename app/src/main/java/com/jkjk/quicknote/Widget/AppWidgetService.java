@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
@@ -55,14 +56,15 @@ public class AppWidgetService extends IntentService {
 
                 views[i] = new RemoteViews("com.jkjk.quicknote", R.layout.note_preview);
 
-                Cursor cursorForWidget = MyApplication.getDatabase().query(DATABASE_NAME, new String[]{"_id","title", "content"}, "_id='"+noteId[i]+"'", null, null
+                Cursor cursorForWidget = MyApplication.database.query(DATABASE_NAME, new String[]{"_id","title", "content"}, "_id='"+noteId[i]+"'", null, null
                         , null, null);
-                if (cursorForWidget != null) {
-                    cursorForWidget.moveToFirst();
-                    views[i].setTextViewText(R.id.widget_title, cursorForWidget.getString(1));
-                    views[i].setTextViewText(R.id.widget_content, cursorForWidget.getString(2));
-                    views[i].setInt(R.id.widget, "setBackgroundColor", color[i]);
-                }
+                try {
+                    if (cursorForWidget != null) {
+                        cursorForWidget.moveToFirst();
+                        views[i].setTextViewText(R.id.widget_title, cursorForWidget.getString(1));
+                        views[i].setTextViewText(R.id.widget_content, cursorForWidget.getString(2));
+                        views[i].setInt(R.id.widget, "setBackgroundColor", color[i]);
+                    }
 
                 Intent startAppIntent = new Intent();
                 startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.Note")
@@ -73,8 +75,16 @@ public class AppWidgetService extends IntentService {
 
                 cursorForWidget.close();
 
+                } catch (Exception e){
+                    Toast.makeText(this,R.string.error_loading,Toast.LENGTH_SHORT).show();
+                    views[i].setTextViewText(R.id.widget_title, getResources().getString(R.string.error_loading));
+                    views[i].setTextViewText(R.id.widget_content, "");
+                }
+
                 AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
                 appWidgetManager.updateAppWidget(appWidgetIds[i], views[i]);
+
+
             }
         }
     }

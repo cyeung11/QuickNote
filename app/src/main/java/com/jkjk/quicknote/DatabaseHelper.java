@@ -9,11 +9,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public final static String DATABASE_NAME = "note";
     private final static String CREATE_STRING = "CREATE TABLE IF NOT EXISTS " + DATABASE_NAME +
             " (_id INTEGER PRIMARY KEY AUTOINCREMENT, " + "title TEXT NOT NULL, " +
-            "content TEXT NOT NULL, " + "time TEXT NOT NULL)";
-    private final static String DROP_STRING = "DROP TABLE IF EXISTS " + DATABASE_NAME + ";";
+            "content TEXT NOT NULL, " + "time TEXT NOT NULL, " + "starred INTEGER)";
+    private static final String DATABASE_ALTER_V2 = "ALTER TABLE "
+            + DATABASE_NAME + " ADD COLUMN starred INTEGER;";
 
     DatabaseHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version){
-        super(context,name,factory,version);
+        super(context,name,factory,2);
     }
 
     @Override
@@ -23,7 +24,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        sqLiteDatabase.execSQL(DROP_STRING);
-        onCreate(sqLiteDatabase);
+        if (oldVersion < 2) {
+            sqLiteDatabase.execSQL(DATABASE_ALTER_V2);
+        }
     }
 }

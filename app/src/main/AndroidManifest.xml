@@ -11,27 +11,32 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".Note">
-            <!--<intent-filter>-->
-                <!--TODO-->
-                <!--<action android:name="android.intent.action.CREATE_SHORTCUT" />-->
-                <!--<category android:name="android.intent.category.DEFAULT" />-->
-            <!--</intent-filter>-->
+        <activity android:name=".Note"
+            android:exported="true">
         </activity>
 
         <service
             android:name=".Widget.AppWidgetService"
-            android:exported="false" />
+            android:exported="false" >
+        </service>
 
         <activity android:name=".NoteList">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <receiver android:name=".Widget.NoteWidget">
+        <activity android:name=".Widget.LauncherShortcuts"
+            android:label="@string/new_note">
+            <intent-filter>
+                <action android:name="android.intent.action.CREATE_SHORTCUT" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <receiver android:name=".Widget.NoteWidget"
+            android:label="@string/note_preview">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
