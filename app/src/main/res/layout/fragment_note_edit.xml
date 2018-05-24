@@ -42,16 +42,27 @@
                         android:inputType="textCapSentences"
                         android:textSize="22sp" />
 
+                    <!--<ImageButton-->
+                        <!--android:id="@+id/share"-->
+                        <!--android:layout_width="wrap_content"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:src="@drawable/sharp_share_24"-->
+                        <!--android:background="@android:color/transparent"-->
+                        <!--android:layout_gravity="center_vertical"-->
+                        <!--android:focusable="false"-->
+                        <!--android:layout_marginLeft="8dp"-->
+                        <!--android:layout_marginRight="8dp"/>-->
+
                     <ImageButton
-                        android:id="@+id/share"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/sharp_share_24"
-                        android:background="@android:color/transparent"
-                        android:layout_gravity="center_vertical"
-                        android:focusable="false"
-                        android:layout_marginLeft="8dp"
-                        android:layout_marginRight="8dp"/>
+                    android:id="@+id/edit_show_drop_menu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/sharp_more_vert_24"
+                    android:contentDescription="@string/menu"
+                    android:background="@android:color/transparent"
+                    android:layout_gravity="center_vertical"
+                    android:focusable="false"
+                    android:layout_marginEnd="8dp" />
 
                 </LinearLayout>
 

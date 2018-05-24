@@ -13,6 +13,11 @@
 
         <activity android:name=".Note"
             android:exported="true">
+            <intent-filter android:label="@string/new_note">
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
         </activity>
 
         <service

@@ -1,6 +1,7 @@
 package com.jkjk.quicknote;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -26,14 +27,25 @@ public class Note extends AppCompatActivity {
         setContentView(R.layout.activity_note);
 
         if (savedInstanceState == null) {
-            if (getIntent().hasExtra(EXTRA_NOTE_ID)) {
+            //Case when the activity is newly created
+
+            if (getIntent().getAction()!= null && getIntent().getAction().equals(Intent.ACTION_SEND)) {
+                //Case when activity is called by external intent
+                noteEditFragment = NoteEditFragment.newNoteEditFragmentInstance(getIntent());
+
+            } else if (getIntent().hasExtra(EXTRA_NOTE_ID)) {
+                //Case when activity is called by note list activity after user selected existing note
                 noteId = getIntent().getLongExtra(EXTRA_NOTE_ID, 0L);
                 noteEditFragment = NoteEditFragment.newNoteEditFragmentInstance(noteId);
+
             } else {
+                //Case when opening a new note
                 noteEditFragment = NoteEditFragment.newNoteEditFragmentInstance();
             }
             getSupportFragmentManager().beginTransaction().add(R.id.container, noteEditFragment, fragmentTag).commit();
+
         }else {
+            //Case when restoring from saved instance, rotate etc.
             noteEditFragment = (NoteEditFragment) getSupportFragmentManager().findFragmentByTag(fragmentTag);
         }
     }

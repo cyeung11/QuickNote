@@ -193,19 +193,33 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
 
                                         ContentValues values = new ContentValues();
                                         //Convert selected items' position to note ID
-                                        Cursor tempNote = MyApplication.database.query(DATABASE_NAME, new String[]{"_id"}, null, null, null
-                                                , null, "time DESC");
+
+//                                        Cursor tempNote;
+//
+//                                        //For situation when search filter applied
+//                                        if (inSearchView){
+//                                            tempNote = cursor;
+//                                        } else if (showingStarred){
+//
+//                                        }
+//
+//                                        // For situation when no filter is apply
+//                                        tempNote = MyApplication.database.query(DATABASE_NAME, new String[]{"_id"}, null, null, null
+//                                                , null, "time DESC");
+//
+//
 
                                         if (selectedNotStarred ==0){
                                             // When all selected notes are starred, un-starred them
 
                                             for (int unstarredPosition : selectedItems) {
-                                                tempNote.moveToPosition(unstarredPosition);
-                                                String unstarredId = tempNote.getString(0);
+                                                cursor.moveToPosition(unstarredPosition);
+                                                String unstarredId = cursor.getString(0);
                                                 values.put("starred", 0);
                                                 //Update
                                                 MyApplication.database.update(DATABASE_NAME, values, "_id='" + unstarredId + "'", null);
                                                 values.clear();
+                                                //position starts from 0
                                                 notifyItemChanged(unstarredPosition+1);
                                             }
 
@@ -213,8 +227,8 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                                             // When some of the selected notes are not starred, starred them all again
 
                                             for (int starredPosition : selectedItems) {
-                                                tempNote.moveToPosition(starredPosition);
-                                                String starredId = tempNote.getString(0);
+                                                cursor.moveToPosition(starredPosition);
+                                                String starredId = cursor.getString(0);
                                                 values.put("starred", 1);
                                                 //Update
                                                 MyApplication.database.update(DATABASE_NAME, values, "_id='" + starredId + "'", null);
@@ -222,7 +236,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                                                 notifyItemChanged(starredPosition+1);
                                             }
                                         }
-                                        tempNote.close();
+//                                        tempNote.close();
                                         updateCursor();
                                         mActionMode.finish();
                                         return true;
@@ -359,10 +373,9 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
         return selectedItems;
     }
 
-    public static Cursor updateCursor(){
+    public static void updateCursor(){
         cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, null, null, null
                 , null, "time DESC");
-        return cursor;
     }
 
     public static void updateCursorForSearch(String result){
@@ -374,5 +387,11 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
         cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "starred = 1", null, null
                 , null, "time DESC");
     }
+
+    public static Cursor getCursor(){
+        return cursor;
+    }
+
+
 }
 

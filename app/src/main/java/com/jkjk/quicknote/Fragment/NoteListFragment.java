@@ -32,6 +32,7 @@ import com.jkjk.quicknote.SearchHelper;
 
 import java.util.ArrayList;
 
+import static com.jkjk.quicknote.Adapter.NoteListAdapter.getCursor;
 import static com.jkjk.quicknote.Adapter.NoteListAdapter.inActionMode;
 import static com.jkjk.quicknote.Adapter.NoteListAdapter.mActionMode;
 import static com.jkjk.quicknote.Adapter.NoteListAdapter.updateCursor;
@@ -50,7 +51,10 @@ public class NoteListFragment extends Fragment {
     NoteListAdapter noteListAdapter;
     FloatingActionButton addNote;
     android.support.v7.widget.Toolbar noteListMenu;
-    static boolean showingStarred = false;
+    public static boolean showingStarred = false;
+    public static boolean inSearchView = false;
+    static MenuItem showStarred;
+    MenuItem search;
 
     public NoteListFragment() {
         // Required empty public constructor
@@ -79,14 +83,13 @@ public class NoteListFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 if (inActionMode){
-                    new AlertDialog.Builder(view.getContext()).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete)
+                    new AlertDialog.Builder(view.getContext()).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete_list)
                             .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     // delete note from  selectedItems
                                     ArrayList<Integer> mSelect = noteListAdapter.getSelected();
-                                    Cursor tempNote = MyApplication.database.query(DATABASE_NAME, new String[]{"_id"}, null, null, null
-                                            , null, "time DESC");
+                                    Cursor tempNote = getCursor();
                                     for (int removedPosition : mSelect) {
                                         tempNote.moveToPosition(removedPosition);
                                         String removedId = tempNote.getString(0);
@@ -128,8 +131,8 @@ public class NoteListFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.note_list_menu, menu);
 
-        final MenuItem showStarred = (MenuItem) menu.findItem(R.id.show_starred);
-        MenuItem search = (MenuItem) menu.findItem(R.id.search);
+        showStarred = (MenuItem) menu.findItem(R.id.show_starred);
+        search = (MenuItem) menu.findItem(R.id.search);
 
         SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
         searchView = (SearchView)menu.findItem(R.id.search).getActionView();
@@ -172,6 +175,7 @@ public class NoteListFragment extends Fragment {
         search.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem menuItem) {
+                inSearchView = true;
                 showStarred.setVisible(false);
                 showingStarred = false;
                 showStarred.setIcon(R.drawable.sharp_star_border_24);
@@ -182,6 +186,7 @@ public class NoteListFragment extends Fragment {
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem menuItem) {
+                inSearchView = false;
                 showStarred.setVisible(true);
                 return true;
             }
@@ -213,6 +218,8 @@ public class NoteListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        //Reset the recyclerview
+        updateCursor();
         noteListAdapter.notifyDataSetChanged();
     }
 
@@ -221,6 +228,11 @@ public class NoteListFragment extends Fragment {
         if (mActionMode!=null) {
             mActionMode.finish();
         }
+
+        // Clear all filter
+        search.collapseActionView();
+        showingStarred = false;
+        showStarred.setIcon(R.drawable.sharp_star_border_24);
         super.onStop();
     }
 

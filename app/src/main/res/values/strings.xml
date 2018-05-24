@@ -17,7 +17,8 @@
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
     <string name="delete_title">Delete Note</string>
-    <string name="confirm_delete">Do you want to delete selected note(s)?</string>
+    <string name="confirm_delete_list">Do you want to delete selected note(s)?</string>
+    <string name="confirm_delete_edit">Do you want to delete this note?</string>
     <string name="select_all">Select all</string>
     <string name="deselect_all">Deselect all</string>
     <string name="back">Back</string>
@@ -28,12 +29,18 @@
     <string name="note_preview">Note preview</string>
     <string name="share">Share</string>
     <string name="search">Search</string>
-    <string name="starred">Starred message</string>
+    <string name="starred">Starred</string>
+    <string name="unstarred">Unstarred</string>
     <string name="setting">Setting</string>
     <string name="add_shortcut_short_label">Background Color</string>
     <string name="color_default_title">Select Background Color</string>
     <string name="search_hint">Search note</string>
     <string name="not_found">No note found</string>
     <string name="new_note">New note</string>
+    <string name="menu">Menu</string>
+    <string name="saved_starred_toast">Note saved &amp; starred</string>
+    <string name="starred_toast">Note starred</string>
+    <string name="unstarred_toast">Note unstarred</string>
+    <string name="deleted_toast">Note deleted</string>
 
 </resources>
