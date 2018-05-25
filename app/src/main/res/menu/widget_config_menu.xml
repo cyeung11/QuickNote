@@ -2,6 +2,11 @@
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <item android:id="@+id/widget_show_starred"
+        android:title="@string/starred"
+        android:icon="@drawable/sharp_star_border_24"
+        app:showAsAction="ifRoom" />
+
     <item
         android:id="@+id/widget_config_search"
         android:icon="@drawable/sharp_search_24"

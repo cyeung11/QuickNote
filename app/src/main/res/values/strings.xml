@@ -6,6 +6,8 @@
     <string name="error_text">Error</string>
     <string name="error_loading">Error loading note</string>
     <string name="error_saving">Error saving note</string>
+    <string name="error_widget">Error loading note for widget</string>
+    <string name="error_back_up">Error backing up</string>
     <string name="text_here">Jot down your note here</string>
     <string name="title_here">Title</string>
     <string name="yesterday">Yesterday</string>
@@ -24,12 +26,12 @@
     <string name="back">Back</string>
     <string name="appwidget_text">EXAMPLE</string>
     <string name="configure">Configure</string>
-    <string name="select_note_instruction">Select note</string>
+    <string name="select_note_instruction">Select Note</string>
     <string name="just_now">Just now</string>
     <string name="note_preview">Note preview</string>
     <string name="share">Share</string>
     <string name="search">Search</string>
-    <string name="starred">Starred</string>
+    <string name="starred">Show Starred</string>
     <string name="unstarred">Unstarred</string>
     <string name="setting">Setting</string>
     <string name="add_shortcut_short_label">Background Color</string>
@@ -42,5 +44,14 @@
     <string name="starred_toast">Note starred</string>
     <string name="unstarred_toast">Note unstarred</string>
     <string name="deleted_toast">Note deleted</string>
+    <string name="back_up">Back up note</string>
+    <string name="back_up_name">notebackup-</string>
+    <string name="permission_required">Permission required</string>
+    <string name="permission">Turn on storage permission to enable back up function.</string>
+    <string name="open_settings">Open settings</string>
+    <string name="restore">Restore note</string>
+    <string name="ok">OK</string>
+    <string name="restore_confirm">Restoring will delete all existing notes. Continue?</string>
+    <string name="title_activity_settings">Settings</string>
 
 </resources>

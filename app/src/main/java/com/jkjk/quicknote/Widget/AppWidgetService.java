@@ -76,7 +76,7 @@ public class AppWidgetService extends IntentService {
                 cursorForWidget.close();
 
                 } catch (Exception e){
-                    Toast.makeText(this,R.string.error_loading,Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this,R.string.error_widget,Toast.LENGTH_SHORT).show();
                     views[i].setTextViewText(R.id.widget_title, getResources().getString(R.string.error_loading));
                     views[i].setTextViewText(R.id.widget_content, "");
                 }

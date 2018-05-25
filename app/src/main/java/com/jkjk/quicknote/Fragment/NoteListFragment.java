@@ -1,17 +1,25 @@
 package com.jkjk.quicknote.Fragment;
 
 
+import android.Manifest;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.ParcelFileDescriptor;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,14 +32,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.jkjk.quicknote.Adapter.NoteListAdapter;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.SearchHelper;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
+import static android.app.Activity.RESULT_OK;
 import static com.jkjk.quicknote.Adapter.NoteListAdapter.getCursor;
 import static com.jkjk.quicknote.Adapter.NoteListAdapter.inActionMode;
 import static com.jkjk.quicknote.Adapter.NoteListAdapter.mActionMode;
@@ -51,10 +66,12 @@ public class NoteListFragment extends Fragment {
     NoteListAdapter noteListAdapter;
     FloatingActionButton addNote;
     android.support.v7.widget.Toolbar noteListMenu;
-    public static boolean showingStarred = false;
-    public static boolean inSearchView = false;
-    static MenuItem showStarred;
-    MenuItem search;
+    boolean showingStarred = false;
+    MenuItem showStarred, search, backUp, restore, setting;
+
+    public static final  int BACK_UP_REQUEST_CODE = 5555;
+    public static final  int RESTORE_REQUEST_CODE = 5556;
+
 
     public NoteListFragment() {
         // Required empty public constructor
@@ -96,6 +113,7 @@ public class NoteListFragment extends Fragment {
                                         MyApplication.database.delete(DATABASE_NAME, "_id='" + removedId+"'",null);
                                         noteListAdapter.notifyItemRemoved(removedPosition);
                                     }
+                                    Toast.makeText(getContext(),R.string.deleted_toast,Toast.LENGTH_SHORT).show();
                                     NoteListAdapter.updateCursor();
                                     mActionMode.finish();
                                     tempNote.close();
@@ -133,6 +151,19 @@ public class NoteListFragment extends Fragment {
 
         showStarred = (MenuItem) menu.findItem(R.id.show_starred);
         search = (MenuItem) menu.findItem(R.id.search);
+        backUp = (MenuItem) menu.findItem(R.id.back_up);
+        restore = (MenuItem) menu.findItem(R.id.restore);
+        setting = (MenuItem) menu.findItem(R.id.setting);
+
+        setting.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                Intent intent = new Intent();
+                intent.setClassName("com.jkjk.quicknote","com.jkjk.quicknote.Setting");
+                startActivity(intent);
+                return true;
+            }
+        });
 
         SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
         searchView = (SearchView)menu.findItem(R.id.search).getActionView();
@@ -175,8 +206,9 @@ public class NoteListFragment extends Fragment {
         search.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem menuItem) {
-                inSearchView = true;
                 showStarred.setVisible(false);
+                backUp.setVisible(false);
+                restore.setVisible(false);
                 showingStarred = false;
                 showStarred.setIcon(R.drawable.sharp_star_border_24);
                 updateCursor();
@@ -186,8 +218,13 @@ public class NoteListFragment extends Fragment {
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem menuItem) {
-                inSearchView = false;
                 showStarred.setVisible(true);
+                backUp.setVisible(true);
+                restore.setVisible(true);
+                search.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW|MenuItem.SHOW_AS_ACTION_ALWAYS);
+                showStarred.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+                backUp.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+                restore.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
                 return true;
             }
         });
@@ -212,8 +249,164 @@ public class NoteListFragment extends Fragment {
                 return true;
             }
         });
+
+        backUp.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+
+                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+                    // Permission is not granted
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                        new AlertDialog.Builder(getContext()).setTitle(R.string.permission_required).setMessage(R.string.permission)
+                                .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                        Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                        intent.setData(uri);
+                                        startActivity(intent);
+                                    }
+                                })
+                                .setNegativeButton(R.string.cancel, null)
+                                .show();
+                    } else {
+                        // request the permission
+                        ActivityCompat.requestPermissions(getActivity(),
+                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                BACK_UP_REQUEST_CODE);
+                    }
+                } else {
+                    // Permission has already been granted
+                    selectBackUpLocation();
+                }
+                return true;
+            }
+        });
+
+        restore.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+
+                new AlertDialog.Builder(getContext()).setTitle(R.string.restore).setMessage(R.string.restore_confirm)
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                                //Check permission
+                                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                                        != PackageManager.PERMISSION_GRANTED) {
+
+                                    // Permission is not granted
+                                    if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                                        new AlertDialog.Builder(getContext()).setTitle(R.string.permission_required).setMessage(R.string.permission)
+                                                .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                                        Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
+                                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                        intent.setData(uri);
+                                                        startActivity(intent);
+                                                    }
+                                                })
+                                                .setNegativeButton(R.string.cancel, null)
+                                                .show();
+                                    } else {
+                                        // request the permission
+                                        ActivityCompat.requestPermissions(getActivity(),
+                                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                                RESTORE_REQUEST_CODE);
+                                    }
+                                } else {
+                                    // Permission has already been granted
+                                    selectRestoreLocation();
+                                }
+                            }
+                        }).setNegativeButton(R.string.cancel, null).show();
+
+                return true;
+            }
+        });
        }
 
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (resultCode == RESULT_OK) {
+            Uri uri = null;
+            if (intent != null) {
+                uri = intent.getData();
+
+                switch (requestCode){
+                    case BACK_UP_REQUEST_CODE:
+                        try {
+                            ParcelFileDescriptor pfd = getActivity().getContentResolver().openFileDescriptor(uri, "w");
+                            FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
+
+                            File dataPath = Environment.getDataDirectory();
+                            String dbPath = "//data//"+getActivity().getPackageName()+"//databases//"+DATABASE_NAME+"_db";
+                            File db = new File(dataPath, dbPath);
+                            FileInputStream fileInputStream = new FileInputStream(db);
+
+                            byte[] buffer = new byte[1024];
+                            int length;
+                            while ((length = fileInputStream.read(buffer))>0){
+                                fileOutputStream.write(buffer, 0, length);
+                            }
+
+                            fileOutputStream.flush();
+                            fileInputStream.close();
+                            fileOutputStream.close();
+                            pfd.close();
+
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            Toast.makeText(getActivity(),R.string.error_back_up,Toast.LENGTH_SHORT).show();
+                        }
+
+                        break;
+
+                    case RESTORE_REQUEST_CODE:
+                        try {
+                            ParcelFileDescriptor pfd = getActivity().getContentResolver().openFileDescriptor(uri, "w");
+                            FileInputStream fileInputStream = new FileInputStream(pfd.getFileDescriptor());
+
+                            File dataPath = Environment.getDataDirectory();
+                            String dbPath = "//data//"+getActivity().getPackageName()+"//databases//"+DATABASE_NAME+"_db";
+                            File db = new File(dataPath, dbPath);
+                            FileOutputStream fileOutputStream = new FileOutputStream(db);
+
+                            byte[] buffer = new byte[1024];
+                            int length;
+
+                            while ((length = fileInputStream.read(buffer))>0){
+                                fileOutputStream.write(buffer, 0, length);
+                            }
+
+                            fileOutputStream.flush();
+                            fileInputStream.close();
+                            fileOutputStream.close();
+                            pfd.close();
+
+                            //Restart app
+                            Intent restart = new Intent();
+                            restart.setClassName(getActivity().getPackageName(),getActivity().getLocalClassName());
+                            restart.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(restart);
+
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            Toast.makeText(getActivity(),R.string.error_back_up,Toast.LENGTH_SHORT).show();
+                        }
+                        break;
+                }
+            }
+        }
+    }
 
     @Override
     public void onResume() {
@@ -250,5 +443,36 @@ public class NoteListFragment extends Fragment {
         startActivity(startNoteActivity);
     }
 
+    public void selectBackUpLocation(){
+        //Define back up file name
+        String backUpName = getString(R.string.back_up_name)+new SimpleDateFormat("yyMMddHHmmss").format(new Date())+"_db";
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+
+        // Filter to only show results that can be "opened", such as
+        // a file (as opposed to a list of contacts or timezones).
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        // Create a file with the requested MIME type.
+        intent.setType("application/octet-stream");
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra(Intent.EXTRA_TITLE, backUpName);
+        startActivityForResult(intent, BACK_UP_REQUEST_CODE);
+    }
+
+    public void selectRestoreLocation(){
+        //Define back up file name
+
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+
+        // Filter to only show results that can be "opened", such as
+        // a file (as opposed to a list of contacts or timezones).
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        // Create a file with the requested MIME type.
+        intent.setType("application/octet-stream");
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivityForResult(intent, RESTORE_REQUEST_CODE);
+    }
 
 }

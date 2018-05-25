@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -29,7 +30,9 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity {
     RecyclerView recyclerViewForWidget;
     android.support.v7.widget.Toolbar widgetMenu;
     SearchView searchView;
+    MenuItem showStarred, search;
     TextView notFoundTextView;
+    private static boolean showingStarred;
 
     public NoteWidgetConfigureActivity() {
         super();
@@ -109,6 +112,50 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+        search = (MenuItem) menu.findItem(R.id.widget_config_search);
+        search.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem menuItem) {
+                showStarred.setVisible(false);
+                showingStarred = false;
+                showStarred.setIcon(R.drawable.sharp_star_border_24);
+                WidgetAdapter.updateCursorForWidget();
+                widgetAdapter.notifyDataSetChanged();
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem menuItem) {
+                showStarred.setVisible(true);
+                search.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW|MenuItem.SHOW_AS_ACTION_ALWAYS);
+                showStarred.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                return true;
+            }
+        });
+
+        showStarred = (MenuItem) menu.findItem(R.id.widget_show_starred);
+        showStarred.setIcon(R.drawable.sharp_star_border_24);
+        showStarred.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                if (!showingStarred){
+                    // to show only starred notes
+                    showingStarred = true;
+                    showStarred.setIcon(R.drawable.baseline_star_24);
+                    WidgetAdapter.updateCursorForStarred();
+                    widgetAdapter.notifyDataSetChanged();
+                } else {
+                    // to show all notes
+                    showingStarred = false;
+                    showStarred.setIcon(R.drawable.sharp_star_border_24);
+                    WidgetAdapter.updateCursorForWidget();
+                    widgetAdapter.notifyDataSetChanged();
+                }
+                return true;
+            }
+        });
+
         return true;
     }
 

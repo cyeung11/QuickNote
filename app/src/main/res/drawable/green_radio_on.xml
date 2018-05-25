@@ -27,7 +27,7 @@
         android:toDegrees="-90">
         <shape android:shape="line">
             <stroke android:width="5dp"
-                android:color="@android:color/white" />
+                android:color="#FFFFFF" />
         </shape>
     </rotate>
 </item>
@@ -42,7 +42,7 @@
         android:pivotY="50%"
         android:toDegrees="-90">
         <shape android:shape="line">
-            <stroke android:width="5dp" android:color="@android:color/white" />
+            <stroke android:width="5dp" android:color="#FFFFFF" />
         </shape>
     </rotate>
 </item>

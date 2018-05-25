@@ -218,6 +218,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                                                 values.put("starred", 0);
                                                 //Update
                                                 MyApplication.database.update(DATABASE_NAME, values, "_id='" + unstarredId + "'", null);
+                                                Toast.makeText(fragment.getContext(),R.string.unstarred_toast,Toast.LENGTH_SHORT).show();
                                                 values.clear();
                                                 //position starts from 0
                                                 notifyItemChanged(unstarredPosition+1);
@@ -232,6 +233,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                                                 values.put("starred", 1);
                                                 //Update
                                                 MyApplication.database.update(DATABASE_NAME, values, "_id='" + starredId + "'", null);
+                                                Toast.makeText(fragment.getContext(),R.string.starred_toast,Toast.LENGTH_SHORT).show();
                                                 values.clear();
                                                 notifyItemChanged(starredPosition+1);
                                             }

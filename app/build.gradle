@@ -4,11 +4,12 @@ android {
     compileSdkVersion 27
     defaultConfig {
         applicationId "com.jkjk.quicknote"
-        minSdkVersion 21
+        minSdkVersion 19
         targetSdkVersion 27
         versionCode 7
-        versionName "0.4.8"
+        versionName "0.5.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
         release {
@@ -30,4 +31,3 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:27.1.1'
     implementation 'com.android.support:cardview-v7:27.1.1'
 }
-

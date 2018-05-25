@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -145,6 +146,10 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
+        holder.noteTitle.setTypeface(Typeface.SERIF);
+        holder.noteTitle.setTextColor(Color.BLACK);
+        holder.noteContent.setTextColor(Color.GRAY);
+
         //Extract data from cursor
         if (cursorForWidget != null) {
             try {
@@ -181,6 +186,13 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
                 }
                 holder.noteTime.setText(shownTime);
 
+                // Show starred note
+                if (cursorForWidget.getInt(4) == 1) {
+                    holder.noteTitle.setTypeface(Typeface.SERIF, Typeface.BOLD_ITALIC);
+                    holder.noteTitle.setTextColor(Color.parseColor("#0099cc"));
+                    holder.noteContent.setTextColor(Color.parseColor("#000000"));
+                }
+
             } catch (Exception e) {
                 Toast.makeText(activity, R.string.error_loading, Toast.LENGTH_SHORT).show();
                 Log.e(this.getClass().getName(), "error", e);
@@ -196,14 +208,18 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
     }
 
 
-    public static Cursor updateCursorForWidget(){
-        cursorForWidget = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time"}, null, null, null
+    public static void updateCursorForWidget(){
+        cursorForWidget = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, null, null, null
                 , null, "time DESC");
-        return cursorForWidget;
     }
 
     public static void updateCursorForSearchForWidget(String result){
-        cursorForWidget = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time"}, "_id in ("+result+")", null, null
+        cursorForWidget = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "_id in ("+result+")", null, null
+                , null, "time DESC");
+    }
+
+    public static void updateCursorForStarred(){
+        cursorForWidget = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "starred = 1", null, null
                 , null, "time DESC");
     }
 }

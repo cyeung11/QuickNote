@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.jkjk.quicknote">
 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -10,37 +12,42 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
-        <activity android:name=".Note"
-            android:exported="true">
+        <activity
+            android:name=".Note"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter android:label="@string/new_note">
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/plain"/>
+
+                <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
 
         <service
             android:name=".Widget.AppWidgetService"
-            android:exported="false" >
-        </service>
+            android:exported="false" />
 
         <activity android:name=".NoteList">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".Widget.LauncherShortcuts"
+        <activity
+            android:name=".Widget.LauncherShortcuts"
             android:label="@string/new_note">
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_SHORTCUT" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
-        <receiver android:name=".Widget.NoteWidget"
+        <receiver
+            android:name=".Widget.NoteWidget"
             android:label="@string/note_preview">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -56,6 +63,9 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".Setting"></activity>
+
     </application>
 
 </manifest>

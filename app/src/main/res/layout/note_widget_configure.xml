@@ -68,6 +68,7 @@
                 android:onClick="onColorSelected"
                 android:layout_marginEnd="4dp"
                 android:layout_weight="1"
+                android:checked="true"
                 style="@style/WhiteRadioButtonStyle"/>
 
             <RadioButton
