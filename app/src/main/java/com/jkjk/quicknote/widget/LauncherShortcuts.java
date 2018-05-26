@@ -1,4 +1,4 @@
-package com.jkjk.quicknote.Widget;
+package com.jkjk.quicknote.widget;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -25,7 +25,7 @@ public class LauncherShortcuts extends Activity {
     private void setupShortcut() {
         // set up the shortcut intent.
         Intent shortcutIntent = new Intent();
-        shortcutIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.Note").setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        shortcutIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.Edit").setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         // Then, set up the container intent (the response to the caller)
         Intent intent = new Intent();
         intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);

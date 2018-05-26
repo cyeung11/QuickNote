@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Fragment.NoteListFragment">
+    tools:context=".listscreen.ListFragment">
 
     <android.support.v7.widget.Toolbar
     style="?android:actionBarStyle"
@@ -13,10 +13,10 @@
     android:layout_height="wrap_content"
     android:backgroundTint="@color/colorPrimary"
     android:title="@string/app_name"
-    android:id="@+id/note_list_menu" />
+    android:id="@+id/list_menu" />
 
     <RelativeLayout
-        android:layout_below="@id/note_list_menu"
+        android:layout_below="@id/list_menu"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 

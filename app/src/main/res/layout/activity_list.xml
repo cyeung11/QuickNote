@@ -4,16 +4,16 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".NoteList">
+    tools:context=".listscreen.List">
 
 
 
             <fragment
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/note_list"
-                android:name="com.jkjk.quicknote.Fragment.NoteListFragment"
-                tools:layout="@layout/fragment_note_list"/>
+                android:id="@+id/list"
+                android:name="com.jkjk.quicknote.listscreen.ListFragment"
+                tools:layout="@layout/fragment_list"/>
 
 
 

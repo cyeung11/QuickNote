@@ -1,4 +1,4 @@
-package com.jkjk.quicknote.Fragment;
+package com.jkjk.quicknote.editscreen;
 
 
 import android.app.PendingIntent;
@@ -26,38 +26,37 @@ import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
-import com.jkjk.quicknote.Adapter.NoteListAdapter;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
-import com.jkjk.quicknote.Widget.AppWidgetService;
-import com.jkjk.quicknote.Widget.NoteWidget;
+import com.jkjk.quicknote.widget.AppWidgetService;
+import com.jkjk.quicknote.widget.NoteWidget;
 
 import java.util.Calendar;
 
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
-import static com.jkjk.quicknote.DatabaseHelper.DATABASE_NAME;
+import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NoteEditFragment extends Fragment {
+public class EditFragment extends Fragment {
 
-    public static final String NOTE_ID = "noteId";
-    public static final String DEFAULT_FRAGMENT_TAG = "NoteEditFragment";
+    private static final String NOTE_ID = "noteId";
+    static final String DEFAULT_FRAGMENT_TAG = "EditFragment";
     public final static String EXTRA_NOTE_ID = "extraNoteId";
 
-    public static boolean hasNoteSave = false;
+    boolean hasNoteSave = false;
 
-    long noteId;
+    private long noteId;
     private EditText titleInFragment, contentInFragment;
-    boolean newNote;
-    FloatingActionButton done;
+    private boolean newNote;
+
     // 0 stands for not starred, 1 starred
     private int isStarred = 0;
 
 
-    public NoteEditFragment() {
+    public EditFragment() {
         // Required empty public constructor
     }
 
@@ -67,9 +66,10 @@ public class NoteEditFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_note_edit, container, false);
-        titleInFragment = (EditText) view.findViewById(R.id.title_edit_fragment);
-        contentInFragment = (EditText) view.findViewById(R.id.content_edit_fragment);
+        View view = inflater.inflate(R.layout.fragment_edit, container, false);
+
+        titleInFragment = view.findViewById(R.id.title_edit_fragment);
+        contentInFragment = view.findViewById(R.id.content_edit_fragment);
 
         if (savedInstanceState !=null) {
             // case when restoring from saved instance
@@ -119,13 +119,13 @@ public class NoteEditFragment extends Fragment {
 //            }
 //        });
 
-        final ImageButton showDropMenu = (ImageButton)view.findViewById(R.id.edit_show_drop_menu);
+        final ImageButton showDropMenu = view.findViewById(R.id.edit_show_drop_menu);
         showDropMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 PopupMenu editDropMenu = new PopupMenu(view.getContext(), showDropMenu);
                 editDropMenu.getMenuInflater().inflate(R.menu.edit_drop_menu, editDropMenu.getMenu());
-                MenuItem starredButton = (MenuItem) editDropMenu.getMenu().findItem(R.id.edit_drop_menu_starred);
+                MenuItem starredButton = editDropMenu.getMenu().findItem(R.id.edit_drop_menu_starred);
                 if (isStarred == 0){
                     // not starred, set button to starred
                     starredButton.setTitle(R.string.starred);
@@ -212,9 +212,8 @@ public class NoteEditFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
         // Define save function for the done button
-        done = (FloatingActionButton)getActivity().findViewById(R.id.done_fab);
+        FloatingActionButton done = getActivity().findViewById(R.id.done_fab);
         done.setImageDrawable(getResources().getDrawable(R.drawable.sharp_done_24));
         done.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff33b5e5")));
         done.setOnClickListener(new View.OnClickListener() {
@@ -253,7 +252,6 @@ public class NoteEditFragment extends Fragment {
             noteId = MyApplication.database.insert(DATABASE_NAME, "",values);
         }
         values.clear();
-        NoteListAdapter.updateCursor();
         hasNoteSave = true;
         newNote = false;
     }
@@ -274,16 +272,16 @@ public class NoteEditFragment extends Fragment {
     }
 
 
-    public static NoteEditFragment newNoteEditFragmentInstance(long noteId){
-        NoteEditFragment fragment = new NoteEditFragment();
+    public static EditFragment newEditFragmentInstance(long noteId){
+        EditFragment fragment = new EditFragment();
         Bundle bundle = new Bundle();
         bundle.putLong(EXTRA_NOTE_ID, noteId);
         fragment.setArguments(bundle);
         return fragment;
     }
 
-    public static NoteEditFragment newNoteEditFragmentInstance(Intent intent){
-        NoteEditFragment fragment = new NoteEditFragment();
+    public static EditFragment newEditFragmentInstance(Intent intent){
+        EditFragment fragment = new EditFragment();
         Bundle bundle = new Bundle();
         try {
             bundle.putString(Intent.EXTRA_TEXT, intent.getStringExtra(Intent.EXTRA_TEXT));
@@ -295,8 +293,8 @@ public class NoteEditFragment extends Fragment {
         return fragment;
     }
 
-    public static NoteEditFragment newNoteEditFragmentInstance(){
-        return new NoteEditFragment();
+    public static EditFragment newEditFragmentInstance(){
+        return new EditFragment();
     }
 
 }

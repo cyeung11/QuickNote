@@ -1,4 +1,4 @@
-package com.jkjk.quicknote.Fragment;
+package com.jkjk.quicknote.listscreen;
 
 
 import android.Manifest;
@@ -34,10 +34,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.jkjk.quicknote.Adapter.NoteListAdapter;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
-import com.jkjk.quicknote.SearchHelper;
+import com.jkjk.quicknote.editscreen.EditFragment;
+import com.jkjk.quicknote.helper.SearchHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,33 +47,25 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import static android.app.Activity.RESULT_OK;
-import static com.jkjk.quicknote.Adapter.NoteListAdapter.getCursor;
-import static com.jkjk.quicknote.Adapter.NoteListAdapter.inActionMode;
-import static com.jkjk.quicknote.Adapter.NoteListAdapter.mActionMode;
-import static com.jkjk.quicknote.Adapter.NoteListAdapter.updateCursor;
-import static com.jkjk.quicknote.Adapter.NoteListAdapter.updateCursorForStarred;
-import static com.jkjk.quicknote.DatabaseHelper.DATABASE_NAME;
+import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NoteListFragment extends Fragment {
+public class ListFragment extends Fragment {
 
-    RecyclerView recyclerView;
-    TextView notFoundTextView;
-    SearchView searchView;
-    NoteListAdapter noteListAdapter;
-    FloatingActionButton addNote;
-    android.support.v7.widget.Toolbar noteListMenu;
-    boolean showingStarred = false;
-    MenuItem showStarred, search, backUp, restore, setting;
+    private RecyclerView recyclerView;
+    private TextView notFoundTextView;
+    ListAdapter listAdapter;
+    private boolean showingStarred = false;
+    private MenuItem showStarred, search, backUp, restore, setting;
 
     public static final  int BACK_UP_REQUEST_CODE = 5555;
     public static final  int RESTORE_REQUEST_CODE = 5556;
 
 
-    public NoteListFragment() {
+    public ListFragment() {
         // Required empty public constructor
     }
 
@@ -81,41 +73,42 @@ public class NoteListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        noteListAdapter = new NoteListAdapter(this);
+        listAdapter = new ListAdapter(this);
     }
 
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if (!inActionMode) {
-            noteListMenu = (android.support.v7.widget.Toolbar) getActivity().findViewById(R.id.note_list_menu);
-            ((AppCompatActivity) getActivity()).setSupportActionBar(noteListMenu);
+        android.support.v7.widget.Toolbar listMenu;
+        if (!listAdapter.inActionMode) {
+            listMenu = getActivity().findViewById(R.id.list_menu);
+            ((AppCompatActivity) getActivity()).setSupportActionBar(listMenu);
         }
 
-        addNote = (FloatingActionButton)getActivity().findViewById(R.id.add_note);
+        FloatingActionButton addNote =  getActivity().findViewById(R.id.add_note);
         addNote.setImageDrawable(getResources().getDrawable(R.drawable.sharp_add_24));
         addNote.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff33b5e5")));
         addNote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (inActionMode){
+                if (listAdapter.inActionMode){
                     new AlertDialog.Builder(view.getContext()).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete_list)
                             .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     // delete note from  selectedItems
-                                    ArrayList<Integer> mSelect = noteListAdapter.getSelected();
-                                    Cursor tempNote = getCursor();
+                                    ArrayList<Integer> mSelect = listAdapter.getSelected();
+                                    Cursor tempNote = listAdapter.getCursor();
                                     for (int removedPosition : mSelect) {
                                         tempNote.moveToPosition(removedPosition);
                                         String removedId = tempNote.getString(0);
                                         MyApplication.database.delete(DATABASE_NAME, "_id='" + removedId+"'",null);
-                                        noteListAdapter.notifyItemRemoved(removedPosition);
+                                        listAdapter.notifyItemRemoved(removedPosition);
                                     }
                                     Toast.makeText(getContext(),R.string.deleted_toast,Toast.LENGTH_SHORT).show();
-                                    NoteListAdapter.updateCursor();
-                                    mActionMode.finish();
+                                    listAdapter.updateCursor();
+                                    listAdapter.mActionMode.finish();
                                     tempNote.close();
                                 }
                             })
@@ -132,13 +125,13 @@ public class NoteListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_note_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_list, container, false);
         notFoundTextView = (TextView)view.findViewById(R.id.result_not_found);
         recyclerView = (RecyclerView)view.findViewById(R.id.recycler_view);
-        recyclerView.setAdapter(noteListAdapter);
+        recyclerView.setAdapter(listAdapter);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        NoteListAdapter.updateCursor();
+        listAdapter.updateCursor();
         return view;
     }
 
@@ -166,7 +159,7 @@ public class NoteListFragment extends Fragment {
         });
 
         SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
-        searchView = (SearchView)menu.findItem(R.id.search).getActionView();
+        SearchView searchView = (SearchView)menu.findItem(R.id.search).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
         searchView.setQueryHint(getResources().getString(R.string.search_hint));
         searchView.setSubmitButtonEnabled(false);
@@ -186,8 +179,8 @@ public class NoteListFragment extends Fragment {
                 if (!result.equals("")) {
                     recyclerView.setVisibility(View.VISIBLE);
                     notFoundTextView.setVisibility(View.INVISIBLE);
-                    NoteListAdapter.updateCursorForSearch(result);
-                    noteListAdapter.notifyDataSetChanged();
+                    listAdapter.updateCursorForSearch(result);
+                    listAdapter.notifyDataSetChanged();
                 }else if (!newText.equals("")){
                     //If search result is empty and the search input is not empty, show result not found
                     recyclerView.setVisibility(View.INVISIBLE);
@@ -196,8 +189,8 @@ public class NoteListFragment extends Fragment {
                     //after finish searching and user empty the search input, reset the view
                     recyclerView.setVisibility(View.VISIBLE);
                     notFoundTextView.setVisibility(View.INVISIBLE);
-                    updateCursor();
-                    noteListAdapter.notifyDataSetChanged();
+                    listAdapter.updateCursor();
+                    listAdapter.notifyDataSetChanged();
                 }
                 return true;
             }
@@ -211,8 +204,8 @@ public class NoteListFragment extends Fragment {
                 restore.setVisible(false);
                 showingStarred = false;
                 showStarred.setIcon(R.drawable.sharp_star_border_24);
-                updateCursor();
-                noteListAdapter.notifyDataSetChanged();
+                listAdapter.updateCursor();
+                listAdapter.notifyDataSetChanged();
                 return true;
             }
 
@@ -237,14 +230,14 @@ public class NoteListFragment extends Fragment {
                     // to show only starred notes
                     showingStarred = true;
                     showStarred.setIcon(R.drawable.baseline_star_24);
-                    updateCursorForStarred();
-                    noteListAdapter.notifyDataSetChanged();
+                    listAdapter.updateCursorForStarred();
+                    listAdapter.notifyDataSetChanged();
                 } else {
                     // to show all notes
                     showingStarred = false;
                     showStarred.setIcon(R.drawable.sharp_star_border_24);
-                    updateCursor();
-                    noteListAdapter.notifyDataSetChanged();
+                    listAdapter.updateCursor();
+                    listAdapter.notifyDataSetChanged();
                 }
                 return true;
             }
@@ -372,7 +365,7 @@ public class NoteListFragment extends Fragment {
 
                     case RESTORE_REQUEST_CODE:
                         try {
-                            ParcelFileDescriptor pfd = getActivity().getContentResolver().openFileDescriptor(uri, "w");
+                            ParcelFileDescriptor pfd = getActivity().getContentResolver().openFileDescriptor(uri, "r");
                             FileInputStream fileInputStream = new FileInputStream(pfd.getFileDescriptor());
 
                             File dataPath = Environment.getDataDirectory();
@@ -408,18 +401,20 @@ public class NoteListFragment extends Fragment {
         }
     }
 
+
     @Override
-    public void onResume() {
-        super.onResume();
-        //Reset the recyclerview
-        updateCursor();
-        noteListAdapter.notifyDataSetChanged();
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        if (savedInstanceState!= null){
+            listAdapter.updateCursor();
+            listAdapter.notifyDataSetChanged();
+        }
+        super.onViewStateRestored(savedInstanceState);
     }
 
     @Override
     public void onStop() {
-        if (mActionMode!=null) {
-            mActionMode.finish();
+        if (listAdapter.mActionMode!=null) {
+            listAdapter.mActionMode.finish();
         }
 
         // Clear all filter
@@ -431,15 +426,15 @@ public class NoteListFragment extends Fragment {
 
     public void onNoteEdit(long noteId) {
         Intent startNoteActivity = new Intent();
-        startNoteActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.Note");
-        startNoteActivity.putExtra(NoteEditFragment.EXTRA_NOTE_ID, noteId);
+        startNoteActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.Edit");
+        startNoteActivity.putExtra(EditFragment.EXTRA_NOTE_ID, noteId);
         startActivity(startNoteActivity);
     }
 
 
     public void onNoteEdit() {
         Intent startNoteActivity = new Intent();
-        startNoteActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.Note");
+        startNoteActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.Edit");
         startActivity(startNoteActivity);
     }
 

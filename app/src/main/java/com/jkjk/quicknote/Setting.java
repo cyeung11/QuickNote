@@ -18,8 +18,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
-import static com.jkjk.quicknote.DatabaseHelper.DATABASE_NAME;
-import static com.jkjk.quicknote.Fragment.NoteListFragment.RESTORE_REQUEST_CODE;
+import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
+import static com.jkjk.quicknote.listscreen.ListFragment.RESTORE_REQUEST_CODE;
 
 public class Setting extends AppCompatActivity {
 
@@ -112,7 +112,7 @@ public class Setting extends AppCompatActivity {
 
                     //Restart app
                     Intent restart = new Intent();
-                    restart.setClassName(this.getPackageName(),"com.jkjk.quicknote.NoteList");
+                    restart.setClassName(this.getPackageName(),"com.jkjk.quicknote.listscreen.List");
                     restart.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(restart);
 

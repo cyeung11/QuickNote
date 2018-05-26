@@ -1,4 +1,4 @@
-package com.jkjk.quicknote;
+package com.jkjk.quicknote.editscreen;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -7,46 +7,45 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
-import com.jkjk.quicknote.Fragment.NoteEditFragment;
+import com.jkjk.quicknote.R;
 
-import static com.jkjk.quicknote.Fragment.NoteEditFragment.EXTRA_NOTE_ID;
-import static com.jkjk.quicknote.Fragment.NoteEditFragment.hasNoteSave;
+import static com.jkjk.quicknote.editscreen.EditFragment.EXTRA_NOTE_ID;
 
 
-public class Note extends AppCompatActivity {
+public class Edit extends AppCompatActivity {
 
-    final String fragmentTag = NoteEditFragment.DEFAULT_FRAGMENT_TAG;
+    final String fragmentTag = EditFragment.DEFAULT_FRAGMENT_TAG;
 
-    long noteId;
-    NoteEditFragment noteEditFragment;
+    private EditFragment editFragment;
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_note);
+        setContentView(R.layout.activity_edit);
+        long noteId;
 
         if (savedInstanceState == null) {
             //Case when the activity is newly created
 
             if (getIntent().getAction()!= null && getIntent().getAction().equals(Intent.ACTION_SEND)) {
                 //Case when activity is called by external intent
-                noteEditFragment = NoteEditFragment.newNoteEditFragmentInstance(getIntent());
+                editFragment = EditFragment.newEditFragmentInstance(getIntent());
 
             } else if (getIntent().hasExtra(EXTRA_NOTE_ID)) {
                 //Case when activity is called by note list activity after user selected existing note
                 noteId = getIntent().getLongExtra(EXTRA_NOTE_ID, 0L);
-                noteEditFragment = NoteEditFragment.newNoteEditFragmentInstance(noteId);
+                editFragment = EditFragment.newEditFragmentInstance(noteId);
 
             } else {
                 //Case when opening a new note
-                noteEditFragment = NoteEditFragment.newNoteEditFragmentInstance();
+                editFragment = EditFragment.newEditFragmentInstance();
             }
-            getSupportFragmentManager().beginTransaction().add(R.id.container, noteEditFragment, fragmentTag).commit();
+            getSupportFragmentManager().beginTransaction().add(R.id.container, editFragment, fragmentTag).commit();
 
         }else {
             //Case when restoring from saved instance, rotate etc.
-            noteEditFragment = (NoteEditFragment) getSupportFragmentManager().findFragmentByTag(fragmentTag);
+            editFragment = (EditFragment) getSupportFragmentManager().findFragmentByTag(fragmentTag);
         }
     }
 
@@ -58,21 +57,21 @@ public class Note extends AppCompatActivity {
                 .setPositiveButton(R.string.discard, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        if (!hasNoteSave){
-                            //Note no need to save. so override hasNoteSave to true to avoid saving on onStop
-                            hasNoteSave = true;
+                        if (!editFragment.hasNoteSave){
+                            //Edit no need to save. so override hasNoteSave to true to avoid saving on onStop
+                            editFragment.hasNoteSave = true;
                         }
-                        Note.super.onBackPressed();
+                        Edit.super.onBackPressed();
                     }
                 })
                 .setNeutralButton(R.string.save_instead, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         //Save instantly instead of onStop so that when the note list's onResume get called, the note is already update
-                        noteEditFragment.saveNote();
+                        editFragment.saveNote();
                         Toast.makeText(getBaseContext(),R.string.saved, Toast.LENGTH_SHORT).show();
-                        noteEditFragment.updateAllWidget();
-                        hasNoteSave = true;
+                        editFragment.updateAllWidget();
+                        editFragment.hasNoteSave = true;
                         finish();
                     }
                 })
@@ -84,13 +83,13 @@ public class Note extends AppCompatActivity {
     @Override
     protected void onStop() {
         //when user quit the app without choosing save or discard, save the note
-        if (!hasNoteSave){
-            noteEditFragment.saveNote();
-            noteEditFragment.updateAllWidget();
+        if (!editFragment.hasNoteSave){
+            editFragment.saveNote();
+            editFragment.updateAllWidget();
             Toast.makeText(this,R.string.saved, Toast.LENGTH_SHORT).show();
         }
         // then reset it to not saved for the case when user come back
-        hasNoteSave = false;
+        editFragment.hasNoteSave = false;
         super.onStop();
     }
 

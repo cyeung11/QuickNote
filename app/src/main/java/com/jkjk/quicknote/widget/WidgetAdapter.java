@@ -1,4 +1,4 @@
-package com.jkjk.quicknote.Adapter;
+package com.jkjk.quicknote.widget;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -28,20 +28,19 @@ import java.util.Calendar;
 import static android.app.Activity.RESULT_CANCELED;
 import static android.content.Context.MODE_PRIVATE;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
-import static com.jkjk.quicknote.Adapter.NoteListAdapter.isYesterday;
-import static com.jkjk.quicknote.DatabaseHelper.DATABASE_NAME;
-import static com.jkjk.quicknote.Fragment.NoteEditFragment.EXTRA_NOTE_ID;
-import static com.jkjk.quicknote.Widget.AppWidgetService.IS_FROM_WIDGET;
+import static com.jkjk.quicknote.editscreen.EditFragment.EXTRA_NOTE_ID;
+import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
+import static com.jkjk.quicknote.widget.AppWidgetService.IS_FROM_WIDGET;
 
 public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder> {
 
     private Activity activity;
-    private int mAppWidgetId, itemCount;
+    private int mAppWidgetId;
     private int color = Color.parseColor("#FFFFFF");
-    private static Cursor cursorForWidget;
+    private Cursor cursorForWidget;
 
 
-    public WidgetAdapter(Activity activity, int mAppWidgetId){
+    WidgetAdapter(Activity activity, int mAppWidgetId){
         this.activity = activity;
         this.mAppWidgetId = mAppWidgetId;
         //There can only be one widget to be create for each adapter , so create an array with only one widget Id to send back to widget for update
@@ -79,9 +78,9 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
         private ViewHolder(CardView card) {
             super(card);
             cardView = card;
-            noteTitle = (TextView) card.findViewById(R.id.note_title);
-            noteTime = (TextView) card.findViewById(R.id.note_date);
-            noteContent = (TextView) card.findViewById(R.id.note_content);
+            noteTitle = card.findViewById(R.id.note_title);
+            noteTime = card.findViewById(R.id.note_date);
+            noteContent = card.findViewById(R.id.note_content);
         }
     }
 
@@ -109,7 +108,7 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
                 remoteViews.setInt(R.id.widget, "setBackgroundColor", color);
 
                 Intent startAppIntent = new Intent();
-                startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.Note")
+                startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.Edit")
                         .putExtra(EXTRA_NOTE_ID, cursorForWidget.getLong(0)).putExtra(IS_FROM_WIDGET, true)
                         .setFlags(FLAG_ACTIVITY_CLEAR_TOP);
                 PendingIntent pendingIntent = PendingIntent.getActivity(activity,(int)cursorForWidget.getLong(0),startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
@@ -139,8 +138,7 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
     @Override
     public int getItemCount() {
         //Obtain all data from database provided from Application class and get count
-        itemCount = cursorForWidget.getCount();
-        return itemCount;
+        return cursorForWidget.getCount();
     }
 
     @Override
@@ -208,18 +206,35 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
     }
 
 
-    public static void updateCursorForWidget(){
+    public void updateCursorForWidget(){
         cursorForWidget = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, null, null, null
                 , null, "time DESC");
     }
 
-    public static void updateCursorForSearchForWidget(String result){
+    public void updateCursorForSearchForWidget(String result){
         cursorForWidget = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "_id in ("+result+")", null, null
                 , null, "time DESC");
     }
 
-    public static void updateCursorForStarred(){
+    public void updateCursorForStarred(){
         cursorForWidget = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "starred = 1", null, null
                 , null, "time DESC");
+    }
+
+    private boolean isYesterday(long time) {
+        int currentDayOfYear, currentYear, setTimeDayOfYear, setTimeYear, setTimeMonth, setTimeDay;
+
+        Calendar dateOfSetTime = Calendar.getInstance();
+        Calendar currentTime = Calendar.getInstance();
+        dateOfSetTime.setTimeInMillis(time);
+
+        currentDayOfYear = currentTime.get(Calendar.DAY_OF_YEAR);
+        currentYear = currentTime.get(Calendar.YEAR);
+        setTimeDayOfYear = dateOfSetTime.get(Calendar.DAY_OF_YEAR);
+        setTimeYear = dateOfSetTime.get(Calendar.YEAR);
+        setTimeMonth = dateOfSetTime.get(Calendar.MONTH);
+        setTimeDay = dateOfSetTime.get(Calendar.DAY_OF_MONTH);
+
+        return (currentDayOfYear == 1 && setTimeYear == currentYear - 1 && setTimeMonth == 11 && setTimeDay == 31) || (setTimeDayOfYear == currentDayOfYear - 1 && setTimeYear == currentYear);
     }
 }

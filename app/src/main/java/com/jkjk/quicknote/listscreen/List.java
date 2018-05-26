@@ -1,4 +1,4 @@
-package com.jkjk.quicknote;
+package com.jkjk.quicknote.listscreen;
 
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -6,20 +6,20 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
-import com.jkjk.quicknote.Fragment.NoteListFragment;
+import com.jkjk.quicknote.R;
 
-import static com.jkjk.quicknote.Fragment.NoteListFragment.BACK_UP_REQUEST_CODE;
-import static com.jkjk.quicknote.Fragment.NoteListFragment.RESTORE_REQUEST_CODE;
+import static com.jkjk.quicknote.listscreen.ListFragment.BACK_UP_REQUEST_CODE;
+import static com.jkjk.quicknote.listscreen.ListFragment.RESTORE_REQUEST_CODE;
 
 
-public class NoteList extends AppCompatActivity  {
-    NoteListFragment noteListFragment;
+public class List extends AppCompatActivity  {
+    private ListFragment listFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_note_list);
-        noteListFragment = (NoteListFragment) getSupportFragmentManager().findFragmentById(R.id.note_list);
+        setContentView(R.layout.activity_list);
+        listFragment = (ListFragment) getSupportFragmentManager().findFragmentById(R.id.list);
     }
 
     @Override
@@ -27,7 +27,7 @@ public class NoteList extends AppCompatActivity  {
         switch (requestCode){
             case BACK_UP_REQUEST_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    noteListFragment.selectBackUpLocation();
+                    listFragment.selectBackUpLocation();
                 } else {
                     Toast.makeText(this,R.string.permission_required,Toast.LENGTH_SHORT).show();
                 }
@@ -35,7 +35,7 @@ public class NoteList extends AppCompatActivity  {
 
             case RESTORE_REQUEST_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    noteListFragment.selectRestoreLocation();
+                    listFragment.selectRestoreLocation();
                 } else {
                     Toast.makeText(this,R.string.permission_required,Toast.LENGTH_SHORT).show();
                 }

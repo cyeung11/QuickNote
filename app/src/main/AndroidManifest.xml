@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".Note"
+            android:name=".editscreen.Edit"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter android:label="@string/new_note">
@@ -26,10 +26,10 @@
         </activity>
 
         <service
-            android:name=".Widget.AppWidgetService"
+            android:name=".widget.AppWidgetService"
             android:exported="false" />
 
-        <activity android:name=".NoteList">
+        <activity android:name=".listscreen.List">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -37,7 +37,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Widget.LauncherShortcuts"
+            android:name=".widget.LauncherShortcuts"
             android:label="@string/new_note">
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_SHORTCUT" />
@@ -47,7 +47,7 @@
         </activity>
 
         <receiver
-            android:name=".Widget.NoteWidget"
+            android:name=".widget.NoteWidget"
             android:label="@string/note_preview">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -58,7 +58,7 @@
                 android:resource="@xml/note_preview_info" />
         </receiver>
 
-        <activity android:name=".Widget.NoteWidgetConfigureActivity">
+        <activity android:name=".widget.NoteWidgetConfigureActivity">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>

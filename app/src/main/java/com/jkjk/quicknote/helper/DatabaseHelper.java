@@ -1,4 +1,4 @@
-package com.jkjk.quicknote;
+package com.jkjk.quicknote.helper;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -13,7 +13,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_ALTER_V2 = "ALTER TABLE "
             + DATABASE_NAME + " ADD COLUMN starred INTEGER;";
 
-    DatabaseHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version){
+    public DatabaseHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version){
         super(context,name,factory,2);
     }
 

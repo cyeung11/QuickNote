@@ -1,4 +1,4 @@
-package com.jkjk.quicknote.Adapter;
+package com.jkjk.quicknote.listscreen;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -22,28 +22,27 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.jkjk.quicknote.Fragment.NoteListFragment;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 
-import static com.jkjk.quicknote.DatabaseHelper.DATABASE_NAME;
+import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 
-public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHolder> {
+public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
 
     private int itemCount;
-    private NoteListFragment fragment;
-    public static Boolean inActionMode = false;
-    public static ActionMode mActionMode;
+    private ListFragment fragment;
+    Boolean inActionMode = false;
+    ActionMode mActionMode;
     private ArrayList<Integer> selectedItems;
-    private static Cursor cursor;
+    private Cursor cursor;
     private int selectedNotStarred;
-    private static int notStarredCount;
+    private int notStarredCount;
 
 
-    public NoteListAdapter(NoteListFragment fragment){
+    ListAdapter(ListFragment fragment){
         this.fragment = fragment;
         selectedItems = new ArrayList<>();
     }
@@ -58,14 +57,14 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
         private ViewHolder(CardView card) {
             super(card);
             cardView = card;
-            noteTitle = (TextView) card.findViewById(R.id.note_title);
-            noteTime = (TextView) card.findViewById(R.id.note_date);
-            noteContent = (TextView) card.findViewById(R.id.note_content);
+            noteTitle = card.findViewById(R.id.note_title);
+            noteTime = card.findViewById(R.id.note_date);
+            noteContent = card.findViewById(R.id.note_content);
         }
     }
 
     @Override
-    public NoteListAdapter.ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
+    public ListAdapter.ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
         CardView v = (CardView) LayoutInflater.from(parent.getContext()).inflate(R.layout.card_note, parent, false);
         final ViewHolder holder = new ViewHolder(v);
 
@@ -119,7 +118,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
             @Override
             public boolean onLongClick(final View view) {
 
-                final FloatingActionButton addNote = (FloatingActionButton)fragment.getActivity().findViewById(R.id.add_note);
+                final FloatingActionButton addNote = fragment.getActivity().findViewById(R.id.add_note);
 
                 final int clickPosition = holder.getAdapterPosition();
                 if (actionMode != null) {
@@ -353,7 +352,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
         cursor.close();
     }
 
-    static boolean isYesterday(long time) {
+    private boolean isYesterday(long time) {
         int currentDayOfYear, currentYear, setTimeDayOfYear, setTimeYear, setTimeMonth, setTimeDay;
 
         Calendar dateOfSetTime = Calendar.getInstance();
@@ -375,22 +374,22 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
         return selectedItems;
     }
 
-    public static void updateCursor(){
+    public void updateCursor(){
         cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, null, null, null
                 , null, "time DESC");
     }
 
-    public static void updateCursorForSearch(String result){
+    public void updateCursorForSearch(String result){
         cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "_id in ("+result+")", null, null
                 , null, "time DESC");
     }
 
-    public static void updateCursorForStarred(){
+    public void updateCursorForStarred(){
         cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "starred = 1", null, null
                 , null, "time DESC");
     }
 
-    public static Cursor getCursor(){
+    public Cursor getCursor(){
         return cursor;
     }
 

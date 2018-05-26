@@ -3,6 +3,8 @@ package com.jkjk.quicknote;
 import android.app.Application;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.jkjk.quicknote.helper.DatabaseHelper;
+
 
 public class MyApplication extends Application {
 

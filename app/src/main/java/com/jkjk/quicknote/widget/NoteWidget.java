@@ -1,4 +1,4 @@
-package com.jkjk.quicknote.Widget;
+package com.jkjk.quicknote.widget;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -28,7 +28,6 @@ public class NoteWidget extends AppWidgetProvider {
 
         // There may be multiple widgets active, so update all of them
         SharedPreferences idPref = context.getSharedPreferences("widget_id", MODE_PRIVATE);
-        SharedPreferences colorPref = context.getSharedPreferences("widget_color", MODE_PRIVATE);
 
         //Weird case: onUpdate called before configuration finish. thus generating exception.
         // Add checking to see if the widget is newly created. If so, id will not send to widget service to prevent calling onUpdate before user selected note

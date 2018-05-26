@@ -1,10 +1,12 @@
-package com.jkjk.quicknote;
+package com.jkjk.quicknote.helper;
 
 import android.database.Cursor;
 
+import com.jkjk.quicknote.MyApplication;
+
 import java.util.ArrayList;
 
-import static com.jkjk.quicknote.DatabaseHelper.DATABASE_NAME;
+import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 
 public class SearchHelper {
 
