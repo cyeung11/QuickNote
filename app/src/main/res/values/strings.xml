@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Quick Note</string>
     <string name="note_list_name">NoteList</string>
+    <string name="note">Note</string>
+    <string name="task">Task</string>
     <string name="user_interface_cap">INTERFACE</string>
     <string name="done">Done</string>
     <string name="saved">Note saved</string>
@@ -119,4 +121,8 @@
         <item>0</item>
         <item>1</item>
     </string-array>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragmentHello blank fragmenHello blank fragmenHello blank fragmenHello blank fragmenHello blank fragmenHello blank fragmenHello blank fragmenHello blank fragmenHello blank fragmenHello blank fragmenHello blank fragmen</string>
+    <string name="hello_blank">Hello blankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblankblank</string>
 </resources>

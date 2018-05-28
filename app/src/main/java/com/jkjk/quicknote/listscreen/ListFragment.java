@@ -10,13 +10,17 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,16 +40,17 @@ import java.util.ArrayList;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 
 
-/**
- * A simple {@link Fragment} subclass.
- */
+
 public class ListFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private TextView notFoundTextView;
     ListAdapter listAdapter;
+    ListPageAdapter listPageAdapter;
     private boolean showingStarred = false;
     private MenuItem showStarred, search, settings;
+    private ViewPager viewPager;
+    TabLayout tabLayout;
 
 
     public ListFragment() {
@@ -63,11 +68,36 @@ public class ListFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        android.support.v7.widget.Toolbar listMenu;
-        if (!listAdapter.inActionMode) {
-            listMenu = getActivity().findViewById(R.id.list_menu);
-            ((AppCompatActivity) getActivity()).setSupportActionBar(listMenu);
-        }
+        android.support.v7.widget.Toolbar listMenu = getActivity().findViewById(R.id.list_menu);
+        ((AppCompatActivity) getActivity()).setSupportActionBar(listMenu);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setElevation(0);
+
+        listPageAdapter = new ListPageAdapter(getActivity().getSupportFragmentManager());
+        viewPager = getActivity().findViewById(R.id.pager);
+        viewPager.setAdapter(listPageAdapter);
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));;
+
+        tabLayout = getActivity().findViewById(R.id.list_tab);
+        tabLayout.addTab(tabLayout.newTab().setText(R.string.note), true);
+        tabLayout.addTab(tabLayout.newTab().setText(R.string.task));
+
+
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                viewPager.setCurrentItem(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
 
         FloatingActionButton addNote =  getActivity().findViewById(R.id.add_note);
         addNote.setImageDrawable(getResources().getDrawable(R.drawable.sharp_add_24));
@@ -114,6 +144,7 @@ public class ListFragment extends Fragment {
         recyclerView.setAdapter(listAdapter);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
         return view;
     }
 
@@ -196,8 +227,6 @@ public class ListFragment extends Fragment {
             public boolean onMenuItemActionCollapse(MenuItem menuItem) {
                 showStarred.setVisible(true);
                 settings.setVisible(true);
-                search.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW | MenuItem.SHOW_AS_ACTION_ALWAYS);
-                showStarred.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
                 return true;
             }
         });

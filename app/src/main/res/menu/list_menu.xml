@@ -18,6 +18,7 @@
 
     <item android:id="@+id/settings"
         android:title="@string/settings"
+        android:icon="@drawable/sharp_settings_24"
         app:showAsAction="never" />
 
 
