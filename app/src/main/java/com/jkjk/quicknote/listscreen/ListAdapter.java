@@ -35,18 +35,17 @@ import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
 
     private int itemCount;
-    private ListFragment fragment;
+    private NoteListFragment fragment;
     Boolean inActionMode = false;
     ActionMode mActionMode;
-    private ArrayList<Integer> selectedItems;
+    private ArrayList<Integer> selectedItems = new ArrayList<>();
     private Cursor cursor;
     private int selectedNotStarred;
     private int notStarredCount;
 
 
-    ListAdapter(ListFragment fragment){
+    ListAdapter(NoteListFragment fragment){
         this.fragment = fragment;
-        selectedItems = new ArrayList<>();
     }
 
 

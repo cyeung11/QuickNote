@@ -45,35 +45,13 @@
             android:fillViewport="true"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
 
             <android.support.v4.view.ViewPager
                 android:id="@+id/pager"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="visible"/>
-
-            <!--TODO-->
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/recycler_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="invisible"/>
+                android:layout_height="match_parent" />
 
 
-            <TextView
-                android:id="@+id/result_not_found"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="35dp"
-                android:textSize="16sp"
-                android:text="@string/not_found"
-                android:visibility="invisible"/>
-
-        </RelativeLayout>
 
         </android.support.v4.widget.NestedScrollView>
 

@@ -61,7 +61,7 @@ public class ListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        listAdapter = new ListAdapter(this);
+//        listAdapter = new ListAdapter(this);
     }
 
 
@@ -105,21 +105,34 @@ public class ListFragment extends Fragment {
         addNote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                NoteListFragment noteListFragment = listPageAdapter.noteListFragment;
+                ListAdapter listAdapter = noteListFragment.getListAdapter();
+//                if (listAdapter.inActionMode){
+
                 if (listAdapter.inActionMode){
                     new AlertDialog.Builder(view.getContext()).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete_list)
                             .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
+
+                                    NoteListFragment noteListFragment = listPageAdapter.noteListFragment;
+                                    ListAdapter listAdapter = noteListFragment.getListAdapter();
+
                                     // delete note from  selectedItems
+//                                    ArrayList<Integer> mSelect = listAdapter.getSelected();
                                     ArrayList<Integer> mSelect = listAdapter.getSelected();
+//                                    Cursor tempNote = listAdapter.getCursor();
                                     Cursor tempNote = listAdapter.getCursor();
                                     for (int removedPosition : mSelect) {
                                         tempNote.moveToPosition(removedPosition);
                                         String removedId = tempNote.getString(0);
                                         MyApplication.database.delete(DATABASE_NAME, "_id='" + removedId+"'",null);
+//                                        listAdapter.notifyItemRemoved(removedPosition);
                                         listAdapter.notifyItemRemoved(removedPosition);
                                     }
                                     Toast.makeText(getContext(),R.string.deleted_toast,Toast.LENGTH_SHORT).show();
+//                                    listAdapter.updateCursor();
+//                                    listAdapter.mActionMode.finish();
                                     listAdapter.updateCursor();
                                     listAdapter.mActionMode.finish();
                                     tempNote.close();
@@ -128,7 +141,8 @@ public class ListFragment extends Fragment {
                             .setNegativeButton(R.string.cancel, null)
                             .show();
                 }else {
-                    onNoteEdit();
+//                    onNoteEdit();
+                    noteListFragment.onNoteEdit();
                 }
             }
         });
@@ -139,11 +153,11 @@ public class ListFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_list, container, false);
-        notFoundTextView = view.findViewById(R.id.result_not_found);
-        recyclerView = view.findViewById(R.id.recycler_view);
-        recyclerView.setAdapter(listAdapter);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+//        notFoundTextView = view.findViewById(R.id.result_not_found);
+//        recyclerView = view.findViewById(R.id.recycler_view);
+//        recyclerView.setAdapter(listAdapter);
+//        recyclerView.setHasFixedSize(true);
+//        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         return view;
     }
@@ -165,7 +179,7 @@ public class ListFragment extends Fragment {
                 Intent intent = new Intent();
                 intent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.settings.Settings");
                 startActivity(intent);
-//                getActivity().finish();
+                getActivity().finish();
                 return true;
             }
         });
@@ -176,6 +190,7 @@ public class ListFragment extends Fragment {
         searchView.setQueryHint(getResources().getString(R.string.search_hint));
         searchView.setSubmitButtonEnabled(false);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
             SearchHelper searchHelper = new SearchHelper();
 
             @Override
@@ -187,22 +202,36 @@ public class ListFragment extends Fragment {
             public boolean onQueryTextChange(String newText) {
 
                 String result = searchHelper.searchResult(newText);
+                NoteListFragment noteListFragment = listPageAdapter.noteListFragment;
+                ListAdapter listAdapter = noteListFragment.getListAdapter();
 
                 //If search result is not empty, update the cursor to show result
                 if (!result.equals("")) {
-                    recyclerView.setVisibility(View.VISIBLE);
-                    notFoundTextView.setVisibility(View.INVISIBLE);
+//                    recyclerView.setVisibility(View.VISIBLE);
+                    noteListFragment.recyclerView.setVisibility(View.VISIBLE);
+//                    notFoundTextView.setVisibility(View.INVISIBLE);
+                    noteListFragment.notFoundTextView.setVisibility(View.INVISIBLE);
+//                    listAdapter.updateCursorForSearch(result);
                     listAdapter.updateCursorForSearch(result);
+//                    listAdapter.notifyDataSetChanged();
                     listAdapter.notifyDataSetChanged();
+
                 } else if (!newText.equals("")) {
                     //If search result is empty and the search input is not empty, show result not found
-                    recyclerView.setVisibility(View.INVISIBLE);
-                    notFoundTextView.setVisibility(View.VISIBLE);
+//                    recyclerView.setVisibility(View.INVISIBLE);
+                    noteListFragment.recyclerView.setVisibility(View.INVISIBLE);
+//                    notFoundTextView.setVisibility(View.VISIBLE);
+                    noteListFragment.notFoundTextView.setVisibility(View.VISIBLE);
+
                 } else {
                     //after finish searching and user empty the search input, reset the view
-                    recyclerView.setVisibility(View.VISIBLE);
-                    notFoundTextView.setVisibility(View.INVISIBLE);
+//                    recyclerView.setVisibility(View.VISIBLE);
+                    noteListFragment.recyclerView.setVisibility(View.VISIBLE);
+//                    notFoundTextView.setVisibility(View.INVISIBLE);
+                    noteListFragment.notFoundTextView.setVisibility(View.INVISIBLE);
+//                    listAdapter.updateCursor();
                     listAdapter.updateCursor();
+//                    listAdapter.notifyDataSetChanged();
                     listAdapter.notifyDataSetChanged();
                 }
                 return true;
@@ -210,15 +239,22 @@ public class ListFragment extends Fragment {
         });
 
         search.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+
             @Override
             public boolean onMenuItemActionExpand(MenuItem menuItem) {
+                NoteListFragment noteListFragment = listPageAdapter.noteListFragment;
+                ListAdapter listAdapter = noteListFragment.getListAdapter();
+
                 showStarred.setVisible(false);
                 settings.setVisible(false);
 
-                showingStarred = false;
+//                showingStarred = false;
+                noteListFragment.showingStarred = false;
                 showStarred.setIcon(R.drawable.sharp_star_border_24);
                 showStarred.setTitle(getResources().getString(R.string.show_starred));
+//                listAdapter.updateCursor();
                 listAdapter.updateCursor();
+//                listAdapter.notifyDataSetChanged();
                 listAdapter.notifyDataSetChanged();
                 return true;
             }
@@ -236,19 +272,30 @@ public class ListFragment extends Fragment {
         showStarred.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
-                if (!showingStarred) {
+
+                NoteListFragment noteListFragment = listPageAdapter.noteListFragment;
+                ListAdapter listAdapter = noteListFragment.getListAdapter();
+
+//                if (!showingStarred) {
+                if (!noteListFragment.showingStarred) {
                     // to show only starred notes
-                    showingStarred = true;
+//                    showingStarred = true;
+                    noteListFragment.showingStarred = true;
                     showStarred.setIcon(R.drawable.baseline_star_24);
                     showStarred.setTitle(getResources().getString(R.string.show_all));
 
+//                    listAdapter.updateCursorForStarred();
+//                    listAdapter.notifyDataSetChanged();
                     listAdapter.updateCursorForStarred();
                     listAdapter.notifyDataSetChanged();
                 } else {
                     // to show all notes
-                    showingStarred = false;
+//                    showingStarred = false;
+                    noteListFragment.showingStarred = false;
                     showStarred.setIcon(R.drawable.sharp_star_border_24);
                     showStarred.setTitle(getResources().getString(R.string.show_starred));
+//                    listAdapter.updateCursor();
+//                    listAdapter.notifyDataSetChanged();
                     listAdapter.updateCursor();
                     listAdapter.notifyDataSetChanged();
                 }
@@ -261,20 +308,36 @@ public class ListFragment extends Fragment {
 
     @Override
     public void onResume() {
-        listAdapter.updateCursor();
-        listAdapter.notifyDataSetChanged();
+        NoteListFragment noteListFragment = listPageAdapter.noteListFragment;
+        ListAdapter listAdapter = noteListFragment.getListAdapter();
+        try {
+            listAdapter.updateCursor();
+            listAdapter.notifyDataSetChanged();
+        }catch (Exception e){
+            Log.e(getClass().getName(),"onResume,   updating cursor", e);
+        }
+
+//        listAdapter.updateCursor();
+//        listAdapter.notifyDataSetChanged();
         super.onResume();
     }
 
     @Override
     public void onStop() {
+
+        NoteListFragment noteListFragment = listPageAdapter.noteListFragment;
+        ListAdapter listAdapter = noteListFragment.getListAdapter();
+//        if (listAdapter.mActionMode!=null) {
+//            listAdapter.mActionMode.finish();
+//        }
         if (listAdapter.mActionMode!=null) {
             listAdapter.mActionMode.finish();
         }
 
         // Clear all filter
         search.collapseActionView();
-        showingStarred = false;
+//        showingStarred = false;
+        noteListFragment.showingStarred = false;
         showStarred.setIcon(R.drawable.sharp_star_border_24);
         showStarred.setTitle(getResources().getString(R.string.show_starred));
         super.onStop();
@@ -286,7 +349,6 @@ public class ListFragment extends Fragment {
         startNoteActivity.putExtra(EditFragment.EXTRA_NOTE_ID, noteId);
         startActivity(startNoteActivity);
     }
-
 
     public void onNoteEdit() {
         Intent startNoteActivity = new Intent();
