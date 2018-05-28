@@ -11,22 +11,13 @@
 
 
     <item android:id="@+id/show_starred"
-        android:title="@string/starred"
+        android:title="@string/show_starred"
         android:icon="@drawable/sharp_star_border_24"
         app:showAsAction="never" />
 
 
-    <item android:id="@+id/back_up"
-        android:title="@string/back_up"
-        app:showAsAction="never" />
-
-    <item android:id="@+id/restore"
-        android:title="@string/restore"
-        app:showAsAction="never" />
-
-
-    <item android:id="@+id/setting"
-        android:title="@string/setting"
+    <item android:id="@+id/settings"
+        android:title="@string/settings"
         app:showAsAction="never" />
 
 

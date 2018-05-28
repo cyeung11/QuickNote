@@ -86,7 +86,7 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
 
     @Override
     public WidgetAdapter.ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
-        CardView v = (CardView) LayoutInflater.from(parent.getContext()).inflate(R.layout.card_note, parent, false);
+        CardView v = (CardView) LayoutInflater.from(parent.getContext()).inflate(R.layout.card_note_m, parent, false);
         final ViewHolder holder = new ViewHolder(v);
 
 

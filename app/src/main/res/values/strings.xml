@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Quick Note</string>
     <string name="note_list_name">NoteList</string>
+    <string name="user_interface_cap">INTERFACE</string>
     <string name="done">Done</string>
     <string name="saved">Note saved</string>
     <string name="error_text">Error</string>
@@ -8,6 +9,7 @@
     <string name="error_saving">Error saving note</string>
     <string name="error_widget">Error loading note for widget</string>
     <string name="error_back_up">Error backing up</string>
+    <string name="error_restore">Error restoring</string>
     <string name="text_here">Jot down your note here</string>
     <string name="title_here">Title</string>
     <string name="yesterday">Yesterday</string>
@@ -31,9 +33,11 @@
     <string name="note_preview">Note preview</string>
     <string name="share">Share</string>
     <string name="search">Search</string>
-    <string name="starred">Show Starred</string>
+    <string name="show_starred">Show starred notes</string>
+    <string name="show_all">Show all notes</string>
+    <string name="starred">Starred</string>
     <string name="unstarred">Unstarred</string>
-    <string name="setting">Setting</string>
+    <string name="settings">Settings</string>
     <string name="add_shortcut_short_label">Background Color</string>
     <string name="color_default_title">Select Background Color</string>
     <string name="search_hint">Search note</string>
@@ -44,14 +48,75 @@
     <string name="starred_toast">Note starred</string>
     <string name="unstarred_toast">Note unstarred</string>
     <string name="deleted_toast">Note deleted</string>
-    <string name="back_up">Back up note</string>
+    <string name="back_up">Backup</string>
+    <string name="back_up_summary">Backup note to storage</string>
     <string name="back_up_name">notebackup-</string>
     <string name="permission_required">Permission required</string>
-    <string name="permission">Turn on storage permission to enable back up function.</string>
+    <string name="permission">Turn on storage permission to enable backup &amp; restore function.</string>
     <string name="open_settings">Open settings</string>
-    <string name="restore">Restore note</string>
+    <string name="restore">Restore</string>
+    <string name="restore_summary">Restore notes from backup file</string>
+    <string name="restore_success">Restore finished</string>
+    <string name="backup_success">Backup finished</string>
     <string name="ok">OK</string>
     <string name="restore_confirm">Restoring will delete all existing notes. Continue?</string>
     <string name="title_activity_settings">Settings</string>
+    <string name="font_size_main_screen">Main Screen Font Size</string>
+    <string name="font_size_editing_screen">Editing Screen Font Size</string>
+    <string name="font_size_default">m</string>
+    <string name="font_size_main_screen_summary">Config font size in main screen</string>
+    <string name="font_size_editing_screen_summary">Config font size in editing screen</string>
+    <string name="notification_pin">Pin to Notification</string>
+    <string name="notification_pin_summary">Pin a function bar on notification panel</string>
+    <string name="auto_back_up">Auto Backup</string>
+    <string name="auto_back_up_summary">Automatically backup to external storage</string>
+    <string name="back_up_frequency">Auto Backup Frequency</string>
+    <string name="auto_back_up_frequency_summary">Set the frequency of automatic backup</string>
+    <string name="report">Report</string>
+    <string name="report_summary">Report an issue to developer</string>
+    <string name="backup_restore_cap">BACKUP &amp; RESTORE</string>
+    <string name="other_cap">OTHERS</string>
+    <string name="default_screen">Default Screen</string>
+    <string name="default_screen_summary">Select default screen to show when launching app</string>
 
+
+    <string-array name="font_size">
+        <item>Small</item>
+        <item>Medium</item>
+        <item>Large</item>
+        <item>Extra large</item>
+    </string-array>
+    <string-array name="font_size_main_screen_value">
+        <item>s</item>
+        <item>m</item>
+        <item>l</item>
+        <item>xl</item>
+    </string-array>
+    <string-array name="font_size_editing_screen_value">
+        <item>s</item>
+        <item>m</item>
+        <item>l</item>
+        <item>xl</item>
+    </string-array>
+    <string-array name="back_up_frequency">
+        <item>Daily</item>
+        <item>Every 3 Days</item>
+        <item>Weekly</item>
+        <item>Bi-weekly</item>
+        <item>Monthly</item>
+    </string-array>
+    <string-array name="back_up_frequency_value">
+        <item>1</item>
+        <item>3</item>
+        <item>7</item>
+        <item>14</item>
+        <item>30</item>
+    </string-array>
+    <string-array name="default_screen">
+        <item>Note</item>
+    </string-array>
+    <string-array name="default_screen_value">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
 </resources>

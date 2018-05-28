@@ -8,7 +8,7 @@
 
     <item
         android:id="@+id/edit_drop_menu_starred"
-        android:title="@string/starred"
+        android:title="@string/show_starred"
         android:visible="true" />
 
     <item

@@ -14,16 +14,14 @@ import static com.jkjk.quicknote.editscreen.EditFragment.EXTRA_NOTE_ID;
 
 public class Edit extends AppCompatActivity {
 
-    final String fragmentTag = EditFragment.DEFAULT_FRAGMENT_TAG;
-
     private EditFragment editFragment;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit);
         long noteId;
+        final String fragmentTag = "editFragmentTag";
 
         if (savedInstanceState == null) {
             //Case when the activity is newly created
@@ -41,7 +39,7 @@ public class Edit extends AppCompatActivity {
                 //Case when opening a new note
                 editFragment = EditFragment.newEditFragmentInstance();
             }
-            getSupportFragmentManager().beginTransaction().add(R.id.container, editFragment, fragmentTag).commit();
+            getSupportFragmentManager().beginTransaction().add(R.id.container, editFragment,fragmentTag).commit();
 
         }else {
             //Case when restoring from saved instance, rotate etc.
@@ -78,19 +76,5 @@ public class Edit extends AppCompatActivity {
                 .setNegativeButton(R.string.cancel, null)
                 .show();
         }
-
-
-    @Override
-    protected void onStop() {
-        //when user quit the app without choosing save or discard, save the note
-        if (!editFragment.hasNoteSave){
-            editFragment.saveNote();
-            editFragment.updateAllWidget();
-            Toast.makeText(this,R.string.saved, Toast.LENGTH_SHORT).show();
-        }
-        // then reset it to not saved for the case when user come back
-        editFragment.hasNoteSave = false;
-        super.onStop();
-    }
 
 }

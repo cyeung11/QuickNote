@@ -2,12 +2,14 @@ package com.jkjk.quicknote.listscreen;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
@@ -65,7 +67,29 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
 
     @Override
     public ListAdapter.ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
-        CardView v = (CardView) LayoutInflater.from(parent.getContext()).inflate(R.layout.card_note, parent, false);
+
+        // Obtain correspond value from preferences to show appropriate size for the card view
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(fragment.getContext());
+        String cardViewSize = sharedPref.getString(fragment.getResources().getString(R.string.font_size_main_screen),"m");
+        int cardViewInt;
+        switch (cardViewSize){
+            case ("s"):
+                cardViewInt = R.layout.card_note_s;
+                break;
+            case ("m"):
+                cardViewInt = R.layout.card_note_m;
+                break;
+            case ("l"):
+                cardViewInt = R.layout.card_note_l;
+                break;
+            case ("xl"):
+                cardViewInt = R.layout.card_note_xl;
+                break;
+            default:
+                cardViewInt = R.layout.card_note_m;
+        }
+
+        CardView v = (CardView) LayoutInflater.from(parent.getContext()).inflate(cardViewInt, parent, false);
         final ViewHolder holder = new ViewHolder(v);
 
         v.setOnClickListener(new View.OnClickListener() {
@@ -73,14 +97,16 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
             @Override
             public void onClick(View view) {
                 int clickPosition = holder.getAdapterPosition();
+
                 //Multi-select
                 if (inActionMode) {
+                    MenuItem selectAll = mActionMode.getMenu().findItem(R.id.select_all);
+                    MenuItem starred = mActionMode.getMenu().findItem(R.id.starred);
                     if (selectedItems.contains(clickPosition)) {
                         // Not all are selected anymore, so change title to select all
-//                        if (selectedItems.size()==itemCount){
-//                            MenuItem selectAll = mActionMode.getMenu().findItem(R.id.select_all);
-//                            selectAll.setTitle(fragment.getResources().getString(R.string.select_all));
-//                        }
+                        if (selectedItems.size()==itemCount){
+                            selectAll.setTitle(fragment.getResources().getString(R.string.select_all));
+                        }
                         // Item has already been selected, so deselect
                         selectedItems.remove(Integer.valueOf(clickPosition));
 
@@ -90,6 +116,10 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
                             selectedNotStarred -= 1;
                         }
 
+                        if (selectedNotStarred == 0){
+                            starred.setTitle(fragment.getResources().getString(R.string.unstarred));
+                        }
+
                     } else {
                         // Item not been selected, so select
                         selectedItems.add(clickPosition);
@@ -97,13 +127,13 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
 
                         if (!holder.isStarred){
                             selectedNotStarred += 1;
+                            starred.setTitle(fragment.getResources().getString(R.string.starred));
                         }
 
                         // if all have been select, change title to deselect all
-//                        if (selectedItems.size()==itemCount){
-//                            MenuItem selectAll = mActionMode.getMenu().findItem(R.id.select_all);
-//                            selectAll.setTitle(fragment.getResources().getString(R.string.deselect_all));
-//                        }
+                        if (selectedItems.size()==itemCount){
+                            selectAll.setTitle(fragment.getResources().getString(R.string.deselect_all));
+                        }
                     }
                 }else {
                     fragment.onNoteEdit(holder.noteId);
@@ -129,20 +159,24 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
                         @Override
                         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
                             MenuInflater inflater = mode.getMenuInflater();
-                            inflater.inflate(R.menu.edit_menu, menu);
+                            inflater.inflate(R.menu.edit_action_mode, menu);
                             inActionMode = true;
 
                             selectedItems.add(clickPosition);
 
+                            MenuItem starred = menu.findItem(R.id.starred);
+
                             if (holder.isStarred){
                                 selectedNotStarred = 0;
+                                starred.setTitle(fragment.getResources().getString(R.string.unstarred));
                             }else {
                                 selectedNotStarred = 1;
+                                starred.setTitle(fragment.getResources().getString(R.string.starred));
                             }
 
-//                            if (itemCount == 1){
-//                                menu.findItem(R.id.select_all).setTitle(fragment.getResources().getString(R.string.deselect_all));
-//                            }
+                            if (itemCount == 1){
+                                menu.findItem(R.id.select_all).setTitle(fragment.getResources().getString(R.string.deselect_all));
+                            }
                             holder.cardView.setCardBackgroundColor(Color.LTGRAY);
                             //change the FAB to delete
                             addNote.setImageDrawable(fragment.getResources().getDrawable(R.drawable.sharp_delete_24));
@@ -169,7 +203,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
                                     if (itemCount != selectedItems.size()){
                                         //select all, change title to deselect all
                                         selectedItems.clear();
-//                                        menuItem.setTitle(fragment.getResources().getString(R.string.deselect_all));
+                                        menuItem.setTitle(fragment.getResources().getString(R.string.deselect_all));
                                         for (int i = 0 ; i < itemCount ; i++) {
                                             selectedItems.add(i);
                                         }
@@ -179,7 +213,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
                                     } else {
                                         //deselect all, change title to select all
                                         selectedItems.clear();
-//                                        menuItem.setTitle(fragment.getResources().getString(R.string.select_all));
+                                        menuItem.setTitle(fragment.getResources().getString(R.string.select_all));
                                         notifyDataSetChanged();
                                         selectedNotStarred = 0;
                                     }
@@ -192,21 +226,6 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
 
                                         ContentValues values = new ContentValues();
                                         //Convert selected items' position to note ID
-
-//                                        Cursor tempNote;
-//
-//                                        //For situation when search filter applied
-//                                        if (inSearchView){
-//                                            tempNote = cursor;
-//                                        } else if (showingStarred){
-//
-//                                        }
-//
-//                                        // For situation when no filter is apply
-//                                        tempNote = MyApplication.database.query(DATABASE_NAME, new String[]{"_id"}, null, null, null
-//                                                , null, "time DESC");
-//
-//
 
                                         if (selectedNotStarred ==0){
                                             // When all selected notes are starred, un-starred them
@@ -237,7 +256,6 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
                                                 notifyItemChanged(starredPosition+1);
                                             }
                                         }
-//                                        tempNote.close();
                                         updateCursor();
                                         mActionMode.finish();
                                         return true;

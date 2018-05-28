@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -16,6 +17,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -65,8 +67,30 @@ public class EditFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Obtain correspond value from preferences to show appropriate size for the view
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        String editViewSize = sharedPref.getString(getResources().getString(R.string.font_size_editing_screen),"m");
+        int editViewInt;
+        switch (editViewSize){
+            case ("s"):
+                editViewInt = R.layout.fragment_edit_s;
+                break;
+            case ("m"):
+                editViewInt = R.layout.fragment_edit_m;
+                break;
+            case ("l"):
+                editViewInt = R.layout.fragment_edit_l;
+                break;
+            case ("xl"):
+                editViewInt = R.layout.fragment_edit_xl;
+                break;
+            default:
+                editViewInt = R.layout.fragment_edit_m;
+        }
+
+
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_edit, container, false);
+        View view = inflater.inflate(editViewInt, container, false);
 
         titleInFragment = view.findViewById(R.id.title_edit_fragment);
         contentInFragment = view.findViewById(R.id.content_edit_fragment);
@@ -105,20 +129,6 @@ public class EditFragment extends Fragment {
             }
         }
 
-
-//        ImageButton shareButton = (ImageButton)view.findViewById(R.id.share);
-//        shareButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Intent shareIntent = new Intent();
-//                shareIntent.setAction(Intent.ACTION_SEND);
-//                shareIntent.setType("text/plain");
-//                shareIntent.putExtra(Intent.EXTRA_TEXT,titleInFragment.getText()+"\n\n"+contentInFragment.getText());
-//                shareIntent.putExtra(Intent.EXTRA_TITLE,R.string.share+" "+titleInFragment.getText());
-//                startActivity(shareIntent);
-//            }
-//        });
-
         final ImageButton showDropMenu = view.findViewById(R.id.edit_show_drop_menu);
         showDropMenu.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -128,7 +138,7 @@ public class EditFragment extends Fragment {
                 MenuItem starredButton = editDropMenu.getMenu().findItem(R.id.edit_drop_menu_starred);
                 if (isStarred == 0){
                     // not starred, set button to starred
-                    starredButton.setTitle(R.string.starred);
+                    starredButton.setTitle(R.string.show_starred);
                 } else {
                     starredButton.setTitle(R.string.unstarred);
                 }
@@ -235,6 +245,18 @@ public class EditFragment extends Fragment {
     }
 
 
+    @Override
+    public void onPause() {
+        //when user quit the app without choosing save or discard, save the note
+        if (!hasNoteSave){
+            saveNote();
+            updateAllWidget();
+            Toast.makeText(getActivity(),R.string.saved, Toast.LENGTH_SHORT).show();
+        }
+        // then reset it to not saved for the case when user come back
+        hasNoteSave = false;
+        super.onPause();
+    }
 
     public void saveNote(){
         ContentValues values = new ContentValues();

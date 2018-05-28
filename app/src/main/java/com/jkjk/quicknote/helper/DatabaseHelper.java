@@ -6,7 +6,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
+    public final static String[] dbColumn = new String[]{"_id", "title", "content", "time","starred"};
     public final static String DATABASE_NAME = "note";
+    // Update setting fragment's restore verify method if column is added
     private final static String CREATE_STRING = "CREATE TABLE IF NOT EXISTS " + DATABASE_NAME +
             " (_id INTEGER PRIMARY KEY AUTOINCREMENT, " + "title TEXT NOT NULL, " +
             "content TEXT NOT NULL, " + "time TEXT NOT NULL, " + "starred INTEGER)";
@@ -14,7 +16,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + DATABASE_NAME + " ADD COLUMN starred INTEGER;";
 
     public DatabaseHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version){
-        super(context,name,factory,2);
+        super(context,name,factory,version);
     }
 
     @Override
@@ -28,4 +30,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             sqLiteDatabase.execSQL(DATABASE_ALTER_V2);
         }
     }
+
+
 }
