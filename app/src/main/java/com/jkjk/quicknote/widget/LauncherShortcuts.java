@@ -31,7 +31,7 @@ public class LauncherShortcuts extends Activity {
         intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
         intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, getString(R.string.new_note));
         Parcelable iconResource = Intent.ShortcutIconResource.fromContext(
-                this,  R.drawable.ic_launcher);
+                this,  R.mipmap.ic_launcher);
         intent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, iconResource);
         // Now, return the result to the launcher
         setResult(RESULT_OK, intent);
