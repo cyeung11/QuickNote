@@ -32,7 +32,7 @@ import java.util.Calendar;
 
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 
-public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
+public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHolder> {
 
     private int itemCount;
     private NoteListFragment fragment;
@@ -44,7 +44,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
     private int notStarredCount;
 
 
-    ListAdapter(NoteListFragment fragment){
+    NoteListAdapter(NoteListFragment fragment){
         this.fragment = fragment;
     }
 
@@ -65,7 +65,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
     }
 
     @Override
-    public ListAdapter.ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
+    public NoteListAdapter.ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
 
         // Obtain correspond value from preferences to show appropriate size for the card view
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(fragment.getContext());

@@ -80,6 +80,11 @@
     <string name="other_cap">OTHERS</string>
     <string name="default_screen">Default Screen</string>
     <string name="default_screen_summary">Select default screen to show when launching app</string>
+    <string name="task_hint">What to do</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="remark_hint">Remark</string>
+    <string name="all_day">All day</string>
 
 
     <string-array name="font_size">
@@ -116,6 +121,7 @@
     </string-array>
     <string-array name="default_screen">
         <item>Note</item>
+        <item>Task</item>
     </string-array>
     <string-array name="default_screen_value">
         <item>0</item>

@@ -1,6 +1,7 @@
 package com.jkjk.quicknote.listscreen;
 
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -13,17 +14,17 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.jkjk.quicknote.R;
-import com.jkjk.quicknote.editscreen.EditFragment;
+import com.jkjk.quicknote.noteeditscreen.NoteEditFragment;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class NoteListFragment extends Fragment {
 
-    ListAdapter listAdapter;
-    RecyclerView recyclerView;
+    NoteListAdapter noteListAdapter;
     TextView notFoundTextView;
     boolean showingStarred = false;
+    RecyclerView recyclerView;
 
 
     public NoteListFragment() {
@@ -34,8 +35,8 @@ public class NoteListFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        listAdapter = new ListAdapter(this);
-        listAdapter.updateCursor();
+        noteListAdapter = new NoteListAdapter(this);
+        noteListAdapter.updateCursor();
     }
 
     @Override
@@ -44,28 +45,58 @@ public class NoteListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_note_list, container, false);
         notFoundTextView = view.findViewById(R.id.result_not_found);
         recyclerView = view.findViewById(R.id.recycler_view);
-        recyclerView.setAdapter(listAdapter);
+        recyclerView.setAdapter(noteListAdapter);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         return view;
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        ListFragment hostFragment = (ListFragment)getParentFragment();
+
+        if(hostFragment != null) {
+            hostFragment.updateNoteListFragment(getTag());
+        }
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        noteListAdapter.updateCursor();
+        noteListAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onStop() {
+        if (noteListAdapter.mActionMode!=null) {
+            noteListAdapter.mActionMode.finish();
+        }
+
+        showingStarred = false;
+
+        super.onStop();
+    }
+
     public void onNoteEdit(long noteId) {
         Intent startNoteActivity = new Intent();
-        startNoteActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.Edit");
-        startNoteActivity.putExtra(EditFragment.EXTRA_NOTE_ID, noteId);
+        startNoteActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.NoteEdit");
+        startNoteActivity.putExtra(NoteEditFragment.EXTRA_NOTE_ID, noteId);
         startActivity(startNoteActivity);
     }
 
     public void onNoteEdit() {
         Intent startNoteActivity = new Intent();
-        startNoteActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.Edit");
+        startNoteActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.NoteEdit");
         startActivity(startNoteActivity);
     }
 
-    public ListAdapter getListAdapter(){
-        return listAdapter;
+    public NoteListAdapter getNoteListAdapter(){
+        return noteListAdapter;
     }
 
 }

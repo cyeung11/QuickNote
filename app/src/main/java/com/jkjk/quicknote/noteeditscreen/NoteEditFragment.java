@@ -1,4 +1,4 @@
-package com.jkjk.quicknote.editscreen;
+package com.jkjk.quicknote.noteeditscreen;
 
 
 import android.app.PendingIntent;
@@ -42,10 +42,10 @@ import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class EditFragment extends Fragment {
+public class NoteEditFragment extends Fragment {
 
     private static final String NOTE_ID = "noteId";
-    static final String DEFAULT_FRAGMENT_TAG = "EditFragment";
+    static final String DEFAULT_FRAGMENT_TAG = "NoteEditFragment";
     public final static String EXTRA_NOTE_ID = "extraNoteId";
 
     boolean hasNoteSave = false;
@@ -58,7 +58,7 @@ public class EditFragment extends Fragment {
     private int isStarred = 0;
 
 
-    public EditFragment() {
+    public NoteEditFragment() {
         // Required empty public constructor
     }
 
@@ -73,19 +73,19 @@ public class EditFragment extends Fragment {
         int editViewInt;
         switch (editViewSize){
             case ("s"):
-                editViewInt = R.layout.fragment_edit_s;
+                editViewInt = R.layout.fragment_note_edit_s;
                 break;
             case ("m"):
-                editViewInt = R.layout.fragment_edit_m;
+                editViewInt = R.layout.fragment_note_edit_m;
                 break;
             case ("l"):
-                editViewInt = R.layout.fragment_edit_l;
+                editViewInt = R.layout.fragment_note_edit_l;
                 break;
             case ("xl"):
-                editViewInt = R.layout.fragment_edit_xl;
+                editViewInt = R.layout.fragment_note_edit_xl;
                 break;
             default:
-                editViewInt = R.layout.fragment_edit_m;
+                editViewInt = R.layout.fragment_note_edit_m;
         }
 
 
@@ -138,7 +138,7 @@ public class EditFragment extends Fragment {
                 MenuItem starredButton = editDropMenu.getMenu().findItem(R.id.edit_drop_menu_starred);
                 if (isStarred == 0){
                     // not starred, set button to starred
-                    starredButton.setTitle(R.string.show_starred);
+                    starredButton.setTitle(R.string.starred);
                 } else {
                     starredButton.setTitle(R.string.unstarred);
                 }
@@ -294,16 +294,16 @@ public class EditFragment extends Fragment {
     }
 
 
-    public static EditFragment newEditFragmentInstance(long noteId){
-        EditFragment fragment = new EditFragment();
+    public static NoteEditFragment newEditFragmentInstance(long noteId){
+        NoteEditFragment fragment = new NoteEditFragment();
         Bundle bundle = new Bundle();
         bundle.putLong(EXTRA_NOTE_ID, noteId);
         fragment.setArguments(bundle);
         return fragment;
     }
 
-    public static EditFragment newEditFragmentInstance(Intent intent){
-        EditFragment fragment = new EditFragment();
+    public static NoteEditFragment newEditFragmentInstance(Intent intent){
+        NoteEditFragment fragment = new NoteEditFragment();
         Bundle bundle = new Bundle();
         try {
             bundle.putString(Intent.EXTRA_TEXT, intent.getStringExtra(Intent.EXTRA_TEXT));
@@ -315,8 +315,8 @@ public class EditFragment extends Fragment {
         return fragment;
     }
 
-    public static EditFragment newEditFragmentInstance(){
-        return new EditFragment();
+    public static NoteEditFragment newEditFragmentInstance(){
+        return new NoteEditFragment();
     }
 
 }

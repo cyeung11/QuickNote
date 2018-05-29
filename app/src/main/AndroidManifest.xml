@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".editscreen.Edit"
+            android:name=".noteeditscreen.NoteEdit"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter android:label="@string/new_note">
@@ -63,7 +63,8 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
-        <activity android:name=".settings.Settings"></activity>
+        <activity android:name=".settings.Settings" />
+        <activity android:name=".taskeditscreen.TaskEdit"></activity>
     </application>
 
 </manifest>

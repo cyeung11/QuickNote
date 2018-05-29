@@ -14,7 +14,7 @@ import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
-import static com.jkjk.quicknote.editscreen.EditFragment.EXTRA_NOTE_ID;
+import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 
 
@@ -67,7 +67,7 @@ public class AppWidgetService extends IntentService {
                     }
 
                 Intent startAppIntent = new Intent();
-                startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.Edit")
+                startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.NoteEdit")
                         .putExtra(EXTRA_NOTE_ID, cursorForWidget.getLong(0)).putExtra(IS_FROM_WIDGET, true)
                         .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 PendingIntent pendingIntent = PendingIntent.getActivity(this,(int)cursorForWidget.getLong(0),startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);

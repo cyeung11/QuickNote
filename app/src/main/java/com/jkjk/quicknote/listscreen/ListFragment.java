@@ -10,29 +10,23 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
-import com.jkjk.quicknote.editscreen.EditFragment;
 import com.jkjk.quicknote.helper.SearchHelper;
 
 import java.util.ArrayList;
@@ -41,16 +35,10 @@ import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 
 
 
-public class ListFragment extends Fragment {
+public class ListFragment extends Fragment{
 
-    private RecyclerView recyclerView;
-    private TextView notFoundTextView;
-    ListAdapter listAdapter;
-    ListPageAdapter listPageAdapter;
-    private boolean showingStarred = false;
     private MenuItem showStarred, search, settings;
-    private ViewPager viewPager;
-    TabLayout tabLayout;
+    private NoteListFragment noteListFragment;
 
 
     public ListFragment() {
@@ -61,7 +49,6 @@ public class ListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-//        listAdapter = new ListAdapter(this);
     }
 
 
@@ -72,32 +59,13 @@ public class ListFragment extends Fragment {
         ((AppCompatActivity) getActivity()).setSupportActionBar(listMenu);
         ((AppCompatActivity) getActivity()).getSupportActionBar().setElevation(0);
 
-        listPageAdapter = new ListPageAdapter(getActivity().getSupportFragmentManager());
-        viewPager = getActivity().findViewById(R.id.pager);
+        ListPageAdapter listPageAdapter = new ListPageAdapter(getContext(), getChildFragmentManager());
+        ViewPager viewPager = getActivity().findViewById(R.id.pager);
         viewPager.setAdapter(listPageAdapter);
-        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));;
 
-        tabLayout = getActivity().findViewById(R.id.list_tab);
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.note), true);
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.task));
+        TabLayout tabLayout = getActivity().findViewById(R.id.list_tab);
+        tabLayout.setupWithViewPager(viewPager);
 
-
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                viewPager.setCurrentItem(tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
 
         FloatingActionButton addNote =  getActivity().findViewById(R.id.add_note);
         addNote.setImageDrawable(getResources().getDrawable(R.drawable.sharp_add_24));
@@ -105,43 +73,34 @@ public class ListFragment extends Fragment {
         addNote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                NoteListFragment noteListFragment = listPageAdapter.noteListFragment;
-                ListAdapter listAdapter = noteListFragment.getListAdapter();
-//                if (listAdapter.inActionMode){
 
-                if (listAdapter.inActionMode){
+                if (noteListFragment.getNoteListAdapter().inActionMode){
                     new AlertDialog.Builder(view.getContext()).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete_list)
                             .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
 
-                                    NoteListFragment noteListFragment = listPageAdapter.noteListFragment;
-                                    ListAdapter listAdapter = noteListFragment.getListAdapter();
+                                    NoteListAdapter noteListAdapter = noteListFragment.getNoteListAdapter();
 
                                     // delete note from  selectedItems
-//                                    ArrayList<Integer> mSelect = listAdapter.getSelected();
-                                    ArrayList<Integer> mSelect = listAdapter.getSelected();
-//                                    Cursor tempNote = listAdapter.getCursor();
-                                    Cursor tempNote = listAdapter.getCursor();
+                                    ArrayList<Integer> mSelect = noteListAdapter.getSelected();
+                                    Cursor tempNote = noteListAdapter.getCursor();
                                     for (int removedPosition : mSelect) {
                                         tempNote.moveToPosition(removedPosition);
                                         String removedId = tempNote.getString(0);
                                         MyApplication.database.delete(DATABASE_NAME, "_id='" + removedId+"'",null);
-//                                        listAdapter.notifyItemRemoved(removedPosition);
-                                        listAdapter.notifyItemRemoved(removedPosition);
+                                        noteListAdapter.notifyItemRemoved(removedPosition);
                                     }
                                     Toast.makeText(getContext(),R.string.deleted_toast,Toast.LENGTH_SHORT).show();
-//                                    listAdapter.updateCursor();
-//                                    listAdapter.mActionMode.finish();
-                                    listAdapter.updateCursor();
-                                    listAdapter.mActionMode.finish();
+
+                                    noteListAdapter.updateCursor();
+                                    noteListAdapter.mActionMode.finish();
                                     tempNote.close();
                                 }
                             })
                             .setNegativeButton(R.string.cancel, null)
                             .show();
                 }else {
-//                    onNoteEdit();
                     noteListFragment.onNoteEdit();
                 }
             }
@@ -152,14 +111,7 @@ public class ListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_list, container, false);
-//        notFoundTextView = view.findViewById(R.id.result_not_found);
-//        recyclerView = view.findViewById(R.id.recycler_view);
-//        recyclerView.setAdapter(listAdapter);
-//        recyclerView.setHasFixedSize(true);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
-        return view;
+        return inflater.inflate(R.layout.fragment_list, container, false);
     }
 
 
@@ -202,37 +154,26 @@ public class ListFragment extends Fragment {
             public boolean onQueryTextChange(String newText) {
 
                 String result = searchHelper.searchResult(newText);
-                NoteListFragment noteListFragment = listPageAdapter.noteListFragment;
-                ListAdapter listAdapter = noteListFragment.getListAdapter();
+                NoteListAdapter noteListAdapter = noteListFragment.getNoteListAdapter();
 
                 //If search result is not empty, update the cursor to show result
                 if (!result.equals("")) {
-//                    recyclerView.setVisibility(View.VISIBLE);
                     noteListFragment.recyclerView.setVisibility(View.VISIBLE);
-//                    notFoundTextView.setVisibility(View.INVISIBLE);
                     noteListFragment.notFoundTextView.setVisibility(View.INVISIBLE);
-//                    listAdapter.updateCursorForSearch(result);
-                    listAdapter.updateCursorForSearch(result);
-//                    listAdapter.notifyDataSetChanged();
-                    listAdapter.notifyDataSetChanged();
+                    noteListAdapter.updateCursorForSearch(result);
+                    noteListAdapter.notifyDataSetChanged();
 
                 } else if (!newText.equals("")) {
                     //If search result is empty and the search input is not empty, show result not found
-//                    recyclerView.setVisibility(View.INVISIBLE);
                     noteListFragment.recyclerView.setVisibility(View.INVISIBLE);
-//                    notFoundTextView.setVisibility(View.VISIBLE);
                     noteListFragment.notFoundTextView.setVisibility(View.VISIBLE);
 
                 } else {
                     //after finish searching and user empty the search input, reset the view
-//                    recyclerView.setVisibility(View.VISIBLE);
                     noteListFragment.recyclerView.setVisibility(View.VISIBLE);
-//                    notFoundTextView.setVisibility(View.INVISIBLE);
                     noteListFragment.notFoundTextView.setVisibility(View.INVISIBLE);
-//                    listAdapter.updateCursor();
-                    listAdapter.updateCursor();
-//                    listAdapter.notifyDataSetChanged();
-                    listAdapter.notifyDataSetChanged();
+                    noteListAdapter.updateCursor();
+                    noteListAdapter.notifyDataSetChanged();
                 }
                 return true;
             }
@@ -242,20 +183,16 @@ public class ListFragment extends Fragment {
 
             @Override
             public boolean onMenuItemActionExpand(MenuItem menuItem) {
-                NoteListFragment noteListFragment = listPageAdapter.noteListFragment;
-                ListAdapter listAdapter = noteListFragment.getListAdapter();
+                NoteListAdapter noteListAdapter = noteListFragment.getNoteListAdapter();
 
                 showStarred.setVisible(false);
                 settings.setVisible(false);
 
-//                showingStarred = false;
                 noteListFragment.showingStarred = false;
                 showStarred.setIcon(R.drawable.sharp_star_border_24);
                 showStarred.setTitle(getResources().getString(R.string.show_starred));
-//                listAdapter.updateCursor();
-                listAdapter.updateCursor();
-//                listAdapter.notifyDataSetChanged();
-                listAdapter.notifyDataSetChanged();
+                noteListAdapter.updateCursor();
+                noteListAdapter.notifyDataSetChanged();
                 return true;
             }
 
@@ -273,31 +210,24 @@ public class ListFragment extends Fragment {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
 
-                NoteListFragment noteListFragment = listPageAdapter.noteListFragment;
-                ListAdapter listAdapter = noteListFragment.getListAdapter();
+                NoteListAdapter noteListAdapter = noteListFragment.getNoteListAdapter();
 
-//                if (!showingStarred) {
                 if (!noteListFragment.showingStarred) {
                     // to show only starred notes
-//                    showingStarred = true;
                     noteListFragment.showingStarred = true;
                     showStarred.setIcon(R.drawable.baseline_star_24);
                     showStarred.setTitle(getResources().getString(R.string.show_all));
 
-//                    listAdapter.updateCursorForStarred();
-//                    listAdapter.notifyDataSetChanged();
-                    listAdapter.updateCursorForStarred();
-                    listAdapter.notifyDataSetChanged();
+                    noteListAdapter.updateCursorForStarred();
+                    noteListAdapter.notifyDataSetChanged();
                 } else {
                     // to show all notes
-//                    showingStarred = false;
                     noteListFragment.showingStarred = false;
                     showStarred.setIcon(R.drawable.sharp_star_border_24);
                     showStarred.setTitle(getResources().getString(R.string.show_starred));
-//                    listAdapter.updateCursor();
-//                    listAdapter.notifyDataSetChanged();
-                    listAdapter.updateCursor();
-                    listAdapter.notifyDataSetChanged();
+
+                    noteListAdapter.updateCursor();
+                    noteListAdapter.notifyDataSetChanged();
                 }
                 return true;
             }
@@ -306,54 +236,19 @@ public class ListFragment extends Fragment {
     }
 
 
-    @Override
-    public void onResume() {
-        NoteListFragment noteListFragment = listPageAdapter.noteListFragment;
-        ListAdapter listAdapter = noteListFragment.getListAdapter();
-        try {
-            listAdapter.updateCursor();
-            listAdapter.notifyDataSetChanged();
-        }catch (Exception e){
-            Log.e(getClass().getName(),"onResume,   updating cursor", e);
-        }
 
-//        listAdapter.updateCursor();
-//        listAdapter.notifyDataSetChanged();
-        super.onResume();
-    }
 
     @Override
     public void onStop() {
-
-        NoteListFragment noteListFragment = listPageAdapter.noteListFragment;
-        ListAdapter listAdapter = noteListFragment.getListAdapter();
-//        if (listAdapter.mActionMode!=null) {
-//            listAdapter.mActionMode.finish();
-//        }
-        if (listAdapter.mActionMode!=null) {
-            listAdapter.mActionMode.finish();
-        }
-
         // Clear all filter
         search.collapseActionView();
-//        showingStarred = false;
-        noteListFragment.showingStarred = false;
         showStarred.setIcon(R.drawable.sharp_star_border_24);
         showStarred.setTitle(getResources().getString(R.string.show_starred));
         super.onStop();
     }
 
-    public void onNoteEdit(long noteId) {
-        Intent startNoteActivity = new Intent();
-        startNoteActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.Edit");
-        startNoteActivity.putExtra(EditFragment.EXTRA_NOTE_ID, noteId);
-        startActivity(startNoteActivity);
-    }
 
-    public void onNoteEdit() {
-        Intent startNoteActivity = new Intent();
-        startNoteActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.Edit");
-        startActivity(startNoteActivity);
+    void updateNoteListFragment(String tag) {
+        noteListFragment = (NoteListFragment)getChildFragmentManager().findFragmentByTag(tag);
     }
-
 }

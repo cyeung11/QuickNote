@@ -28,7 +28,7 @@ import java.util.Calendar;
 import static android.app.Activity.RESULT_CANCELED;
 import static android.content.Context.MODE_PRIVATE;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
-import static com.jkjk.quicknote.editscreen.EditFragment.EXTRA_NOTE_ID;
+import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.widget.AppWidgetService.IS_FROM_WIDGET;
 
@@ -108,7 +108,7 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
                 remoteViews.setInt(R.id.widget, "setBackgroundColor", color);
 
                 Intent startAppIntent = new Intent();
-                startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.Edit")
+                startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.NoteEdit")
                         .putExtra(EXTRA_NOTE_ID, cursorForWidget.getLong(0)).putExtra(IS_FROM_WIDGET, true)
                         .setFlags(FLAG_ACTIVITY_CLEAR_TOP);
                 PendingIntent pendingIntent = PendingIntent.getActivity(activity,(int)cursorForWidget.getLong(0),startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
