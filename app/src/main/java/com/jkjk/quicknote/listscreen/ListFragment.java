@@ -5,6 +5,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -16,6 +17,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,6 +26,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+import com.google.android.gms.ads.MobileAds;
+
 
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
@@ -37,8 +41,15 @@ import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 
 public class ListFragment extends Fragment{
 
+    public static final String REWARD_VIDEO_AD_ID = "ca-app-pub-3940256099942544/5224354917";
+    public static final String ADMOB_ID = "ca-app-pub-8833570917041672~2236425579";
+    public static boolean isAllowedToUse = false;
+    // 0 stands for note , 1 stands for task
+    private int defaultPage, currentPage;
+
     private MenuItem showStarred, search, settings;
     private NoteListFragment noteListFragment;
+    private TaskListFragment taskListFragment;
 
 
     public ListFragment() {
@@ -55,6 +66,8 @@ public class ListFragment extends Fragment{
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        MobileAds.initialize(getActivity(),ADMOB_ID);
+
         android.support.v7.widget.Toolbar listMenu = getActivity().findViewById(R.id.list_menu);
         ((AppCompatActivity) getActivity()).setSupportActionBar(listMenu);
         ((AppCompatActivity) getActivity()).getSupportActionBar().setElevation(0);
@@ -66,6 +79,33 @@ public class ListFragment extends Fragment{
         TabLayout tabLayout = getActivity().findViewById(R.id.list_tab);
         tabLayout.setupWithViewPager(viewPager);
 
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        defaultPage =  Integer.valueOf(sharedPref.getString(getString(R.string.default_screen), "0"));
+
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                // if default page is note, position 0 will be note, so current page is 0
+                if (defaultPage==0) {
+                    currentPage = position;
+                    // if default page is task, position 0 will be task, so current page is 1
+                } else if (position==0){
+                    currentPage = 1;
+                } else if (position==1){
+                    currentPage = 0;
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
 
         FloatingActionButton addNote =  getActivity().findViewById(R.id.add_note);
         addNote.setImageDrawable(getResources().getDrawable(R.drawable.sharp_add_24));
@@ -73,7 +113,7 @@ public class ListFragment extends Fragment{
         addNote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                // button served as delete function
                 if (noteListFragment.getNoteListAdapter().inActionMode){
                     new AlertDialog.Builder(view.getContext()).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete_list)
                             .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
@@ -84,7 +124,7 @@ public class ListFragment extends Fragment{
 
                                     // delete note from  selectedItems
                                     ArrayList<Integer> mSelect = noteListAdapter.getSelected();
-                                    Cursor tempNote = noteListAdapter.getCursor();
+                                    Cursor tempNote = noteListAdapter.getNoteCursor();
                                     for (int removedPosition : mSelect) {
                                         tempNote.moveToPosition(removedPosition);
                                         String removedId = tempNote.getString(0);
@@ -100,8 +140,10 @@ public class ListFragment extends Fragment{
                             })
                             .setNegativeButton(R.string.cancel, null)
                             .show();
-                }else {
+                }else if (currentPage==0) {
                     noteListFragment.onNoteEdit();
+                }else if (currentPage==1){
+                    taskListFragment.onTaskEdit();
                 }
             }
         });
@@ -250,5 +292,9 @@ public class ListFragment extends Fragment{
 
     void updateNoteListFragment(String tag) {
         noteListFragment = (NoteListFragment)getChildFragmentManager().findFragmentByTag(tag);
+    }
+
+    void updateTaskListFragment(String tag) {
+        taskListFragment = (TaskListFragment) getChildFragmentManager().findFragmentByTag(tag);
     }
 }

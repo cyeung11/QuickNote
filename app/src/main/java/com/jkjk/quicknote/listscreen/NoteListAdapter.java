@@ -39,7 +39,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
     Boolean inActionMode = false;
     ActionMode mActionMode;
     private ArrayList<Integer> selectedItems = new ArrayList<>();
-    private Cursor cursor;
+    private Cursor noteCursor;
     private int selectedNotStarred;
     private int notStarredCount;
 
@@ -230,8 +230,8 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                                             // When all selected notes are starred, un-starred them
 
                                             for (int unstarredPosition : selectedItems) {
-                                                cursor.moveToPosition(unstarredPosition);
-                                                String unstarredId = cursor.getString(0);
+                                                noteCursor.moveToPosition(unstarredPosition);
+                                                String unstarredId = noteCursor.getString(0);
                                                 values.put("starred", 0);
                                                 //Update
                                                 MyApplication.database.update(DATABASE_NAME, values, "_id='" + unstarredId + "'", null);
@@ -245,8 +245,8 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                                             // When some of the selected notes are not starred, starred them all again
 
                                             for (int starredPosition : selectedItems) {
-                                                cursor.moveToPosition(starredPosition);
-                                                String starredId = cursor.getString(0);
+                                                noteCursor.moveToPosition(starredPosition);
+                                                String starredId = noteCursor.getString(0);
                                                 values.put("starred", 1);
                                                 //Update
                                                 MyApplication.database.update(DATABASE_NAME, values, "_id='" + starredId + "'", null);
@@ -289,7 +289,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
     @Override
     public int getItemCount() {
         //Obtain all data from database provided from Application class and get count
-        itemCount = cursor.getCount();
+        itemCount = noteCursor.getCount();
         return itemCount;
     }
 
@@ -299,9 +299,12 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
         final Context context = holder.cardView.getContext();
 
         holder.noteTitle.setTypeface(Typeface.SERIF);
-        holder.noteTitle.setTextColor(Color.BLACK);
-        holder.noteContent.setTextColor(Color.GRAY);
+        holder.noteContent.setTextColor(Color.DKGRAY);
+        holder.noteContent.setTypeface(Typeface.DEFAULT);
+        holder.noteTime.setTypeface(Typeface.DEFAULT);
+        holder.noteTime.setTextColor(Color.DKGRAY);
 
+        // Reset card background color
         if (selectedItems.contains(holder.getAdapterPosition())) {
             holder.cardView.setCardBackgroundColor(Color.LTGRAY);
         } else {
@@ -309,21 +312,21 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
         }
 
 
-        //Extract data from cursor
-        if (cursor != null) {
+        //Extract data from noteCursor
+        if (noteCursor != null) {
             try {
-                cursor.moveToPosition(position);
+                noteCursor.moveToPosition(position);
 
-                holder.noteId = cursor.getLong(0);
+                holder.noteId = noteCursor.getLong(0);
 
-                holder.noteTitle.setText(cursor.getString(1).trim());
+                holder.noteTitle.setText(noteCursor.getString(1).trim());
 
-                holder.noteContent.setText(cursor.getString(2).trim());
+                holder.noteContent.setText(noteCursor.getString(2).trim());
 
                 //Time formatting
-                long time = (Long.parseLong(cursor.getString(3)));
+                long time = (Long.parseLong(noteCursor.getString(3)));
                 String shownTime;
-                // Get current time from Calendar and check how long aga was the note edited
+                // Get current time from Calendar and check how long ago was the note edited
                 long timeSpan = Calendar.getInstance().getTimeInMillis() - time;
 
                 if (timeSpan < 300000L){
@@ -346,18 +349,20 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 holder.noteTime.setText(shownTime);
 
                 // Show starred note
-                if (cursor.getInt(4) == 1) {
+                if (noteCursor.getInt(4) == 1) {
                     holder.isStarred = true;
                     holder.noteTitle.setTypeface(Typeface.SERIF, Typeface.BOLD_ITALIC);
-                    holder.noteTitle.setTextColor(Color.parseColor("#0099cc"));
-                    holder.noteContent.setTextColor(Color.parseColor("#000000"));
+                    holder.noteContent.setTextColor(Color.BLACK);
+                    holder.noteContent.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+                    holder.noteTime.setTextColor(Color.BLACK);
+                    holder.noteTime.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
                 }else {
                     holder.isStarred = false;
                 }
 
             } catch (Exception e) {
                 Toast.makeText(context, R.string.error_loading, Toast.LENGTH_SHORT).show();
-                Log.e(this.getClass().getName(), "error", e);
+                Log.e(this.getClass().getName(), "Loading note into card view", e);
             }
         }
 
@@ -366,7 +371,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
     @Override
     public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onDetachedFromRecyclerView(recyclerView);
-        cursor.close();
+        noteCursor.close();
     }
 
     private boolean isYesterday(long time) {
@@ -392,22 +397,22 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
     }
 
     public void updateCursor(){
-        cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, null, null, null
+        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, null, null, null
                 , null, "time DESC");
     }
 
     public void updateCursorForSearch(String result){
-        cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "_id in ("+result+")", null, null
+        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "_id in ("+result+")", null, null
                 , null, "time DESC");
     }
 
     public void updateCursorForStarred(){
-        cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "starred = 1", null, null
+        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "starred = 1", null, null
                 , null, "time DESC");
     }
 
-    public Cursor getCursor(){
-        return cursor;
+    public Cursor getNoteCursor(){
+        return noteCursor;
     }
 
 

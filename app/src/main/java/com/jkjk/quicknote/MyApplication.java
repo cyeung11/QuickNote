@@ -14,7 +14,7 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        helper = new DatabaseHelper(this, "note_db", null, 2);
+        helper = new DatabaseHelper(this, "note_db", null, 3);
         database = helper.getWritableDatabase();
     }
 

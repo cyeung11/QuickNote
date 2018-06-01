@@ -162,7 +162,7 @@ public class NoteEditFragment extends Fragment {
                                     isStarred = 1;
                                     String noteTitle = titleInFragment.getText().toString().trim();
                                     if (noteTitle.length()<1){
-                                        noteTitle = getActivity().getResources().getString(R.string.untitled);
+                                        noteTitle = getActivity().getResources().getString(R.string.untitled_note);
                                     }
                                     values.put("title", noteTitle);
                                     values.put("content", contentInFragment.getText().toString());
@@ -262,12 +262,15 @@ public class NoteEditFragment extends Fragment {
         ContentValues values = new ContentValues();
         String noteTitle = titleInFragment.getText().toString().trim();
         if (noteTitle.length()<1){
-            noteTitle = getActivity().getResources().getString(R.string.untitled);
+            noteTitle = getString(R.string.untitled_note);
         }
         values.put("title", noteTitle);
         values.put("content", contentInFragment.getText().toString());
         values.put("time", Long.toString(Calendar.getInstance().getTimeInMillis()));
         values.put("starred", isStarred);
+        values.put("type", 0);
+        values.put("urgency", 4);
+        values.put("done", 3);
         if (!newNote) {
             MyApplication.database.update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
         }else {

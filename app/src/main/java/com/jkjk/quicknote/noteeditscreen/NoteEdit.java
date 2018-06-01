@@ -21,7 +21,7 @@ public class NoteEdit extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_edit);
         long noteId;
-        final String fragmentTag = "editFragmentTag";
+        final String fragmentTag = "noteEditFragmentTag";
 
         if (savedInstanceState == null) {
             //Case when the activity is newly created
@@ -70,7 +70,7 @@ public class NoteEdit extends AppCompatActivity {
                         Toast.makeText(getBaseContext(),R.string.saved, Toast.LENGTH_SHORT).show();
                         noteEditFragment.updateAllWidget();
                         noteEditFragment.hasNoteSave = true;
-                        finish();
+                        NoteEdit.super.onBackPressed();
                     }
                 })
                 .setNegativeButton(R.string.cancel, null)

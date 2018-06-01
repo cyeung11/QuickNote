@@ -13,8 +13,8 @@ public class LauncherShortcuts extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final Intent intent = getIntent();
-        final String action = intent.getAction();
+        Intent intent = getIntent();
+        String action = intent.getAction();
 
         if (Intent.ACTION_CREATE_SHORTCUT.equals(action)) {
             setupShortcut();
@@ -25,7 +25,7 @@ public class LauncherShortcuts extends Activity {
     private void setupShortcut() {
         // set up the shortcut intent.
         Intent shortcutIntent = new Intent();
-        shortcutIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.NoteEdit").setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        shortcutIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.noteeditscreen.NoteEdit").setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         // Then, set up the container intent (the response to the caller)
         Intent intent = new Intent();
         intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);

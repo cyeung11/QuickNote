@@ -26,11 +26,9 @@ public class NoteListFragment extends Fragment {
     boolean showingStarred = false;
     RecyclerView recyclerView;
 
-
     public NoteListFragment() {
         // Required empty public constructor
     }
-
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -84,14 +82,14 @@ public class NoteListFragment extends Fragment {
 
     public void onNoteEdit(long noteId) {
         Intent startNoteActivity = new Intent();
-        startNoteActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.NoteEdit");
+        startNoteActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.noteeditscreen.NoteEdit");
         startNoteActivity.putExtra(NoteEditFragment.EXTRA_NOTE_ID, noteId);
         startActivity(startNoteActivity);
     }
 
     public void onNoteEdit() {
         Intent startNoteActivity = new Intent();
-        startNoteActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.NoteEdit");
+        startNoteActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.noteeditscreen.NoteEdit");
         startActivity(startNoteActivity);
     }
 

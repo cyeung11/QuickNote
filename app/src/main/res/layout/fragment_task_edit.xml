@@ -7,128 +7,165 @@
     tools:context=".taskeditscreen.TaskEditFragment">
 
 
-
-
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:orientation="horizontal">
-
-            <EditText
-                android:id="@+id/title_edit_fragment"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="8dp"
-                android:background="@android:color/transparent"
-                android:fontFamily="serif"
-                android:hint="@string/task_hint"
-                android:inputType="textCapSentences"
-                android:textSize="18sp" />
+            android:orientation="vertical">
 
             <ImageButton
-                android:id="@+id/edit_show_drop_menu"
+                android:id="@+id/task_show_drop_menu"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:srcCompat="@drawable/sharp_more_vert_24"
                 android:contentDescription="@string/menu"
                 android:background="@android:color/transparent"
-                android:layout_gravity="center_vertical"
+                android:layout_gravity="end"
                 android:focusable="false"
-                android:layout_marginStart="8dp" />
+                android:layout_marginTop="12dp" />
 
-        </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/todo_title_caption"
+                android:textColor="@color/colorPrimary"
+                android:layout_marginBottom="8dp"/>
 
-        <view
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:background="@android:color/darker_gray"/>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:orientation="horizontal">
+            <EditText
+                android:id="@+id/task_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
+                android:background="@android:color/transparent"
+                android:fontFamily="serif"
+                android:hint="@string/task_hint"
+                android:maxLines="1"
+                android:inputType="textCapSentences" />
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/mark_as_done"
+                    android:layout_weight="1"/>
+
+                <Switch
+                    android:id="@+id/task_done"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/urgency_caption"
+                android:layout_marginBottom="8dp"
+                android:textColor="@color/colorPrimary"/>
+
+            <Spinner
+                android:id="@+id/task_urgency"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="20dp"/>
+
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/due_date_caption"
+                android:layout_marginBottom="8dp"
+                android:textColor="@color/colorPrimary"/>
 
             <EditText
                 android:id="@+id/task_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minWidth="160dp"
-                android:layout_marginEnd="16dp"
-                android:hint="@string/date"
+                android:hint="@string/date_hint"
                 android:background="@android:color/transparent"
                 android:inputType="date"
-                android:textSize="16sp" />
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"/>
 
-            <!--<Switch-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:text="@string/all_day"/>-->
-            <!---->
-        </LinearLayout>
-
-        <EditText
-            android:id="@+id/task_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:minWidth="160dp"
-            android:hint="@string/time"
-            android:background="@android:color/transparent"
-            android:inputType="time"
-            android:textSize="16sp" />
-
-        <view
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:background="@android:color/darker_gray"/>
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:fillViewport="true">
-
-            <EditText
-                android:id="@+id/remark_edit_fragment"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/all_day"
+                    android:layout_weight="1"/>
+
+                <Switch
+                    android:id="@+id/task_all_day"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/task_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
+                android:minWidth="160dp"
+                android:hint="@string/time_hint"
+                android:background="@android:color/transparent"
+                android:inputType="time" />
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/remark_caption"
+                android:layout_marginBottom="8dp"
+                android:textColor="@color/colorPrimary"/>
+
+
+
+            <EditText
+                android:id="@+id/task_remark"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
                 android:background="@android:color/transparent"
                 android:gravity="top"
                 android:hint="@string/remark_hint"
-                android:inputType="textCapSentences|textMultiLine"
-                android:textSize="16sp" />
+                android:inputType="textCapSentences|textMultiLine" />
 
-        </ScrollView>
-
-
-    </LinearLayout>
+        </LinearLayout>
 
 
+    </ScrollView>
 
 
 

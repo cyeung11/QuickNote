@@ -33,6 +33,34 @@
             android:gravity="center_vertical"
             android:layout_marginBottom="2dp">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/task_urgency"
+                    android:maxLines="1"
+                    android:layout_weight="1"
+                    android:textSize="16sp"
+                    android:textColor="@android:color/holo_red_light"
+                    android:text="URGENT" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/task_date"
+                    android:maxLines="1"
+                    android:gravity="end"
+                    android:textSize="14sp"
+                    android:textColor="@android:color/darker_gray"
+                    android:text="This Friday"
+                    android:minWidth="100dp"/>
+
+            </LinearLayout>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -43,14 +71,6 @@
                 android:textColor="@android:color/black"
                 android:text="Some sample text of the title"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/task_date"
-                android:maxLines="1"
-                android:textSize="14sp"
-                android:textColor="@android:color/darker_gray"
-                android:text="Due date: this friday" />
 
         </LinearLayout>
 

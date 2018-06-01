@@ -9,10 +9,12 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +32,7 @@ import static android.content.Context.MODE_PRIVATE;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
+import static com.jkjk.quicknote.listscreen.ListFragment.isAllowedToUse;
 import static com.jkjk.quicknote.widget.AppWidgetService.IS_FROM_WIDGET;
 
 public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder> {
@@ -99,6 +102,10 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
 
             @Override
             public void onClick(View view) {
+
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(view.getContext());
+                String widgetSize = sharedPref.getString(view.getResources().getString(R.string.font_size_widget),"m");
+
                 RemoteViews remoteViews = new RemoteViews("com.jkjk.quicknote", R.layout.note_preview);
 
                 //Obtain correspond data according to the position the user click. As both the recyclerview and cursor are sorted chronically, position equals to cursor index
@@ -106,9 +113,34 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
                 remoteViews.setTextViewText(R.id.widget_title, cursorForWidget.getString(1));
                 remoteViews.setTextViewText(R.id.widget_content, cursorForWidget.getString(2));
                 remoteViews.setInt(R.id.widget, "setBackgroundColor", color);
+                if (color != Color.parseColor("#FFFFFF")){
+                    isAllowedToUse = false;
+                }
+
+                switch (widgetSize){
+                    case "s":
+                        remoteViews.setTextViewTextSize(R.id.widget_title, TypedValue.COMPLEX_UNIT_SP,16);
+                        remoteViews.setTextViewTextSize(R.id.widget_content, TypedValue.COMPLEX_UNIT_SP,14);
+                        break;
+                    case "m":
+                        remoteViews.setTextViewTextSize(R.id.widget_title, TypedValue.COMPLEX_UNIT_SP,18);
+                        remoteViews.setTextViewTextSize(R.id.widget_content, TypedValue.COMPLEX_UNIT_SP,16);
+                        break;
+                    case "l":
+                        remoteViews.setTextViewTextSize(R.id.widget_title, TypedValue.COMPLEX_UNIT_SP,22);
+                        remoteViews.setTextViewTextSize(R.id.widget_content, TypedValue.COMPLEX_UNIT_SP,20);
+                        break;
+                    case "xl":
+                        remoteViews.setTextViewTextSize(R.id.widget_title, TypedValue.COMPLEX_UNIT_SP,26);
+                        remoteViews.setTextViewTextSize(R.id.widget_content, TypedValue.COMPLEX_UNIT_SP,24);
+                        break;
+                    default:
+                        remoteViews.setTextViewTextSize(R.id.widget_title, TypedValue.COMPLEX_UNIT_SP,18);
+                        remoteViews.setTextViewTextSize(R.id.widget_content, TypedValue.COMPLEX_UNIT_SP,16);
+                }
 
                 Intent startAppIntent = new Intent();
-                startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.NoteEdit")
+                startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.noteeditscreen.NoteEdit")
                         .putExtra(EXTRA_NOTE_ID, cursorForWidget.getLong(0)).putExtra(IS_FROM_WIDGET, true)
                         .setFlags(FLAG_ACTIVITY_CLEAR_TOP);
                 PendingIntent pendingIntent = PendingIntent.getActivity(activity,(int)cursorForWidget.getLong(0),startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);

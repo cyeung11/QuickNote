@@ -3,8 +3,10 @@ package com.jkjk.quicknote.widget;
 import android.app.SearchManager;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,16 +15,27 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.reward.RewardItem;
+import com.google.android.gms.ads.reward.RewardedVideoAd;
+import com.google.android.gms.ads.reward.RewardedVideoAdListener;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.SearchHelper;
+
+import static com.jkjk.quicknote.listscreen.ListFragment.REWARD_VIDEO_AD_ID;
+import static com.jkjk.quicknote.listscreen.ListFragment.isAllowedToUse;
 
 
 /**
  * The configuration screen for the {@link NoteWidget NoteWidget} AppWidget.
  */
-public class NoteWidgetConfigureActivity extends AppCompatActivity {
+public class NoteWidgetConfigureActivity extends AppCompatActivity implements RewardedVideoAdListener {
 
     private int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private WidgetAdapter widgetAdapter;
@@ -30,6 +43,8 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity {
     private MenuItem showStarred, search;
     private TextView notFoundTextView;
     private boolean showingStarred;
+    private RewardedVideoAd mRewardedVideoAd;
+    private RadioButton white;
 
     public NoteWidgetConfigureActivity() {
         super();
@@ -38,6 +53,10 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+
+        mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(this);
+        mRewardedVideoAd.setRewardedVideoAdListener(this);
+        loadRewardedVideoAd();
 
         // Find the widget id from the intent.
         Intent intent = getIntent();
@@ -64,7 +83,25 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity {
         recyclerViewForWidget.setAdapter(widgetAdapter);
 
         notFoundTextView =  findViewById(R.id.widget_config_result_not_found);
+        white = findViewById(R.id.color_white);
+    }
 
+    @Override
+    protected void onResume() {
+        mRewardedVideoAd.resume(this);
+        super.onResume();
+    }
+
+    @Override
+    protected void onStop() {
+        mRewardedVideoAd.pause(this);
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        mRewardedVideoAd.destroy(this);
+        super.onDestroy();
     }
 
     @Override
@@ -157,7 +194,67 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity {
     }
 
     public void onColorSelected(View view) {
-        widgetAdapter.onColorSelected(view);
+        if (isAllowedToUse) {
+            widgetAdapter.onColorSelected(view);
+        } else {
+        new AlertDialog.Builder(this).setTitle(R.string.premium_function).setMessage(R.string.ads_prompt)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (mRewardedVideoAd.isLoaded()) {
+                            mRewardedVideoAd.show();
+                        } else {
+                            Toast.makeText(getBaseContext(),R.string.ads_wait,Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }).setNegativeButton(R.string.cancel, null).show();
+        }
+    }
+
+    private void loadRewardedVideoAd() {
+        mRewardedVideoAd.loadAd(REWARD_VIDEO_AD_ID, new AdRequest.Builder().build());
+    }
+
+    @Override
+    public void onRewardedVideoAdLoaded() {
+
+    }
+
+    @Override
+    public void onRewardedVideoAdOpened() {
+
+    }
+
+    @Override
+    public void onRewardedVideoStarted() {
+
+    }
+
+    @Override
+    public void onRewardedVideoAdClosed() {
+        loadRewardedVideoAd();
+        white.setChecked(true);
+    }
+
+    @Override
+    public void onRewarded(RewardItem rewardItem) {
+        Toast.makeText(this, R.string.ads_complete, Toast.LENGTH_SHORT).show();
+        isAllowedToUse = true;
+    }
+
+    @Override
+    public void onRewardedVideoAdLeftApplication() {
+
+    }
+
+    @Override
+    public void onRewardedVideoAdFailedToLoad(int i) {
+
+    }
+
+    @Override
+    public void onRewardedVideoCompleted() {
+
     }
 }
 

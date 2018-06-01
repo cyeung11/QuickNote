@@ -4,14 +4,14 @@
     <PreferenceCategory
         android:title="@string/user_interface_cap">
 
-        <ListPreference
-            android:key="@string/default_screen"
-            android:title="@string/default_screen"
-            android:summary="@string/default_screen_summary"
-            android:dialogTitle="@string/default_screen"
-            android:entries="@array/default_screen"
-            android:entryValues="@array/default_screen_value"
-            android:defaultValue="0" />
+        <!--<ListPreference-->
+        <!--android:key="@string/default_screen"-->
+        <!--android:title="@string/default_screen"-->
+        <!--android:summary="@string/default_screen_summary"-->
+        <!--android:dialogTitle="@string/default_screen"-->
+        <!--android:entries="@array/default_screen"-->
+        <!--android:entryValues="@array/default_screen_value"-->
+        <!--android:defaultValue="0" />-->
 
         <ListPreference
             android:key="@string/font_size_main_screen"
@@ -31,12 +31,21 @@
             android:entryValues="@array/font_size_editing_screen_value"
             android:defaultValue="@string/font_size_default" />
 
-        <SwitchPreference
-            android:key="@string/notification_pin"
-            android:title="@string/notification_pin"
-            android:summary="@string/notification_pin_summary"
-            android:dependency="@string/notification_pin"
-            android:defaultValue="false" />
+        <ListPreference
+            android:key="@string/font_size_widget"
+            android:title="@string/font_size_widget"
+            android:summary="@string/font_size_widget_summary"
+            android:dialogTitle="@string/font_size_widget"
+            android:entries="@array/font_size"
+            android:entryValues="@array/font_size_widget_value"
+            android:defaultValue="@string/font_size_default" />
+
+        <!--<SwitchPreference-->
+        <!--android:key="@string/notification_pin"-->
+        <!--android:title="@string/notification_pin"-->
+        <!--android:summary="@string/notification_pin_summary"-->
+        <!--android:dependency="@string/notification_pin"-->
+        <!--android:defaultValue="false" />-->
 
     </PreferenceCategory>
 
@@ -54,35 +63,35 @@
             android:key="@string/restore">
         </Preference>
 
-        <SwitchPreference
-            android:key="@string/auto_back_up"
-            android:title="@string/auto_back_up"
-            android:summary="@string/auto_back_up_summary"
-            android:dependency="@string/auto_back_up"
-            android:defaultValue="false" />
+        <!--<SwitchPreference-->
+        <!--android:key="@string/auto_back_up"-->
+        <!--android:title="@string/auto_back_up"-->
+        <!--android:summary="@string/auto_back_up_summary"-->
+        <!--android:dependency="@string/auto_back_up"-->
+        <!--android:defaultValue="false" />-->
 
 
-        <ListPreference
-            android:key="@string/back_up_frequency"
-            android:title="@string/back_up_frequency"
-            android:summary="@string/auto_back_up_frequency_summary"
-            android:dependency="@string/auto_back_up"
-            android:dialogTitle="@string/back_up_frequency"
-            android:entries="@array/back_up_frequency"
-            android:entryValues="@array/back_up_frequency_value"
-            android:defaultValue="7" />
-
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        android:title="@string/other_cap">
-
-        <Preference android:title="@string/report"
-            android:summary="@string/report_summary">
-            <intent android:action="android.intent.action.SENDTO"
-                android:data="mailto:cyeung11@gmail.com" />
-        </Preference>
+        <!--<ListPreference-->
+        <!--android:key="@string/back_up_frequency"-->
+        <!--android:title="@string/back_up_frequency"-->
+        <!--android:summary="@string/auto_back_up_frequency_summary"-->
+        <!--android:dependency="@string/auto_back_up"-->
+        <!--android:dialogTitle="@string/back_up_frequency"-->
+        <!--android:entries="@array/back_up_frequency"-->
+        <!--android:entryValues="@array/back_up_frequency_value"-->
+        <!--android:defaultValue="7" />-->
 
     </PreferenceCategory>
+
+    <!--<PreferenceCategory-->
+    <!--android:title="@string/other_cap">-->
+
+    <!--<Preference android:title="@string/report"-->
+    <!--android:summary="@string/report_summary">-->
+    <!--<intent android:action="android.intent.action.SENDTO"-->
+    <!--android:data="mailto:cyeung11@gmail.com" />-->
+    <!--</Preference>-->
+
+    <!--</PreferenceCategory>-->
 
 </PreferenceScreen>

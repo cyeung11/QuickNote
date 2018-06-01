@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.support.v7.preference.PreferenceManager;
+import android.util.TypedValue;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
@@ -38,6 +40,9 @@ public class AppWidgetService extends IntentService {
 
         if (intent!=null) {
 
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+            String widgetSize = sharedPref.getString(getString(R.string.font_size_widget),"m");
+
             int[] appWidgetIds = intent.getIntArrayExtra(EXTRA_APPWIDGET_ID);
             int[] noteId  = new int[appWidgetIds.length];
             int[] color = new int[appWidgetIds.length];
@@ -64,10 +69,32 @@ public class AppWidgetService extends IntentService {
                         views[i].setTextViewText(R.id.widget_title, cursorForWidget.getString(1));
                         views[i].setTextViewText(R.id.widget_content, cursorForWidget.getString(2));
                         views[i].setInt(R.id.widget, "setBackgroundColor", color[i]);
+
+                        switch (widgetSize){
+                            case "s":
+                                views[i].setTextViewTextSize(R.id.widget_title, TypedValue.COMPLEX_UNIT_SP,16);
+                                views[i].setTextViewTextSize(R.id.widget_content, TypedValue.COMPLEX_UNIT_SP,14);
+                                break;
+                            case "m":
+                                views[i].setTextViewTextSize(R.id.widget_title, TypedValue.COMPLEX_UNIT_SP,18);
+                                views[i].setTextViewTextSize(R.id.widget_content, TypedValue.COMPLEX_UNIT_SP,16);
+                                break;
+                            case "l":
+                                views[i].setTextViewTextSize(R.id.widget_title, TypedValue.COMPLEX_UNIT_SP,22);
+                                views[i].setTextViewTextSize(R.id.widget_content, TypedValue.COMPLEX_UNIT_SP,20);
+                                break;
+                            case "xl":
+                                views[i].setTextViewTextSize(R.id.widget_title, TypedValue.COMPLEX_UNIT_SP,26);
+                                views[i].setTextViewTextSize(R.id.widget_content, TypedValue.COMPLEX_UNIT_SP,24);
+                                break;
+                            default:
+                                views[i].setTextViewTextSize(R.id.widget_title, TypedValue.COMPLEX_UNIT_SP,18);
+                                views[i].setTextViewTextSize(R.id.widget_content, TypedValue.COMPLEX_UNIT_SP,16);
+                        }
                     }
 
                 Intent startAppIntent = new Intent();
-                startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.editscreen.NoteEdit")
+                startAppIntent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.noteeditscreen.NoteEdit")
                         .putExtra(EXTRA_NOTE_ID, cursorForWidget.getLong(0)).putExtra(IS_FROM_WIDGET, true)
                         .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 PendingIntent pendingIntent = PendingIntent.getActivity(this,(int)cursorForWidget.getLong(0),startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
