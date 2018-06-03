@@ -8,11 +8,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -41,6 +39,10 @@ import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 
 public class ListFragment extends Fragment{
 
+    /*TODO change when release
+    debug id: ca-app-pub-3940256099942544/5224354917
+    real id ca-app-pub-8833570917041672/9209453063
+     */
     public static final String REWARD_VIDEO_AD_ID = "ca-app-pub-3940256099942544/5224354917";
     public static final String ADMOB_ID = "ca-app-pub-8833570917041672~2236425579";
     public static boolean isAllowedToUse = false;
@@ -70,14 +72,13 @@ public class ListFragment extends Fragment{
 
         android.support.v7.widget.Toolbar listMenu = getActivity().findViewById(R.id.list_menu);
         ((AppCompatActivity) getActivity()).setSupportActionBar(listMenu);
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setElevation(0);
 
         ListPageAdapter listPageAdapter = new ListPageAdapter(getContext(), getChildFragmentManager());
         ViewPager viewPager = getActivity().findViewById(R.id.pager);
         viewPager.setAdapter(listPageAdapter);
 
-        TabLayout tabLayout = getActivity().findViewById(R.id.list_tab);
-        tabLayout.setupWithViewPager(viewPager);
+//        TabLayout tabLayout = getActivity().findViewById(R.id.list_tab);
+//        tabLayout.setupWithViewPager(viewPager);
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
         defaultPage =  Integer.valueOf(sharedPref.getString(getString(R.string.default_screen), "0"));
@@ -108,8 +109,8 @@ public class ListFragment extends Fragment{
         });
 
         FloatingActionButton addNote =  getActivity().findViewById(R.id.add_note);
-        addNote.setImageDrawable(getResources().getDrawable(R.drawable.sharp_add_24));
-        addNote.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff33b5e5")));
+        addNote.setImageDrawable(getResources().getDrawable(R.drawable.pencil));
+        addNote.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.highlight)));
         addNote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -197,25 +198,36 @@ public class ListFragment extends Fragment{
 
                 String result = searchHelper.searchResult(newText);
                 NoteListAdapter noteListAdapter = noteListFragment.getNoteListAdapter();
+                TaskListAdapter taskListAdapter = taskListFragment.getTaskListAdapter();
 
                 //If search result is not empty, update the cursor to show result
                 if (!result.equals("")) {
+                    noteListAdapter.updateCursorForSearch(result);
+                    taskListAdapter.updateCursorForSearch(result);
                     noteListFragment.recyclerView.setVisibility(View.VISIBLE);
                     noteListFragment.notFoundTextView.setVisibility(View.INVISIBLE);
-                    noteListAdapter.updateCursorForSearch(result);
+                    taskListFragment.recyclerView.setVisibility(View.VISIBLE);
+                    taskListFragment.notFoundTextView.setVisibility(View.INVISIBLE);
                     noteListAdapter.notifyDataSetChanged();
+                    taskListAdapter.notifyDataSetChanged();
 
                 } else if (!newText.equals("")) {
                     //If search result is empty and the search input is not empty, show result not found
                     noteListFragment.recyclerView.setVisibility(View.INVISIBLE);
                     noteListFragment.notFoundTextView.setVisibility(View.VISIBLE);
+                    taskListFragment.recyclerView.setVisibility(View.INVISIBLE);
+                    taskListFragment.notFoundTextView.setVisibility(View.VISIBLE);
 
                 } else {
                     //after finish searching and user empty the search input, reset the view
+                    noteListAdapter.updateCursor();
+                    taskListAdapter.updateCursor();
                     noteListFragment.recyclerView.setVisibility(View.VISIBLE);
                     noteListFragment.notFoundTextView.setVisibility(View.INVISIBLE);
-                    noteListAdapter.updateCursor();
+                    taskListFragment.recyclerView.setVisibility(View.VISIBLE);
+                    taskListFragment.notFoundTextView.setVisibility(View.INVISIBLE);
                     noteListAdapter.notifyDataSetChanged();
+                    taskListAdapter.notifyDataSetChanged();
                 }
                 return true;
             }

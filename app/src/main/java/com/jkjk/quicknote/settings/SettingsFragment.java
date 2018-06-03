@@ -51,9 +51,11 @@ import java.util.Date;
 
 import static android.app.Activity.RESULT_OK;
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
+import static com.jkjk.quicknote.MyApplication.CURRENT_DB_VER;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.helper.DatabaseHelper.dbColumn;
 import static com.jkjk.quicknote.listscreen.ListFragment.REWARD_VIDEO_AD_ID;
+import static com.jkjk.quicknote.listscreen.ListFragment.isAllowedToUse;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements RewardedVideoAdListener {
 
@@ -359,14 +361,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
             verifyOutputStream.flush();
             verifyOutputStream.close();
 
-            DatabaseHelper helper  = new DatabaseHelper(context.getApplicationContext(), "verify_db", null, 2);
+            DatabaseHelper helper  = new DatabaseHelper(context.getApplicationContext(), "verify_db", null, CURRENT_DB_VER);
             SQLiteDatabase database = helper.getWritableDatabase();
 
             Cursor verifyCursor = database.query(DATABASE_NAME, null, null, null, null
                     , null, null);
 
-
-            if (database.isDatabaseIntegrityOk() && verifyCursor.moveToLast() && Arrays.equals(verifyCursor.getColumnNames(), dbColumn)){
+            if (database.isDatabaseIntegrityOk() && verifyCursor.moveToFirst() && Arrays.equals(verifyCursor.getColumnNames(), dbColumn)){
 
                 // Restore file verified. Begin restoring
                 String dbPath = "//data//"+context.getPackageName()+"//databases//note_db";

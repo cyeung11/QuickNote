@@ -91,18 +91,18 @@
     <string name="ads_wait">Please wait while the ad is loading</string>
     <string name="ads_complete">Great! Feel free to use it now</string>
     <string name="todo_title_caption">What is the task?</string>
-    <string name="task_hint">Call Dad</string>
-    <string name="due_date_caption">Due date</string>
+    <string name="task_hint">Task name</string>
+    <string name="due_date_caption">DUE DATE</string>
     <string name="mark_as_done">Mark as done</string>
-    <string name="remark_caption">Remark</string>
+    <string name="remark_caption">REMARK</string>
     <string name="remark_hint">Progress, instruction etc.</string>
     <string name="date_hint">Date not set</string>
     <string name="time_hint">Time not set</string>
-    <string name="urgency_caption">Urgency</string>
-    <string name="urgent_important">Urgent &amp; Important</string>
-    <string name="urgent_trivial">Urgent &amp; Trivial</string>
-    <string name="delayable_important">Delayable &amp; Important</string>
-    <string name="delayable_trivial">Delayable &amp; Trivial</string>
+    <string name="category_caption">CATEGORY</string>
+    <string name="asap">ASAP</string>
+    <string name="important">IMPORTANT</string>
+    <string name="priority_default">DEFAULT</string>
+    <string name="priority_done">DONE</string>
     <string name="tomorrow">Tomorrow</string>
     <string name="today">Today</string>
 
@@ -153,10 +153,9 @@
         <item>1</item>
     </string-array>
     <string-array name="urgency_list">
-        <item>Urgent &amp; Important</item>
-        <item>Urgent &amp; Trivial</item>
-        <item>Delayable &amp; Important</item>
-        <item>Delayable &amp; Trivial</item>
+        <item>Default</item>
+        <item>Important</item>
+        <item>ASAP</item>
     </string-array>
 
 

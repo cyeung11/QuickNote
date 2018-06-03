@@ -3,12 +3,13 @@ package com.jkjk.quicknote.taskeditscreen;
 
 import android.content.ContentValues;
 import android.content.res.ColorStateList;
-import android.graphics.Color;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,11 +37,10 @@ public class TaskEditFragment extends Fragment {
     boolean hasTaskSave = false;
     private long taskId;
     private EditText titleInFragment, remarkInFragment, dateInFragment, timeInFragment;
-    private Switch markAsDoneInFragment, allDayInFragment;
+    private Switch markAsDoneInFragment;
     private Spinner urgencyInFragment;
-    private boolean newNote;
+    private boolean newTask;
     // 0 stands for not starred, 1 starred
-    private int isStarred = 0;
     private int selectUrgency = 0;
 
     public TaskEditFragment() {
@@ -58,7 +58,6 @@ public class TaskEditFragment extends Fragment {
         dateInFragment = view.findViewById(R.id.task_date);
         timeInFragment = view.findViewById(R.id.task_time);
         markAsDoneInFragment = view.findViewById(R.id.task_done);
-        allDayInFragment = view.findViewById(R.id.task_all_day);
         urgencyInFragment = view.findViewById(R.id.task_urgency);
 
         ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(getContext(),R.array.urgency_list, android.R.layout.simple_spinner_item);
@@ -79,15 +78,37 @@ public class TaskEditFragment extends Fragment {
         if (savedInstanceState !=null) {
             // case when restoring from saved instance
             taskId = savedInstanceState.getLong(TASK_ID, 0L);
-            newNote = false;
+            newTask = false;
 
         }else if (getArguments() != null) {
 
             // case when argument has data, either note ID from the note list activity or text from external intent
             taskId = getArguments().getLong(EXTRA_NOTE_ID, 999999999L);
-            newNote = (taskId == 999999999L);
+            newTask = (taskId == 999999999L);
 
-        } else {newNote = true;}
+        } else {
+            newTask = true;}
+
+        if (!newTask) {
+            try {
+                Cursor tempNote = MyApplication.database.query(DATABASE_NAME, new String[]{"title", "content", "time","urgency","done"}, "_id='" + taskId +"'",
+                        null, null, null, null, null);
+                tempNote.moveToFirst();
+                titleInFragment.setText(tempNote.getString(0));
+                remarkInFragment.setText(tempNote.getString(1));
+                //TODO time
+                urgencyInFragment.setSelection(tempNote.getInt(3));
+                if (tempNote.getInt(4)==1) {
+                    markAsDoneInFragment.setChecked(true);
+                } else markAsDoneInFragment.setChecked(false);
+
+                tempNote.close();
+
+            } catch (Exception e) {
+                Toast.makeText(container.getContext(), R.string.error_loading, Toast.LENGTH_SHORT).show();
+                Log.e(this.getClass().getName(), "error", e);
+            }
+        }
 
 
         return view;
@@ -99,7 +120,7 @@ public class TaskEditFragment extends Fragment {
         // Define save function for the done button
         FloatingActionButton done = getActivity().findViewById(R.id.done_fab);
         done.setImageDrawable(getResources().getDrawable(R.drawable.sharp_done_24));
-        done.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff33b5e5")));
+        done.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.highlight)));
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -145,7 +166,7 @@ public class TaskEditFragment extends Fragment {
         values.put("time", Long.toString(Calendar.getInstance().getTimeInMillis()));
 
 
-        values.put("starred", isStarred);
+        values.put("starred", 0);
         values.put("type", 1);
         values.put("urgency", selectUrgency);
 
@@ -153,14 +174,14 @@ public class TaskEditFragment extends Fragment {
             values.put("done", 1);
         } else values.put("done", 0);
 
-        if (!newNote) {
+        if (!newTask) {
             MyApplication.database.update(DATABASE_NAME, values, "_id='" + taskId +"'", null);
         }else {
             taskId = MyApplication.database.insert(DATABASE_NAME, "",values);
         }
         values.clear();
         hasTaskSave = true;
-        newNote = false;
+        newTask = false;
     }
 
     public static TaskEditFragment newEditFragmentInstance(long taskId){

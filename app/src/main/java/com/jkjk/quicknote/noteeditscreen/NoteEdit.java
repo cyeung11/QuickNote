@@ -50,31 +50,36 @@ public class NoteEdit extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-    //confirm to discard dialog, and ask the note list activity to update its view
-        new AlertDialog.Builder(this).setTitle(R.string.discard_title).setMessage(R.string.confirm_discard)
-                .setPositiveButton(R.string.discard, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        if (!noteEditFragment.hasNoteSave){
-                            //NoteEdit no need to save. so override hasNoteSave to true to avoid saving on onStop
-                            noteEditFragment.hasNoteSave = true;
+        //confirm to discard dialog, and ask the note list activity to update its view
+        if (noteEditFragment.hasModified) {
+            new AlertDialog.Builder(this).setTitle(R.string.discard_title).setMessage(R.string.confirm_discard)
+                    .setPositiveButton(R.string.discard, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            if (!noteEditFragment.hasNoteSave) {
+                                //NoteEdit no need to save. so override hasNoteSave to true to avoid saving on onStop
+                                noteEditFragment.hasNoteSave = true;
+                            }
+                            NoteEdit.super.onBackPressed();
                         }
-                        NoteEdit.super.onBackPressed();
-                    }
-                })
-                .setNeutralButton(R.string.save_instead, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        //Save instantly instead of onStop so that when the note list's onResume get called, the note is already update
-                        noteEditFragment.saveNote();
-                        Toast.makeText(getBaseContext(),R.string.saved, Toast.LENGTH_SHORT).show();
-                        noteEditFragment.updateAllWidget();
-                        noteEditFragment.hasNoteSave = true;
-                        NoteEdit.super.onBackPressed();
-                    }
-                })
-                .setNegativeButton(R.string.cancel, null)
-                .show();
+                    })
+                    .setNeutralButton(R.string.save_instead, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            //Save instantly instead of onStop so that when the note list's onResume get called, the note is already update
+                            noteEditFragment.saveNote();
+                            Toast.makeText(getBaseContext(), R.string.saved, Toast.LENGTH_SHORT).show();
+                            noteEditFragment.updateAllWidget();
+                            noteEditFragment.hasNoteSave = true;
+                            NoteEdit.super.onBackPressed();
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel, null)
+                    .show();
+        } else {
+            noteEditFragment.hasNoteSave = true;
+            super.onBackPressed();
         }
+    }
 
 }

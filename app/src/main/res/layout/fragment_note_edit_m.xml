@@ -36,17 +36,16 @@
                     android:textSize="22sp" />
 
                 <ImageButton
-                android:id="@+id/edit_show_drop_menu"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/sharp_more_vert_24"
-                android:contentDescription="@string/menu"
-                android:background="@android:color/transparent"
-                android:layout_gravity="center_vertical"
-                android:focusable="false"
-
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="16dp" />
+                    android:id="@+id/edit_show_drop_menu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/sharp_more_vert_24"
+                    android:contentDescription="@string/menu"
+                    android:background="@android:color/transparent"
+                    android:layout_gravity="center_vertical"
+                    android:focusable="false"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="16dp" />
 
             </LinearLayout>
 

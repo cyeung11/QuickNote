@@ -39,9 +39,7 @@ import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 
 
-/**
- * A simple {@link Fragment} subclass.
- */
+
 public class NoteEditFragment extends Fragment {
 
     private static final String NOTE_ID = "noteId";
@@ -49,6 +47,7 @@ public class NoteEditFragment extends Fragment {
     public final static String EXTRA_NOTE_ID = "extraNoteId";
 
     boolean hasNoteSave = false;
+    boolean hasModified = false;
 
     private long noteId;
     private EditText titleInFragment, contentInFragment;
@@ -215,6 +214,24 @@ public class NoteEditFragment extends Fragment {
             }
         });
 
+        titleInFragment.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (b) {
+                    hasModified = true;
+                }
+            }
+        });
+
+        contentInFragment.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (b) {
+                    hasModified = true;
+                }
+            }
+        });
+
         return view;
     }
 
@@ -225,7 +242,7 @@ public class NoteEditFragment extends Fragment {
         // Define save function for the done button
         FloatingActionButton done = getActivity().findViewById(R.id.done_fab);
         done.setImageDrawable(getResources().getDrawable(R.drawable.sharp_done_24));
-        done.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff33b5e5")));
+        done.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.highlight)));
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -269,8 +286,8 @@ public class NoteEditFragment extends Fragment {
         values.put("time", Long.toString(Calendar.getInstance().getTimeInMillis()));
         values.put("starred", isStarred);
         values.put("type", 0);
-        values.put("urgency", 4);
-        values.put("done", 3);
+        values.put("urgency", 0);
+        values.put("done", 0);
         if (!newNote) {
             MyApplication.database.update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
         }else {

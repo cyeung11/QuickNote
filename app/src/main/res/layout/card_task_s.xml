@@ -17,8 +17,8 @@
         android:gravity="center_vertical"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="14dp">
+        android:paddingTop="13dp"
+        android:paddingBottom="13dp">
 
         <CheckBox
             android:layout_width="wrap_content"
@@ -41,8 +41,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/task_urgency"
-                    android:textSize="14sp"
-                    android:layout_marginBottom="2dp"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="1.5dp"
                     android:textColor="@android:color/black" />
 
                 <TextView
@@ -50,7 +50,7 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/task_title"
                     android:maxLines="1"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:fontFamily="serif"
                     android:textColor="@android:color/black"/>
 

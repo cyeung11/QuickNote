@@ -11,7 +11,7 @@
         android:background="?attr/colorPrimary"
         android:title="@string/settings"
         android:id="@+id/settings_menu"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
+        android:theme="@style/ThemeOverlay.AppCompat.Light"/>
 
     <FrameLayout
         android:layout_width="match_parent"

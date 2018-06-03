@@ -10,11 +10,12 @@ public class MyApplication extends Application {
 
     public static SQLiteDatabase database;
     private DatabaseHelper helper = null;
+    public static final int CURRENT_DB_VER = 3;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        helper = new DatabaseHelper(this, "note_db", null, 3);
+        helper = new DatabaseHelper(this, "note_db", null, CURRENT_DB_VER);
         database = helper.getWritableDatabase();
     }
 

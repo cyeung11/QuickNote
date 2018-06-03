@@ -4,14 +4,14 @@
     <PreferenceCategory
         android:title="@string/user_interface_cap">
 
-        <!--<ListPreference-->
-        <!--android:key="@string/default_screen"-->
-        <!--android:title="@string/default_screen"-->
-        <!--android:summary="@string/default_screen_summary"-->
-        <!--android:dialogTitle="@string/default_screen"-->
-        <!--android:entries="@array/default_screen"-->
-        <!--android:entryValues="@array/default_screen_value"-->
-        <!--android:defaultValue="0" />-->
+        <ListPreference
+        android:key="@string/default_screen"
+        android:title="@string/default_screen"
+        android:summary="@string/default_screen_summary"
+        android:dialogTitle="@string/default_screen"
+        android:entries="@array/default_screen"
+        android:entryValues="@array/default_screen_value"
+        android:defaultValue="0" />
 
         <ListPreference
             android:key="@string/font_size_main_screen"

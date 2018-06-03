@@ -7,6 +7,7 @@ import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.preference.PreferenceManager;
@@ -161,6 +162,10 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                             inflater.inflate(R.menu.edit_action_mode, menu);
                             inActionMode = true;
 
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                fragment.getActivity().getWindow().setStatusBarColor(Color.DKGRAY);
+                            }
+
                             selectedItems.add(clickPosition);
 
                             MenuItem starred = menu.findItem(R.id.starred);
@@ -179,7 +184,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                             holder.cardView.setCardBackgroundColor(Color.LTGRAY);
                             //change the FAB to delete
                             addNote.setImageDrawable(fragment.getResources().getDrawable(R.drawable.sharp_delete_24));
-                            addNote.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff4444")));
+                            addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.colorPrimary)));
 
                             // Get item count of not starred note
                             Cursor checkStarredCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id"}, "starred=0", null, null
@@ -272,8 +277,11 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                             actionMode = null;
                             inActionMode = false;
                             selectedItems.clear();
-                            addNote.setImageDrawable(fragment.getResources().getDrawable(R.drawable.sharp_add_24));
-                            addNote.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#33b5e5")));
+                            addNote.setImageDrawable(fragment.getResources().getDrawable(R.drawable.pencil));
+                            addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.highlight)));
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                fragment.getActivity().getWindow().setStatusBarColor(fragment.getResources().getColor(R.color.colorPrimaryDark));
+                            }
                         }
                     });
                     view.setSelected(true);
@@ -299,10 +307,6 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
         final Context context = holder.cardView.getContext();
 
         holder.noteTitle.setTypeface(Typeface.SERIF);
-        holder.noteContent.setTextColor(Color.DKGRAY);
-        holder.noteContent.setTypeface(Typeface.DEFAULT);
-        holder.noteTime.setTypeface(Typeface.DEFAULT);
-        holder.noteTime.setTextColor(Color.DKGRAY);
 
         // Reset card background color
         if (selectedItems.contains(holder.getAdapterPosition())) {
@@ -310,7 +314,6 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
         } else {
             holder.cardView.setCardBackgroundColor(Color.WHITE);
         }
-
 
         //Extract data from noteCursor
         if (noteCursor != null) {
@@ -351,11 +354,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 // Show starred note
                 if (noteCursor.getInt(4) == 1) {
                     holder.isStarred = true;
-                    holder.noteTitle.setTypeface(Typeface.SERIF, Typeface.BOLD_ITALIC);
-                    holder.noteContent.setTextColor(Color.BLACK);
-                    holder.noteContent.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-                    holder.noteTime.setTextColor(Color.BLACK);
-                    holder.noteTime.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+                    holder.noteTitle.setTypeface(Typeface.SERIF, Typeface.BOLD);
                 }else {
                     holder.isStarred = false;
                 }
@@ -397,17 +396,17 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
     }
 
     public void updateCursor(){
-        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, null, null, null
+        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"},  "type = 0", null, null
                 , null, "time DESC");
     }
 
     public void updateCursorForSearch(String result){
-        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "_id in ("+result+")", null, null
+        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "_id in ("+result+") AND type = 0", null, null
                 , null, "time DESC");
     }
 
     public void updateCursorForStarred(){
-        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "starred = 1", null, null
+        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "starred = 1 AND type = 0", null, null
                 , null, "time DESC");
     }
 

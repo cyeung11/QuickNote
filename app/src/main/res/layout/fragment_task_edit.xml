@@ -19,37 +19,48 @@
             android:layout_marginEnd="16dp"
             android:orientation="vertical">
 
-            <ImageButton
-                android:id="@+id/task_show_drop_menu"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/sharp_more_vert_24"
-                android:contentDescription="@string/menu"
-                android:background="@android:color/transparent"
-                android:layout_gravity="end"
-                android:focusable="false"
-                android:layout_marginTop="12dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/todo_title_caption"
-                android:textColor="@color/colorPrimary"
-                android:layout_marginBottom="8dp"/>
-
-
-            <EditText
-                android:id="@+id/task_title"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="4dp"
-                android:layout_marginStart="4dp"
-                android:background="@android:color/transparent"
-                android:fontFamily="serif"
-                android:hint="@string/task_hint"
-                android:maxLines="1"
-                android:inputType="textCapSentences" />
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+
+                <EditText
+                    android:id="@+id/task_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginBottom="8dp"
+                    android:fontFamily="serif"
+                    android:hint="@string/title_here"
+                    android:maxLines="1"
+                    android:textSize="22sp"
+                    android:inputType="textCapSentences" />
+
+                <ImageButton
+                    android:id="@+id/task_show_drop_menu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/sharp_more_vert_24"
+                    android:contentDescription="@string/menu"
+                    android:background="@android:color/transparent"
+                    android:layout_gravity="center_vertical"
+                    android:focusable="false" />
+
+
+            </LinearLayout>
+
+
+            <!--<TextView-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="@string/todo_title_caption"-->
+                <!--android:textColor="@color/colorPrimary"-->
+                <!--android:layout_marginBottom="8dp"/>-->
+
+
+
 
 
             <LinearLayout
@@ -61,10 +72,10 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/mark_as_done"
-                    android:layout_weight="1"/>
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/mark_as_done" />
 
                 <Switch
                     android:id="@+id/task_done"
@@ -76,7 +87,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/urgency_caption"
+                android:text="@string/category_caption"
                 android:layout_marginBottom="8dp"
                 android:textColor="@color/colorPrimary"/>
 
@@ -88,8 +99,6 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginBottom="20dp"/>
 
-
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -97,49 +106,36 @@
                 android:layout_marginBottom="8dp"
                 android:textColor="@color/colorPrimary"/>
 
-            <EditText
-                android:id="@+id/task_date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:hint="@string/date_hint"
-                android:background="@android:color/transparent"
-                android:inputType="date"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="4dp"
-                android:layout_marginStart="4dp"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="20dp"
                 android:layout_marginEnd="4dp"
                 android:layout_marginStart="4dp"
                 android:orientation="horizontal">
 
-                <TextView
+                <EditText
+                    android:id="@+id/task_date"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/all_day"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:layout_marginEnd="16dp"
+                    android:hint="@string/date_hint"
+                    android:background="@android:color/transparent"
+                    android:inputType="date"/>
 
-                <Switch
-                    android:id="@+id/task_all_day"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                <EditText
+                    android:id="@+id/task_time"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:minWidth="160dp"
+                    android:hint="@string/time_hint"
+                    android:background="@android:color/transparent"
+                    android:inputType="time" />
 
             </LinearLayout>
-
-            <EditText
-                android:id="@+id/task_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:layout_marginEnd="4dp"
-                android:layout_marginStart="4dp"
-                android:minWidth="160dp"
-                android:hint="@string/time_hint"
-                android:background="@android:color/transparent"
-                android:inputType="time" />
 
 
             <TextView
@@ -177,7 +173,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_marginBottom="40dp"
-        android:layout_marginRight="24dp"/>
+        android:layout_marginEnd="24dp"/>
 
 
 </RelativeLayout>
