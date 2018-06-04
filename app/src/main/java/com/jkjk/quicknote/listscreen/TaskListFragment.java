@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.taskeditscreen.TaskEdit;
 
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
 
@@ -78,15 +79,13 @@ public class TaskListFragment extends Fragment {
     }
 
     public void onTaskEdit(long taskId) {
-        Intent startTaskActivity = new Intent();
-        startTaskActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.taskeditscreen.TaskEdit");
+        Intent startTaskActivity = new Intent(getContext(), TaskEdit.class);
         startTaskActivity.putExtra(EXTRA_NOTE_ID, taskId);
         startActivity(startTaskActivity);
     }
 
     public void onTaskEdit() {
-        Intent startTaskActivity = new Intent();
-        startTaskActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.taskeditscreen.TaskEdit");
+        Intent startTaskActivity = new Intent(getContext(), TaskEdit.class);
         startActivity(startTaskActivity);
     }
 

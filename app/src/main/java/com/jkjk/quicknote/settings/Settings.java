@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.listscreen.List;
 
 import static com.jkjk.quicknote.settings.SettingsFragment.BACK_UP_REQUEST_CODE;
 import static com.jkjk.quicknote.settings.SettingsFragment.RESTORE_REQUEST_CODE;
@@ -47,8 +48,7 @@ public class Settings extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case android.R.id.home:
-                Intent intent = new Intent();
-                intent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.listscreen.List");
+                Intent intent = new Intent(this, List.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 finish();
@@ -60,8 +60,7 @@ public class Settings extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Intent intent = new Intent();
-        intent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.listscreen.List");
+        Intent intent = new Intent(this, List.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         super.onBackPressed();

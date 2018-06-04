@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.noteeditscreen.NoteEdit;
 import com.jkjk.quicknote.noteeditscreen.NoteEditFragment;
 
 /**
@@ -81,15 +82,13 @@ public class NoteListFragment extends Fragment {
     }
 
     public void onNoteEdit(long noteId) {
-        Intent startNoteActivity = new Intent();
-        startNoteActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.noteeditscreen.NoteEdit");
+        Intent startNoteActivity = new Intent(getContext(), NoteEdit.class);
         startNoteActivity.putExtra(NoteEditFragment.EXTRA_NOTE_ID, noteId);
         startActivity(startNoteActivity);
     }
 
     public void onNoteEdit() {
-        Intent startNoteActivity = new Intent();
-        startNoteActivity.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.noteeditscreen.NoteEdit");
+        Intent startNoteActivity = new Intent(getContext(), NoteEdit.class);
         startActivity(startNoteActivity);
     }
 

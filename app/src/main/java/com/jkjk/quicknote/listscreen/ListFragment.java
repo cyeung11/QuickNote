@@ -30,6 +30,7 @@ import com.google.android.gms.ads.MobileAds;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.SearchHelper;
+import com.jkjk.quicknote.settings.Settings;
 
 import java.util.ArrayList;
 
@@ -73,15 +74,16 @@ public class ListFragment extends Fragment{
         android.support.v7.widget.Toolbar listMenu = getActivity().findViewById(R.id.list_menu);
         ((AppCompatActivity) getActivity()).setSupportActionBar(listMenu);
 
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        defaultPage =  Integer.valueOf(sharedPref.getString(getString(R.string.default_screen), "0"));
+        if (defaultPage==0) {
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.note);
+        } else ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.task);
+
         ListPageAdapter listPageAdapter = new ListPageAdapter(getContext(), getChildFragmentManager());
         ViewPager viewPager = getActivity().findViewById(R.id.pager);
         viewPager.setAdapter(listPageAdapter);
 
-//        TabLayout tabLayout = getActivity().findViewById(R.id.list_tab);
-//        tabLayout.setupWithViewPager(viewPager);
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
-        defaultPage =  Integer.valueOf(sharedPref.getString(getString(R.string.default_screen), "0"));
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -94,11 +96,16 @@ public class ListFragment extends Fragment{
                 // if default page is note, position 0 will be note, so current page is 0
                 if (defaultPage==0) {
                     currentPage = position;
+                    if (position==0) {
+                        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.note);
+                    } else ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.task);
                     // if default page is task, position 0 will be task, so current page is 1
                 } else if (position==0){
                     currentPage = 1;
+                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.task);
                 } else if (position==1){
                     currentPage = 0;
+                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.note);
                 }
             }
 
@@ -171,8 +178,7 @@ public class ListFragment extends Fragment{
         settings.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
-                Intent intent = new Intent();
-                intent.setClassName("com.jkjk.quicknote", "com.jkjk.quicknote.settings.Settings");
+                Intent intent = new Intent(getContext(), Settings.class);
                 startActivity(intent);
                 getActivity().finish();
                 return true;

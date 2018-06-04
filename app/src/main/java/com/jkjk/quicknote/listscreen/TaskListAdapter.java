@@ -118,7 +118,6 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                                 holder.taskTitle.setMaxLines(1);
                                 holder.urgency.setText(R.string.asap);
                                 holder.urgency.setTextColor(fragment.getResources().getColor(R.color.highlight));
-                                holder.urgency.setTypeface(Typeface.DEFAULT_BOLD);
                                 break;
                             case 1:
                                 layoutParams.removeRule(RelativeLayout.START_OF);
@@ -148,7 +147,6 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
         holder.taskTitle.setTypeface(Typeface.SERIF);
         holder.taskTitle.setMaxLines(1);
-        holder.urgency.setTypeface(Typeface.DEFAULT);
         holder.taskDone.setChecked(false);
         holder.urgency.setVisibility(View.VISIBLE);
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) holder.taskBody.getLayoutParams();
@@ -165,7 +163,6 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                     case 2:
                         holder.urgency.setText(R.string.asap);
                         holder.urgency.setTextColor(fragment.getResources().getColor(R.color.highlight));
-                        holder.urgency.setTypeface(Typeface.DEFAULT_BOLD);
                         break;
                     case 1:
                         holder.urgency.setText(R.string.important);

@@ -5,7 +5,8 @@
     <string name="task">Task</string>
     <string name="user_interface_cap">INTERFACE</string>
     <string name="done">Done</string>
-    <string name="saved">Note saved</string>
+    <string name="saved_note">Note saved</string>
+    <string name="saved_task">Task saved</string>
     <string name="error_text">Error</string>
     <string name="error_loading">Error loading</string>
     <string name="error_saving">Error saving</string>

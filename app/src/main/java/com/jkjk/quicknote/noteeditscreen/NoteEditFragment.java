@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -247,7 +246,6 @@ public class NoteEditFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 saveNote();
-                Toast.makeText(getContext(),R.string.saved, Toast.LENGTH_SHORT).show();
                 updateAllWidget();
                 hasNoteSave = true;
                 getActivity().finish();
@@ -268,7 +266,6 @@ public class NoteEditFragment extends Fragment {
         if (!hasNoteSave){
             saveNote();
             updateAllWidget();
-            Toast.makeText(getActivity(),R.string.saved, Toast.LENGTH_SHORT).show();
         }
         // then reset it to not saved for the case when user come back
         hasNoteSave = false;
@@ -296,6 +293,7 @@ public class NoteEditFragment extends Fragment {
         values.clear();
         hasNoteSave = true;
         newNote = false;
+        Toast.makeText(getActivity(), R.string.saved_note, Toast.LENGTH_SHORT).show();
     }
 
     public void updateAllWidget(){

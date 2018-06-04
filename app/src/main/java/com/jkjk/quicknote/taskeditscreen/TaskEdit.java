@@ -62,7 +62,6 @@ public class TaskEdit extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         //Save instantly instead of onStop so that when the note list's onResume get called, the note is already update
                         taskEditFragment.saveTask();
-                        Toast.makeText(getBaseContext(),R.string.saved, Toast.LENGTH_SHORT).show();
                         taskEditFragment.hasTaskSave = true;
                         TaskEdit.super.onBackPressed();
                     }

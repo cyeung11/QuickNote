@@ -52,17 +52,6 @@
             </LinearLayout>
 
 
-            <!--<TextView-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:text="@string/todo_title_caption"-->
-                <!--android:textColor="@color/colorPrimary"-->
-                <!--android:layout_marginBottom="8dp"/>-->
-
-
-
-
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -115,25 +104,21 @@
                 android:layout_marginStart="4dp"
                 android:orientation="horizontal">
 
-                <EditText
+                <TextView
                     android:id="@+id/task_date"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginEnd="16dp"
-                    android:hint="@string/date_hint"
-                    android:background="@android:color/transparent"
-                    android:inputType="date"/>
+                    android:hint="@string/date_hint" />
 
-                <EditText
+                <TextView
                     android:id="@+id/task_time"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:minWidth="160dp"
-                    android:hint="@string/time_hint"
-                    android:background="@android:color/transparent"
-                    android:inputType="time" />
+                    android:hint="@string/time_hint" />
 
             </LinearLayout>
 
@@ -150,7 +135,8 @@
             <EditText
                 android:id="@+id/task_remark"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
                 android:layout_marginEnd="4dp"
                 android:layout_marginStart="4dp"
                 android:background="@android:color/transparent"

@@ -1,6 +1,8 @@
 package com.jkjk.quicknote.taskeditscreen;
 
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.ContentValues;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
@@ -15,14 +17,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 
+import org.w3c.dom.Text;
+
+import java.text.DateFormat;
 import java.util.Calendar;
 
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
@@ -36,12 +44,13 @@ public class TaskEditFragment extends Fragment {
     private static final String TASK_ID = "taskId";
     boolean hasTaskSave = false;
     private long taskId;
-    private EditText titleInFragment, remarkInFragment, dateInFragment, timeInFragment;
+    private EditText titleInFragment, remarkInFragment;
+    private TextView dateInFragment, timeInFragment;
     private Switch markAsDoneInFragment;
-    private Spinner urgencyInFragment;
     private boolean newTask;
     // 0 stands for not starred, 1 starred
     private int selectUrgency = 0;
+    private Calendar taskDate;
 
     public TaskEditFragment() {
         // Required empty public constructor
@@ -55,11 +64,44 @@ public class TaskEditFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_task_edit, container, false);
         titleInFragment = view.findViewById(R.id.task_title);
         remarkInFragment = view.findViewById(R.id.task_remark);
-        dateInFragment = view.findViewById(R.id.task_date);
-        timeInFragment = view.findViewById(R.id.task_time);
         markAsDoneInFragment = view.findViewById(R.id.task_done);
-        urgencyInFragment = view.findViewById(R.id.task_urgency);
 
+        dateInFragment = view.findViewById(R.id.task_date);
+        final Calendar calendar = Calendar.getInstance();
+        taskDate = Calendar.getInstance();
+        dateInFragment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new DatePickerDialog(getContext(), new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker datePicker,int year, int month, int dayOfMonth) {
+                        taskDate.set(Calendar.YEAR, year);
+                        taskDate.set(Calendar.MONTH, month);
+                        taskDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+                        dateInFragment.setText(dateFormat.format(taskDate.getTime()));
+                    }
+                }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
+            }
+        });
+
+        timeInFragment = view.findViewById(R.id.task_time);
+        timeInFragment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute){
+                        taskDate.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                        taskDate.set(Calendar.MINUTE, minute);
+                        DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
+                        timeInFragment.setText(timeFormat.format(taskDate.getTime()));
+                }
+                }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false).show();
+            }
+        });
+
+        Spinner urgencyInFragment = view.findViewById(R.id.task_urgency);
         ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(getContext(),R.array.urgency_list, android.R.layout.simple_spinner_item);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         urgencyInFragment.setAdapter(arrayAdapter);
@@ -96,7 +138,7 @@ public class TaskEditFragment extends Fragment {
                 tempNote.moveToFirst();
                 titleInFragment.setText(tempNote.getString(0));
                 remarkInFragment.setText(tempNote.getString(1));
-                //TODO time
+                //TODO read time to date and time field
                 urgencyInFragment.setSelection(tempNote.getInt(3));
                 if (tempNote.getInt(4)==1) {
                     markAsDoneInFragment.setChecked(true);
@@ -125,7 +167,6 @@ public class TaskEditFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 saveTask();
-                Toast.makeText(getContext(),R.string.saved, Toast.LENGTH_SHORT).show();
                 hasTaskSave = true;
                 getActivity().finish();
             }
@@ -143,7 +184,6 @@ public class TaskEditFragment extends Fragment {
         //when user quit the app without choosing save or discard, save the task
         if (!hasTaskSave){
             saveTask();
-            Toast.makeText(getActivity(),R.string.saved, Toast.LENGTH_SHORT).show();
         }
         // then reset it to not saved for the case when user come back
         hasTaskSave = false;
@@ -161,9 +201,8 @@ public class TaskEditFragment extends Fragment {
 
         values.put("content", remarkInFragment.getText().toString());
 
-        Calendar calendar = Calendar.getInstance();
-//        calendar.set(Calendar.DAY_OF_MONTH, );
-        values.put("time", Long.toString(Calendar.getInstance().getTimeInMillis()));
+        //TODO check if the input time is correct
+        values.put("time", Long.toString(taskDate.getTimeInMillis()));
 
 
         values.put("starred", 0);
@@ -182,6 +221,7 @@ public class TaskEditFragment extends Fragment {
         values.clear();
         hasTaskSave = true;
         newTask = false;
+        Toast.makeText(getActivity(),R.string.saved_task, Toast.LENGTH_SHORT).show();
     }
 
     public static TaskEditFragment newEditFragmentInstance(long taskId){
