@@ -132,7 +132,7 @@ public class NoteEditFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 PopupMenu editDropMenu = new PopupMenu(view.getContext(), showDropMenu);
-                editDropMenu.getMenuInflater().inflate(R.menu.edit_drop_menu, editDropMenu.getMenu());
+                editDropMenu.getMenuInflater().inflate(R.menu.note_edit_drop_menu, editDropMenu.getMenu());
                 MenuItem starredButton = editDropMenu.getMenu().findItem(R.id.edit_drop_menu_starred);
                 if (isStarred == 0){
                     // not starred, set button to starred

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/search"
+        android:icon="@drawable/sharp_search_24"
+        android:title="@string/search"
+        app:showAsAction="always|collapseActionView"
+        app:actionViewClass="android.support.v7.widget.SearchView"/>
+
+
+    <item android:id="@+id/sort_by"
+        android:title="@string/sort_by_urgency"
+        app:showAsAction="never" />
+
+    <item android:id="@+id/show_done"
+        android:title="@string/show_done"
+        app:showAsAction="never" />
+
+    <item android:id="@+id/switch_note"
+        android:title="@string/switch_note"
+        app:showAsAction="never" />
+
+    <item android:id="@+id/settings"
+        android:title="@string/settings"
+        android:icon="@drawable/sharp_settings_24"
+        app:showAsAction="never" />
+
+
+</menu>

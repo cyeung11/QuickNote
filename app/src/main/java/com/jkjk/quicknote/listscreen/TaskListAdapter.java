@@ -29,6 +29,7 @@ import java.util.Calendar;
 
 import static android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
+import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_INDICATOR;
 
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
 
@@ -186,12 +187,17 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
                 long time = (Long.parseLong(taskCursor.getString(3)));
 
-                if (DateUtils.isToday(time)){
-                    holder.taskTime.setText(R.string.today);
-                }else if (isTomorrow(time)){
-                    holder.taskTime.setText(R.string.tomorrow);
-                } else {
-                    holder.taskTime.setText(DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_DATE));
+                if (time!=0L) {
+                    if (DateUtils.isToday(time)) {
+                        //get the millisecond to see if the time was set by user
+                        if ((time % 1000) == TIME_NOT_SET_INDICATOR) {
+                            holder.taskTime.setText(R.string.today);
+                        } else holder.taskTime.setText(DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_TIME));
+                    } else if (isTomorrow(time)) {
+                        holder.taskTime.setText(R.string.tomorrow);
+                    } else {
+                        holder.taskTime.setText(DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_DATE));
+                    }
                 }
 
                 if (taskCursor.getInt(4) == 1) {
@@ -240,11 +246,11 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
     public void updateCursor(){
         taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "time","starred","done"}, "type = 1", null, null
-                , null, "time DESC");
+                , null, "time ASC");
     }
 
     public void updateCursorForSearch(String result){
         taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "time","starred","done"}, "_id in ("+result+") AND type = 1", null, null
-                , null, "time DESC");
+                , null, "time ASC");
     }
 }

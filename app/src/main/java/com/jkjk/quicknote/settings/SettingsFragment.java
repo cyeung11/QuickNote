@@ -269,6 +269,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
         mRewardedVideoAd.resume(getContext());
         super.onResume();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(listener);
+
+
+        //TODO Delete when release
+        isAllowedToUse=true;
     }
 
     @Override
@@ -478,4 +482,5 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
     public void onRewardedVideoCompleted() {
 
     }
+
 }

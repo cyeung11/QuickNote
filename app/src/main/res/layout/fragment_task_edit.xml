@@ -110,7 +110,8 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginEnd="16dp"
-                    android:hint="@string/date_hint" />
+                    android:hint="@string/date_hint"
+                    android:textColor="@android:color/black"/>
 
                 <TextView
                     android:id="@+id/task_time"
@@ -118,7 +119,9 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:minWidth="160dp"
-                    android:hint="@string/time_hint" />
+                    android:hint="@string/time_hint"
+                    android:visibility="invisible"
+                    android:textColor="@android:color/black"/>
 
             </LinearLayout>
 

@@ -36,22 +36,20 @@ import java.util.Calendar;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
 
-/**
- * A simple {@link Fragment} subclass.
- */
 public class TaskEditFragment extends Fragment {
 
     private static final String TASK_ID = "taskId";
+    public static final int TIME_NOT_SET_INDICATOR = 0;
+
     boolean hasTaskSave = false;
     private long taskId;
     private EditText titleInFragment, remarkInFragment;
     private TextView dateInFragment, timeInFragment;
     private Switch markAsDoneInFragment;
-    private boolean newTask;
+    private boolean newTask, dateChange = false, timeChanged = false;
     // 0 stands for not starred, 1 starred
     private int selectUrgency = 0;
     private Calendar taskDate;
-    private boolean dateChange = false, timeChanged = false;
 
     public TaskEditFragment() {
         // Required empty public constructor
@@ -114,12 +112,14 @@ public class TaskEditFragment extends Fragment {
                     taskDate.setTimeInMillis(taskCursor.getLong(2));
                     DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
                     dateInFragment.setText(dateFormat.format(taskDate.getTime()));
+                    dateChange = true;
+                    timeInFragment.setVisibility(View.VISIBLE);
 
-                    // to see if the save time is default or not. If default (999), time will not be shown
-                    if (taskDate.get(Calendar.MILLISECOND)!=999) {
+                    // to see if the save time is default or not. If default (999), time will be shown as not set
+                    if (taskDate.get(Calendar.MILLISECOND)!=TIME_NOT_SET_INDICATOR) {
                         DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
                         timeInFragment.setText(timeFormat.format(taskDate.getTime()));
-                        setTimePicker(timeInFragment, taskDate);
+                        timeChanged = true;
                     }
                 }
 
@@ -132,7 +132,7 @@ public class TaskEditFragment extends Fragment {
 
             } catch (Exception e) {
                 Toast.makeText(container.getContext(), R.string.error_loading, Toast.LENGTH_SHORT).show();
-                Log.e(this.getClass().getName(), "error", e);
+                Log.e(this.getClass().getName(), "loading task from cursor       ", e);
             }
         }
 
@@ -147,33 +147,32 @@ public class TaskEditFragment extends Fragment {
                         taskDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
                         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
                         dateInFragment.setText(dateFormat.format(taskDate.getTime()));
-                        setTimePicker(timeInFragment, taskDate);
+                        timeInFragment.setVisibility(View.VISIBLE);
                         dateChange = true;
                     }
                 }, taskDate.get(Calendar.YEAR), taskDate.get(Calendar.MONTH), taskDate.get(Calendar.DAY_OF_MONTH)).show();
             }
         });
 
-        return view;
-    }
-
-    private void setTimePicker(final TextView textView, final Calendar calendar) {
-        textView.setOnClickListener(new View.OnClickListener() {
+        timeInFragment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute){
-                        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                        calendar.set(Calendar.MINUTE, minute);
+                        taskDate.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                        taskDate.set(Calendar.MINUTE, minute);
                         DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
-                        textView.setText(timeFormat.format(calendar.getTime()));
+                        timeInFragment.setText(timeFormat.format(taskDate.getTime()));
                         timeChanged = true;
-                }
-                }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false).show();
+                    }
+                }, taskDate.get(Calendar.HOUR_OF_DAY), taskDate.get(Calendar.MINUTE), false).show();
             }
         });
+
+        return view;
     }
+
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -223,16 +222,13 @@ public class TaskEditFragment extends Fragment {
         // if date is not set, save the time as 0
         if (!dateChange) {
             values.put("time", 0L);
-            Log.e("Date        ", "0");
         } else {
             if(!timeChanged){
-                // if time is not set by user, set the millisecond to 999 to indicate so that we can determine if we should show the time in time field when user comeback
-                taskDate.set(Calendar.MILLISECOND, 999);
-
-                Log.e("time        ", "999");
-            }
+                // if time is not set by user, set the millisecond to 0 to indicate so that we can determine if we should show the time in time field when user comeback
+                taskDate.set(Calendar.MILLISECOND, TIME_NOT_SET_INDICATOR);
+                // if time is set, set millisecond to 999 to show it
+            } else taskDate.set(Calendar.MILLISECOND, 999);
             values.put("time", Long.toString(taskDate.getTimeInMillis()));
-            Log.e("time        ", ((String)values.get("time")));
         }
 
         values.put("starred", 0);

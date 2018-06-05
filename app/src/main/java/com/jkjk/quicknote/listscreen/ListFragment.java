@@ -75,8 +75,8 @@ public class ListFragment extends Fragment{
         ((AppCompatActivity) getActivity()).setSupportActionBar(listMenu);
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
-        defaultPage =  Integer.valueOf(sharedPref.getString(getString(R.string.default_screen), "0"));
-        if (defaultPage==0) {
+        defaultPage = Integer.valueOf(sharedPref.getString(getString(R.string.default_screen), "0"));
+        if (defaultPage == 0) {
             ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.note);
         } else ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.task);
 
@@ -93,6 +93,9 @@ public class ListFragment extends Fragment{
 
             @Override
             public void onPageSelected(int position) {
+                if (noteListFragment.noteListAdapter.mActionMode!=null) {
+                    noteListFragment.noteListAdapter.mActionMode.finish();
+                }
                 // if default page is note, position 0 will be note, so current page is 0
                 if (defaultPage==0) {
                     currentPage = position;
@@ -169,7 +172,7 @@ public class ListFragment extends Fragment{
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.list_menu, menu);
+        inflater.inflate(R.menu.note_list_menu, menu);
 
         showStarred =  menu.findItem(R.id.show_starred);
         search =  menu.findItem(R.id.search);

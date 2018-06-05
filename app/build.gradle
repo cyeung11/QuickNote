@@ -6,8 +6,8 @@ android {
         applicationId "com.jkjk.quicknote"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 7
-        versionName "0.6.3"
+        versionCode 8
+        versionName "1.0.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -22,6 +22,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:customtabs:27.1.1'
     implementation 'com.android.support:preference-v7:27.1.1'
     implementation 'com.android.support:support-v4:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
