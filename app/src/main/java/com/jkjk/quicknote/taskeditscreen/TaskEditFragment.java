@@ -28,8 +28,6 @@ import android.widget.Toast;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 
-import org.w3c.dom.Text;
-
 import java.text.DateFormat;
 import java.util.Calendar;
 
@@ -46,10 +44,11 @@ public class TaskEditFragment extends Fragment {
     private EditText titleInFragment, remarkInFragment;
     private TextView dateInFragment, timeInFragment;
     private Switch markAsDoneInFragment;
-    private boolean newTask, dateChange = false, timeChanged = false;
-    // 0 stands for not starred, 1 starred
-    private int selectUrgency = 0;
+    private boolean newTask, isDone, dateChange = false, timeChanged = false, hasModified = false;
+    private int selectUrgency;
     private Calendar taskDate;
+    private String title, remark;
+    private Spinner urgencyInFragment;
 
     public TaskEditFragment() {
         // Required empty public constructor
@@ -67,7 +66,7 @@ public class TaskEditFragment extends Fragment {
         dateInFragment = view.findViewById(R.id.task_date);
         timeInFragment = view.findViewById(R.id.task_time);
 
-        Spinner urgencyInFragment = view.findViewById(R.id.task_urgency);
+        urgencyInFragment = view.findViewById(R.id.task_urgency);
         ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(getContext(),R.array.urgency_list, android.R.layout.simple_spinner_item);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         urgencyInFragment.setAdapter(arrayAdapter);
@@ -104,6 +103,7 @@ public class TaskEditFragment extends Fragment {
                 Cursor taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title", "content", "time","urgency","done"}, "_id='" + taskId +"'",
                         null, null, null, null, null);
                 taskCursor.moveToFirst();
+
                 titleInFragment.setText(taskCursor.getString(0));
                 remarkInFragment.setText(taskCursor.getString(1));
 
@@ -123,10 +123,14 @@ public class TaskEditFragment extends Fragment {
                     }
                 }
 
-                urgencyInFragment.setSelection(taskCursor.getInt(3));
+                selectUrgency = taskCursor.getInt(3);
+                urgencyInFragment.setSelection(selectUrgency);
+
                 if (taskCursor.getInt(4)==1) {
                     markAsDoneInFragment.setChecked(true);
-                } else markAsDoneInFragment.setChecked(false);
+                } else {
+                    markAsDoneInFragment.setChecked(false);
+                }
 
                 taskCursor.close();
 
@@ -149,6 +153,7 @@ public class TaskEditFragment extends Fragment {
                         dateInFragment.setText(dateFormat.format(taskDate.getTime()));
                         timeInFragment.setVisibility(View.VISIBLE);
                         dateChange = true;
+                        hasModified = true;
                     }
                 }, taskDate.get(Calendar.YEAR), taskDate.get(Calendar.MONTH), taskDate.get(Calendar.DAY_OF_MONTH)).show();
             }
@@ -165,6 +170,7 @@ public class TaskEditFragment extends Fragment {
                         DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
                         timeInFragment.setText(timeFormat.format(taskDate.getTime()));
                         timeChanged = true;
+                        hasModified = true;
                     }
                 }, taskDate.get(Calendar.HOUR_OF_DAY), taskDate.get(Calendar.MINUTE), false).show();
             }
@@ -198,9 +204,18 @@ public class TaskEditFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        title = titleInFragment.getText().toString();
+        remark = remarkInFragment.getText().toString();
+        isDone = markAsDoneInFragment.isChecked();
+        selectUrgency = urgencyInFragment.getSelectedItemPosition();
+    }
+
+    @Override
     public void onPause() {
         //when user quit the app without choosing save or discard, save the task
-        if (!hasTaskSave){
+        if (checkModified() && !hasTaskSave){
             saveTask();
         }
         // then reset it to not saved for the case when user come back
@@ -248,6 +263,22 @@ public class TaskEditFragment extends Fragment {
         hasTaskSave = true;
         newTask = false;
         Toast.makeText(getActivity(),R.string.saved_task, Toast.LENGTH_SHORT).show();
+    }
+
+    boolean checkModified() {
+        if (newTask) {
+            return !titleInFragment.getText().toString().trim().equals("")
+                    || hasModified
+                    || !remarkInFragment.getText().toString().trim().equals("")
+                    || urgencyInFragment.getSelectedItemPosition() != 0
+                    || markAsDoneInFragment.isChecked();
+        } else {
+            return !titleInFragment.getText().toString().equals(title)
+                    || markAsDoneInFragment.isChecked() != isDone
+                    || hasModified
+                    || urgencyInFragment.getSelectedItemPosition() != selectUrgency
+                    || !remarkInFragment.getText().toString().equals(remark);
+        }
     }
 
     public static TaskEditFragment newEditFragmentInstance(long taskId){

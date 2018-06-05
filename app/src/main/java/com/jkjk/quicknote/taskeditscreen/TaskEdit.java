@@ -1,14 +1,11 @@
 package com.jkjk.quicknote.taskeditscreen;
 
 import android.content.DialogInterface;
-import android.content.Intent;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.widget.Toast;
 
 import com.jkjk.quicknote.R;
-import com.jkjk.quicknote.listscreen.TaskListFragment;
 
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
 
@@ -46,27 +43,32 @@ public class TaskEdit extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         //confirm to discard dialog, and ask the note list activity to update its view
-        new AlertDialog.Builder(this).setTitle(R.string.discard_title).setMessage(R.string.confirm_discard)
-                .setPositiveButton(R.string.discard, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        if (!taskEditFragment.hasTaskSave){
-                            //NoteEdit no need to save. so override hasNoteSave to true to avoid saving on onStop
-                            taskEditFragment.hasTaskSave = true;
+        if (taskEditFragment.checkModified()) {
+            new AlertDialog.Builder(this).setTitle(R.string.discard_title).setMessage(R.string.confirm_discard)
+                    .setPositiveButton(R.string.discard, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            if (!taskEditFragment.hasTaskSave) {
+                                //NoteEdit no need to save. so override hasNoteSave to true to avoid saving on onStop
+                                taskEditFragment.hasTaskSave = true;
+                            }
+                            TaskEdit.super.onBackPressed();
                         }
-                        TaskEdit.super.onBackPressed();
-                    }
-                })
-                .setNeutralButton(R.string.save_instead, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        //Save instantly instead of onStop so that when the note list's onResume get called, the note is already update
-                        taskEditFragment.saveTask();
-                        taskEditFragment.hasTaskSave = true;
-                        TaskEdit.super.onBackPressed();
-                    }
-                })
-                .setNegativeButton(R.string.cancel, null)
-                .show();
+                    })
+                    .setNeutralButton(R.string.save_instead, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            //Save instantly instead of onStop so that when the note list's onResume get called, the note is already update
+                            taskEditFragment.saveTask();
+                            taskEditFragment.hasTaskSave = true;
+                            TaskEdit.super.onBackPressed();
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel, null)
+                    .show();
+        } else {
+            taskEditFragment.hasTaskSave = true;
+            super.onBackPressed();
+        }
     }
 }

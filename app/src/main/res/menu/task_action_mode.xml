@@ -2,18 +2,16 @@
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:id="@+id/starred"
-        android:title="@string/starred"
-        android:icon="@drawable/sharp_star_border_24"
+    <item android:id="@+id/mark_as_done"
+        android:title="@string/mark_as_done"
+        android:icon="@drawable/sharp_done_24"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/select_all"
-        android:checkable="true"
         android:title="@string/select_all"
         android:icon="@drawable/sharp_select_all_24"
         app:showAsAction="always" />
-
 
 
 </menu>

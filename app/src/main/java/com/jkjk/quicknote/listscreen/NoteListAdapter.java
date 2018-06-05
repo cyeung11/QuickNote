@@ -35,14 +35,12 @@ import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 
 public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHolder> {
 
-    private int itemCount;
     private NoteListFragment fragment;
-    Boolean inActionMode = false;
-    ActionMode mActionMode;
+    Boolean isInNoteActionMode = false;
+    ActionMode actionMode;
     private ArrayList<Integer> selectedItems = new ArrayList<>();
     private Cursor noteCursor;
-    private int selectedNotStarred;
-    private int notStarredCount;
+    private int itemCount, selectedNotStarred, notStarredCount;
 
 
     NoteListAdapter(NoteListFragment fragment){
@@ -96,14 +94,14 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
 
             @Override
             public void onClick(View view) {
-                int clickPosition = holder.getAdapterPosition();
 
                 //Multi-select
-                if (inActionMode) {
-                    MenuItem selectAll = mActionMode.getMenu().findItem(R.id.select_all);
-                    MenuItem starred = mActionMode.getMenu().findItem(R.id.starred);
+                if (isInNoteActionMode) {
+                    int clickPosition = holder.getAdapterPosition();
+                    MenuItem selectAll = actionMode.getMenu().findItem(R.id.select_all);
+                    MenuItem starred = actionMode.getMenu().findItem(R.id.starred);
                     if (selectedItems.contains(clickPosition)) {
-                        // Not all are selected anymore, so change title to select all
+                        // Not all notes are selected, so set title to select all
                         if (selectedItems.size()==itemCount){
                             selectAll.setTitle(fragment.getResources().getString(R.string.select_all));
                         }
@@ -115,7 +113,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                         if (!holder.isStarred){
                             selectedNotStarred -= 1;
                         }
-
+                        // if all selected item are starred, set title of menu item to unstar
                         if (selectedNotStarred == 0){
                             starred.setTitle(fragment.getResources().getString(R.string.unstarred));
                         }
@@ -135,22 +133,20 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                             selectAll.setTitle(fragment.getResources().getString(R.string.deselect_all));
                         }
                     }
-                }else {
-                    fragment.onNoteEdit(holder.noteId);
 
-                }
+                }else fragment.onNoteEdit(holder.noteId);
+
             }
         });
 
         v.setOnLongClickListener(new View.OnLongClickListener() {
-            ActionMode actionMode;
 
             @Override
             public boolean onLongClick(final View view) {
 
                 final FloatingActionButton addNote = fragment.getActivity().findViewById(R.id.add_note);
-
                 final int clickPosition = holder.getAdapterPosition();
+
                 if (actionMode != null) {
                     return false;
                 } else {
@@ -159,8 +155,8 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                         @Override
                         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
                             MenuInflater inflater = mode.getMenuInflater();
-                            inflater.inflate(R.menu.edit_action_mode, menu);
-                            inActionMode = true;
+                            inflater.inflate(R.menu.note_action_mode, menu);
+                            isInNoteActionMode = true;
 
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                 fragment.getActivity().getWindow().setStatusBarColor(Color.DKGRAY);
@@ -169,7 +165,6 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                             selectedItems.add(clickPosition);
 
                             MenuItem starred = menu.findItem(R.id.starred);
-
                             if (holder.isStarred){
                                 selectedNotStarred = 0;
                                 starred.setTitle(fragment.getResources().getString(R.string.unstarred));
@@ -184,10 +179,10 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                             holder.cardView.setCardBackgroundColor(Color.LTGRAY);
                             //change the FAB to delete
                             addNote.setImageDrawable(fragment.getResources().getDrawable(R.drawable.sharp_delete_24));
-                            addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.colorPrimary)));
+                            addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.alternative)));
 
                             // Get item count of not starred note
-                            Cursor checkStarredCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id"}, "starred=0", null, null
+                            Cursor checkStarredCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id"}, "starred=0 AND type=0", null, null
                                     , null, null);
                             notStarredCount = checkStarredCursor.getCount();
                             checkStarredCursor.close();
@@ -233,38 +228,45 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
 
                                         if (selectedNotStarred ==0){
                                             // When all selected notes are starred, un-starred them
-
+                                            values.put("starred", 0);
                                             for (int unstarredPosition : selectedItems) {
                                                 noteCursor.moveToPosition(unstarredPosition);
                                                 String unstarredId = noteCursor.getString(0);
-                                                values.put("starred", 0);
+
                                                 //Update
                                                 MyApplication.database.update(DATABASE_NAME, values, "_id='" + unstarredId + "'", null);
-                                                Toast.makeText(fragment.getContext(),R.string.unstarred_toast,Toast.LENGTH_SHORT).show();
-                                                values.clear();
-                                                //position starts from 0
-                                                notifyItemChanged(unstarredPosition+1);
                                             }
+
+                                            updateCursor();
+                                            for (int unstarredPosition : selectedItems) {
+                                                notifyItemChanged(unstarredPosition);
+                                            }
+
+                                            Toast.makeText(fragment.getContext(),R.string.unstarred_toast,Toast.LENGTH_SHORT).show();
 
                                         } else if (selectedNotStarred >0){
                                             // When some of the selected notes are not starred, starred them all again
+                                            values.put("starred", 1);
 
                                             for (int starredPosition : selectedItems) {
                                                 noteCursor.moveToPosition(starredPosition);
                                                 String starredId = noteCursor.getString(0);
-                                                values.put("starred", 1);
+
                                                 //Update
                                                 MyApplication.database.update(DATABASE_NAME, values, "_id='" + starredId + "'", null);
-                                                Toast.makeText(fragment.getContext(),R.string.starred_toast,Toast.LENGTH_SHORT).show();
-                                                values.clear();
-                                                notifyItemChanged(starredPosition+1);
                                             }
+
+                                            updateCursor();
+                                            for (int starredPosition : selectedItems) {
+                                                notifyItemChanged(starredPosition);
+                                            }
+
+                                            Toast.makeText(fragment.getContext(),R.string.starred_toast,Toast.LENGTH_SHORT).show();
                                         }
-                                        updateCursor();
-                                        mActionMode.finish();
+                                        actionMode.finish();
                                         return true;
-                                    }
-                                    return false;
+
+                                    } else return false;
 
                                 default:
                                     return false;
@@ -275,7 +277,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                         public void onDestroyActionMode(ActionMode mode) {
                             notifyDataSetChanged();
                             actionMode = null;
-                            inActionMode = false;
+                            isInNoteActionMode = false;
                             selectedItems.clear();
                             addNote.setImageDrawable(fragment.getResources().getDrawable(R.drawable.pencil));
                             addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.highlight)));
@@ -284,8 +286,6 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                             }
                         }
                     });
-                    view.setSelected(true);
-                    mActionMode = actionMode;
                     return true;
                 }
             }
@@ -376,22 +376,22 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
     private boolean isYesterday(long time) {
         int currentDayOfYear, currentYear, setTimeDayOfYear, setTimeYear, setTimeMonth, setTimeDay;
 
-        Calendar dateOfSetTime = Calendar.getInstance();
+        Calendar setTime = Calendar.getInstance();
         Calendar currentTime = Calendar.getInstance();
-        dateOfSetTime.setTimeInMillis(time);
+        setTime.setTimeInMillis(time);
 
         currentDayOfYear = currentTime.get(Calendar.DAY_OF_YEAR);
         currentYear = currentTime.get(Calendar.YEAR);
-        setTimeDayOfYear = dateOfSetTime.get(Calendar.DAY_OF_YEAR);
-        setTimeYear = dateOfSetTime.get(Calendar.YEAR);
-        setTimeMonth = dateOfSetTime.get(Calendar.MONTH);
-        setTimeDay = dateOfSetTime.get(Calendar.DAY_OF_MONTH);
+        setTimeDayOfYear = setTime.get(Calendar.DAY_OF_YEAR);
+        setTimeYear = setTime.get(Calendar.YEAR);
+        setTimeMonth = setTime.get(Calendar.MONTH);
+        setTimeDay = setTime.get(Calendar.DAY_OF_MONTH);
 
-        return (currentDayOfYear == 1 && setTimeYear == currentYear - 1 && setTimeMonth == 11 && setTimeDay == 31) || (setTimeDayOfYear == currentDayOfYear - 1 && setTimeYear == currentYear);
+        return (setTimeDayOfYear == currentDayOfYear - 1 && setTimeYear == currentYear) || (currentDayOfYear == 1 && setTimeYear == currentYear - 1 && setTimeMonth == 11 && setTimeDay == 31) ;
     }
 
 
-    public ArrayList<Integer> getSelected (){
+    ArrayList<Integer> getSelected (){
         return selectedItems;
     }
 
@@ -410,7 +410,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 , null, "time DESC");
     }
 
-    public Cursor getNoteCursor(){
+    Cursor getNoteCursor(){
         return noteCursor;
     }
 

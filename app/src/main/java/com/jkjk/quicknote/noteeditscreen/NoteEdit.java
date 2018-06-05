@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.Toast;
 
 import com.jkjk.quicknote.R;
 
@@ -51,7 +50,7 @@ public class NoteEdit extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         //confirm to discard dialog, and ask the note list activity to update its view
-        if (noteEditFragment.hasModified) {
+        if (noteEditFragment.checkModified()) {
             new AlertDialog.Builder(this).setTitle(R.string.discard_title).setMessage(R.string.confirm_discard)
                     .setPositiveButton(R.string.discard, new DialogInterface.OnClickListener() {
                         @Override

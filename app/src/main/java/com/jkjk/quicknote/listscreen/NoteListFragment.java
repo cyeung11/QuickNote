@@ -24,7 +24,7 @@ public class NoteListFragment extends Fragment {
 
     NoteListAdapter noteListAdapter;
     TextView notFoundTextView;
-    boolean showingStarred = false;
+
     RecyclerView recyclerView;
 
     public NoteListFragment() {
@@ -72,12 +72,9 @@ public class NoteListFragment extends Fragment {
 
     @Override
     public void onStop() {
-        if (noteListAdapter.mActionMode!=null) {
-            noteListAdapter.mActionMode.finish();
+        if (noteListAdapter.actionMode !=null) {
+            noteListAdapter.actionMode.finish();
         }
-
-        showingStarred = false;
-
         super.onStop();
     }
 

@@ -42,15 +42,14 @@ import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 public class NoteEditFragment extends Fragment {
 
     private static final String NOTE_ID = "noteId";
-    static final String DEFAULT_FRAGMENT_TAG = "NoteEditFragment";
     public final static String EXTRA_NOTE_ID = "extraNoteId";
 
     boolean hasNoteSave = false;
-    boolean hasModified = false;
 
     private long noteId;
     private EditText titleInFragment, contentInFragment;
     private boolean newNote;
+    private String title, content;
 
     // 0 stands for not starred, 1 starred
     private int isStarred = 0;
@@ -196,7 +195,7 @@ public class NoteEditFragment extends Fragment {
                                                 }
                                                     // No need to do saving
                                                     hasNoteSave = true;
-                                                    Toast.makeText(getContext(), R.string.deleted_toast, Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(getContext(), R.string.note_deleted_toast, Toast.LENGTH_SHORT).show();
                                                     getActivity().finish();
                                                 }
                                             }
@@ -210,24 +209,6 @@ public class NoteEditFragment extends Fragment {
                     }
                 });
                 editDropMenu.show();
-            }
-        });
-
-        titleInFragment.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean b) {
-                if (b) {
-                    hasModified = true;
-                }
-            }
-        });
-
-        contentInFragment.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean b) {
-                if (b) {
-                    hasModified = true;
-                }
             }
         });
 
@@ -259,11 +240,17 @@ public class NoteEditFragment extends Fragment {
         outState.putLong(NOTE_ID, noteId);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        title = titleInFragment.getText().toString();
+        content = contentInFragment.getText().toString();
+    }
 
     @Override
     public void onPause() {
-        //when user quit the app without choosing save or discard, save the note
-        if (!hasNoteSave){
+        if (checkModified() && !hasNoteSave) {
+            //when user quit the app without choosing save or discard, save the note
             saveNote();
             updateAllWidget();
         }
@@ -309,6 +296,16 @@ public class NoteEditFragment extends Fragment {
             Log.e(getClass().getName(), "updating widget",e);
         }
 
+    }
+
+    boolean checkModified(){
+        if (newNote){
+            return !titleInFragment.getText().toString().trim().equals("")
+                    || !contentInFragment.getText().toString().trim().equals("");
+        } else {
+            return !title.equals(titleInFragment.getText().toString())
+                    || !content.equals(contentInFragment.getText().toString());
+        }
     }
 
 

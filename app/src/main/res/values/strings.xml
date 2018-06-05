@@ -38,7 +38,8 @@
     <string name="share">Share</string>
     <string name="search">Search</string>
     <string name="show_starred">Show starred notes</string>
-    <string name="show_all">Show all notes</string>
+    <string name="show_all_note">Show all notes</string>
+    <string name="show_all_task">Show all tasks</string>
     <string name="starred">Star</string>
     <string name="unstarred">Unstar</string>
     <string name="settings">Settings</string>
@@ -52,7 +53,10 @@
     <string name="saved_starred_toast">Note saved &amp; starred</string>
     <string name="starred_toast">Note starred</string>
     <string name="unstarred_toast">Note unstarred</string>
-    <string name="deleted_toast">Note deleted</string>
+    <string name="pending_toast">Task marked as pending</string>
+    <string name="done_toast">Task marked as done</string>
+    <string name="note_deleted_toast">Note deleted</string>
+    <string name="task_deleted_toast">Task deleted</string>
     <string name="back_up">Backup</string>
     <string name="back_up_summary">Backup note to storage</string>
     <string name="back_up_name">notebackup-</string>
@@ -96,6 +100,7 @@
     <string name="task_hint">Task name</string>
     <string name="due_date_caption">DUE DATE</string>
     <string name="mark_as_done">Mark as done</string>
+    <string name="mark_as_pending">Mark as pending</string>
     <string name="remark_caption">REMARK</string>
     <string name="remark_hint">Progress, instruction etc.</string>
     <string name="date_hint">Date not set</string>
@@ -112,6 +117,7 @@
     <string name="show_done">Show done tasks</string>
     <string name="switch_note">Switch to Note</string>
     <string name="switch_task">Switch to Task</string>
+
 
 
     <string-array name="font_size">

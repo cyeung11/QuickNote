@@ -24,9 +24,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
 import com.google.android.gms.ads.MobileAds;
-
-
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.SearchHelper;
@@ -48,11 +47,15 @@ public class ListFragment extends Fragment{
     public static final String ADMOB_ID = "ca-app-pub-8833570917041672~2236425579";
     public static boolean isAllowedToUse = false;
     // 0 stands for note , 1 stands for task
-    private int defaultPage, currentPage;
+    private int defaultPage;
+    private char currentPage;
+    private boolean showingStarred = false, showingDone = false, sortingBytime = true;
 
-    private MenuItem showStarred, search, settings;
+    private MenuItem showStarred, search, settings, sortBy, showDone, switchTab;
     private NoteListFragment noteListFragment;
     private TaskListFragment taskListFragment;
+    private ViewPager viewPager;
+    private SharedPreferences sharedPref;
 
 
     public ListFragment() {
@@ -74,14 +77,18 @@ public class ListFragment extends Fragment{
         android.support.v7.widget.Toolbar listMenu = getActivity().findViewById(R.id.list_menu);
         ((AppCompatActivity) getActivity()).setSupportActionBar(listMenu);
 
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
         defaultPage = Integer.valueOf(sharedPref.getString(getString(R.string.default_screen), "0"));
         if (defaultPage == 0) {
+            currentPage = 'N';
             ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.note);
-        } else ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.task);
+        } else {
+            currentPage = 'T';
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.task);
+        }
 
         ListPageAdapter listPageAdapter = new ListPageAdapter(getContext(), getChildFragmentManager());
-        ViewPager viewPager = getActivity().findViewById(R.id.pager);
+        viewPager = getActivity().findViewById(R.id.pager);
         viewPager.setAdapter(listPageAdapter);
 
 
@@ -93,21 +100,52 @@ public class ListFragment extends Fragment{
 
             @Override
             public void onPageSelected(int position) {
-                if (noteListFragment.noteListAdapter.mActionMode!=null) {
-                    noteListFragment.noteListAdapter.mActionMode.finish();
+                if (noteListFragment.getNoteListAdapter().actionMode !=null) {
+                    noteListFragment.getNoteListAdapter().actionMode.finish();
                 }
+                if (taskListFragment.getTaskListAdapter().actionMode !=null) {
+                    taskListFragment.getTaskListAdapter().actionMode.finish();
+                }
+
                 // if default page is note, position 0 will be note, so current page is 0
                 if (defaultPage==0) {
-                    currentPage = position;
                     if (position==0) {
+                        currentPage = 'N';
+                        if (showStarred!=null) {
+                            showStarred.setVisible(true);
+                            showDone.setVisible(false);
+                            sortBy.setVisible(false);
+                            switchTab.setTitle(R.string.switch_task);
+                        }
                         ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.note);
-                    } else ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.task);
+                    } else {
+                        currentPage = 'T';
+                        if (showStarred!=null) {
+                            showStarred.setVisible(false);
+                            showDone.setVisible(true);
+                            sortBy.setVisible(true);
+                            switchTab.setTitle(R.string.switch_note);
+                        }
+                        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.task);
+                    }
                     // if default page is task, position 0 will be task, so current page is 1
                 } else if (position==0){
-                    currentPage = 1;
+                    currentPage = 'T';
+                    if (showStarred!=null) {
+                        showStarred.setVisible(false);
+                        showDone.setVisible(true);
+                        sortBy.setVisible(true);
+                        switchTab.setTitle(R.string.switch_note);
+                    }
                     ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.task);
                 } else if (position==1){
-                    currentPage = 0;
+                    currentPage = 'N';
+                    if (showStarred!=null) {
+                        showStarred.setVisible(true);
+                        showDone.setVisible(false);
+                        sortBy.setVisible(false);
+                        switchTab.setTitle(R.string.switch_task);
+                    }
                     ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.note);
                 }
             }
@@ -124,36 +162,64 @@ public class ListFragment extends Fragment{
         addNote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 // button served as delete function
-                if (noteListFragment.getNoteListAdapter().inActionMode){
+                if (noteListFragment.getNoteListAdapter().isInNoteActionMode || taskListFragment.getTaskListAdapter().isInTaskActionMode){
                     new AlertDialog.Builder(view.getContext()).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete_list)
                             .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
 
-                                    NoteListAdapter noteListAdapter = noteListFragment.getNoteListAdapter();
+                                    if (currentPage == 'N') {
+                                        NoteListAdapter noteListAdapter = noteListFragment.getNoteListAdapter();
 
-                                    // delete note from  selectedItems
-                                    ArrayList<Integer> mSelect = noteListAdapter.getSelected();
-                                    Cursor tempNote = noteListAdapter.getNoteCursor();
-                                    for (int removedPosition : mSelect) {
-                                        tempNote.moveToPosition(removedPosition);
-                                        String removedId = tempNote.getString(0);
-                                        MyApplication.database.delete(DATABASE_NAME, "_id='" + removedId+"'",null);
-                                        noteListAdapter.notifyItemRemoved(removedPosition);
+                                        // delete note from  selectedItems
+                                        ArrayList<Integer> mSelect = noteListAdapter.getSelected();
+                                        Cursor noteCursor = noteListAdapter.getNoteCursor();
+                                        for (int removedPosition : mSelect) {
+                                            noteCursor.moveToPosition(removedPosition);
+                                            String removedId = noteCursor.getString(0);
+                                            MyApplication.database.delete(DATABASE_NAME, "_id='" + removedId + "'", null);
+                                        }
+
+                                        noteListAdapter.updateCursor();
+                                        for (int removedPosition : mSelect) {
+                                            noteListAdapter.notifyItemRemoved(removedPosition);
+                                        }
+
+                                        Toast.makeText(getContext(), R.string.note_deleted_toast, Toast.LENGTH_SHORT).show();
+                                        noteListAdapter.actionMode.finish();
+                                        noteCursor.close();
+
+                                    } else if (currentPage == 'T'){
+                                        TaskListAdapter taskListAdapter = taskListFragment.getTaskListAdapter();
+
+                                        // delete task from  selectedItems
+                                        ArrayList<Integer> mSelect = taskListAdapter.getSelected();
+                                        Cursor taskCursor = taskListAdapter.getTaskCursor();
+                                        for (int removedPosition : mSelect) {
+                                            taskCursor.moveToPosition(removedPosition);
+                                            String removedId = taskCursor.getString(0);
+                                            MyApplication.database.delete(DATABASE_NAME, "_id='" + removedId + "'", null);
+                                        }
+
+                                        taskListAdapter.updateCursor();
+                                        for (int removedPosition : mSelect) {
+                                            taskListAdapter.notifyItemRemoved(removedPosition);
+                                        }
+
+                                        Toast.makeText(getContext(), R.string.task_deleted_toast, Toast.LENGTH_SHORT).show();
+                                        taskListAdapter.actionMode.finish();
+                                        taskCursor.close();
                                     }
-                                    Toast.makeText(getContext(),R.string.deleted_toast,Toast.LENGTH_SHORT).show();
-
-                                    noteListAdapter.updateCursor();
-                                    noteListAdapter.mActionMode.finish();
-                                    tempNote.close();
                                 }
                             })
                             .setNegativeButton(R.string.cancel, null)
                             .show();
-                }else if (currentPage==0) {
+
+                }else if (currentPage=='N') {
                     noteListFragment.onNoteEdit();
-                }else if (currentPage==1){
+                }else if (currentPage=='T'){
                     taskListFragment.onTaskEdit();
                 }
             }
@@ -172,11 +238,24 @@ public class ListFragment extends Fragment{
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.note_list_menu, menu);
+        inflater.inflate(R.menu.list_menu, menu);
 
         showStarred =  menu.findItem(R.id.show_starred);
         search =  menu.findItem(R.id.search);
         settings =  menu.findItem(R.id.settings);
+        sortBy = menu.findItem(R.id.sort_by);
+        showDone = menu.findItem(R.id.show_done);
+        switchTab = menu.findItem(R.id.switch_tab);
+
+        if (currentPage=='N'){
+            sortBy.setVisible(false);
+            showDone.setVisible(false);
+            showStarred.setVisible(true);
+        } else if (currentPage=='T'){
+            sortBy.setVisible(true);
+            showDone.setVisible(true);
+            showStarred.setVisible(false);
+        }
 
         settings.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
@@ -188,7 +267,7 @@ public class ListFragment extends Fragment{
             }
         });
 
-        SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
+        final SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
         SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
         searchView.setQueryHint(getResources().getString(R.string.search_hint));
@@ -251,9 +330,9 @@ public class ListFragment extends Fragment{
                 showStarred.setVisible(false);
                 settings.setVisible(false);
 
-                noteListFragment.showingStarred = false;
+                showingStarred = false;
                 showStarred.setIcon(R.drawable.sharp_star_border_24);
-                showStarred.setTitle(getResources().getString(R.string.show_starred));
+                showStarred.setTitle(R.string.show_starred);
                 noteListAdapter.updateCursor();
                 noteListAdapter.notifyDataSetChanged();
                 return true;
@@ -267,27 +346,27 @@ public class ListFragment extends Fragment{
             }
         });
 
-        showStarred.setIcon(R.drawable.sharp_star_border_24);
-        showStarred.setTitle(getResources().getString(R.string.show_starred));
+//        showStarred.setIcon(R.drawable.sharp_star_border_24);
+        showStarred.setTitle(R.string.show_starred);
         showStarred.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
 
                 NoteListAdapter noteListAdapter = noteListFragment.getNoteListAdapter();
 
-                if (!noteListFragment.showingStarred) {
+                if (!showingStarred) {
                     // to show only starred notes
-                    noteListFragment.showingStarred = true;
-                    showStarred.setIcon(R.drawable.baseline_star_24);
-                    showStarred.setTitle(getResources().getString(R.string.show_all));
+                    showingStarred = true;
+//                    showStarred.setIcon(R.drawable.baseline_star_24);
+                    showStarred.setTitle(R.string.show_all_note);
 
                     noteListAdapter.updateCursorForStarred();
                     noteListAdapter.notifyDataSetChanged();
                 } else {
                     // to show all notes
-                    noteListFragment.showingStarred = false;
-                    showStarred.setIcon(R.drawable.sharp_star_border_24);
-                    showStarred.setTitle(getResources().getString(R.string.show_starred));
+                    showingStarred = false;
+//                    showStarred.setIcon(R.drawable.sharp_star_border_24);
+                    showStarred.setTitle(R.string.show_starred);
 
                     noteListAdapter.updateCursor();
                     noteListAdapter.notifyDataSetChanged();
@@ -296,17 +375,110 @@ public class ListFragment extends Fragment{
             }
         });
 
+        showDone.setTitle(R.string.show_done);
+        showDone.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+
+                TaskListAdapter taskListAdapter = taskListFragment.getTaskListAdapter();
+
+                if(!showingDone){
+                    showingDone = true;
+                    showDone.setTitle(R.string.show_all_task);
+
+                    taskListAdapter.updateCursorForDone();
+                    taskListAdapter.notifyDataSetChanged();
+                } else {
+                    showingDone = false;
+                    showDone.setTitle(R.string.show_done);
+
+                    taskListAdapter.updateCursor();
+                    taskListAdapter.notifyDataSetChanged();
+                }
+                return true;
+            }
+        });
+
+        sortBy.setTitle(R.string.sort_by_urgency);
+        sortBy.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+
+                TaskListAdapter taskListAdapter = taskListFragment.getTaskListAdapter();
+
+                if (sortingBytime){
+                    sortingBytime = false;
+                    sortBy.setTitle(R.string.sort_by_time);
+
+                    taskListAdapter.updateCursorForSorting();
+                    taskListAdapter.notifyDataSetChanged();
+                } else {
+                    sortingBytime = true;
+                    sortBy.setTitle(R.string.sort_by_urgency);
+
+                    taskListAdapter.updateCursor();
+                    taskListAdapter.notifyDataSetChanged();
+                }
+                return true;
+            }
+        });
+
+        switchTab.setTitle(R.string.switch_note);
+        switchTab.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+                defaultPage = Integer.valueOf(sharedPref.getString(getString(R.string.default_screen), "0"));
+
+                if (currentPage == 'N'){
+                    if (defaultPage == 0) {
+                        viewPager.setCurrentItem(1, true);
+                    } else if (defaultPage == 1){
+                        viewPager.setCurrentItem(0, true);
+                    }
+                    switchTab.setTitle(R.string.switch_note);
+
+                } else if (currentPage == 'T'){
+                    if (defaultPage == 0) {
+                        viewPager.setCurrentItem(0, true);
+                    } else if (defaultPage == 1){
+                        viewPager.setCurrentItem(1, true);
+                    }
+                    switchTab.setTitle(R.string.switch_task);
+                }
+                return true;
+            }
+        });
     }
 
 
-
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (sortBy != null) {
+            if (currentPage == 'N') {
+                sortBy.setVisible(false);
+                showDone.setVisible(false);
+                showStarred.setVisible(true);
+            } else if (currentPage == 'T') {
+                sortBy.setVisible(true);
+                showDone.setVisible(true);
+                showStarred.setVisible(false);
+            }
+        }
+    }
 
     @Override
     public void onStop() {
         // Clear all filter
         search.collapseActionView();
-        showStarred.setIcon(R.drawable.sharp_star_border_24);
-        showStarred.setTitle(getResources().getString(R.string.show_starred));
+//        showStarred.setIcon(R.drawable.sharp_star_border_24);
+        showStarred.setTitle(R.string.show_starred);
+        showingStarred = false;
+        showDone.setTitle(R.string.show_done);
+        showingDone = false;
+        sortBy.setTitle(R.string.sort_by_urgency);
+        sortingBytime = true;
         super.onStop();
     }
 
