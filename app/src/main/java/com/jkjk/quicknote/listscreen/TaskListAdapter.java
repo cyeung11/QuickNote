@@ -441,7 +441,6 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         }
     }
 
-    //TODO
     @Override
     public int getItemCount() {
         itemCount = taskCursor.getCount();

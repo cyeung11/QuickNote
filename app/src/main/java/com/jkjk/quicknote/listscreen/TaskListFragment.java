@@ -72,8 +72,9 @@ public class TaskListFragment extends Fragment {
 
     @Override
     public void onStop() {
-        //TODO
-
+        if (taskListAdapter.actionMode !=null) {
+            taskListAdapter.actionMode.finish();
+        }
         showingStarred = false;
         super.onStop();
     }
