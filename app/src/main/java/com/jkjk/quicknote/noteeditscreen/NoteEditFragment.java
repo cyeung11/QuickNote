@@ -114,13 +114,13 @@ public class NoteEditFragment extends Fragment {
         //read data from database and attach them into the fragment
         if (!newNote) {
             try {
-                Cursor tempNote = MyApplication.database.query(DATABASE_NAME, new String[]{"title", "content", "starred"}, "_id='" + noteId +"'",
+                Cursor noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title", "content", "starred"}, "_id='" + noteId +"'",
                       null, null, null, null, null);
-                tempNote.moveToFirst();
-                titleInFragment.setText(tempNote.getString(0));
-                contentInFragment.setText(tempNote.getString(1));
-                isStarred = tempNote.getInt(2);
-                tempNote.close();
+                noteCursor.moveToFirst();
+                titleInFragment.setText(noteCursor.getString(0));
+                contentInFragment.setText(noteCursor.getString(1));
+                isStarred = noteCursor.getInt(2);
+                noteCursor.close();
             } catch (Exception e) {
                 Toast.makeText(container.getContext(), R.string.error_loading, Toast.LENGTH_SHORT).show();
                 Log.e(this.getClass().getName(), "error", e);
