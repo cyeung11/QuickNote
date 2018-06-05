@@ -8,7 +8,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public final static String[] dbColumn = new String[]{"_id", "title", "content", "time", "starred", "type", "urgency", "done"};
     public final static String DATABASE_NAME = "note";
-    // Update setting fragment's restore verify method if column is added
     private final static String CREATE_STRING = "CREATE TABLE IF NOT EXISTS " + DATABASE_NAME +
             " (_id INTEGER PRIMARY KEY AUTOINCREMENT, " + "title TEXT NOT NULL, " +
             "content TEXT NOT NULL, " + "time TEXT NOT NULL, " + "starred INTEGER, " + "type INTEGER NOT NULL, " +
