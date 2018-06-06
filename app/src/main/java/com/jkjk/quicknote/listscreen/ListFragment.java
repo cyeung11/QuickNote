@@ -327,22 +327,41 @@ public class ListFragment extends Fragment{
             @Override
             public boolean onMenuItemActionExpand(MenuItem menuItem) {
                 NoteListAdapter noteListAdapter = noteListFragment.getNoteListAdapter();
+                TaskListAdapter taskListAdapter = taskListFragment.getTaskListAdapter();
 
                 showStarred.setVisible(false);
                 settings.setVisible(false);
+                sortBy.setVisible(false);
+                showDone.setVisible(false);
+                switchTab.setVisible(false);
 
                 showingStarred = false;
-                showStarred.setIcon(R.drawable.sharp_star_border_24);
+                taskListAdapter.showingDone = false;
+
                 showStarred.setTitle(R.string.show_starred);
+                sortBy.setTitle(R.string.sort_by_urgency);
+                showDone.setTitle(R.string.show_done);
+
+                taskListAdapter.updateCursor();
+                taskListAdapter.notifyDataSetChanged();
                 noteListAdapter.updateCursor();
                 noteListAdapter.notifyDataSetChanged();
+
                 return true;
             }
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem menuItem) {
-                showStarred.setVisible(true);
                 settings.setVisible(true);
+                switchTab.setVisible(true);
+
+                if (currentPage == 'N') {
+                    showStarred.setVisible(true);
+                } else if (currentPage == 'T'){
+                    sortBy.setVisible(true);
+                    showDone.setVisible(true);
+                }
+
                 return true;
             }
         });

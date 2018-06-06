@@ -4,6 +4,8 @@ package com.jkjk.quicknote.taskeditscreen;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -12,14 +14,18 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -48,7 +54,6 @@ public class TaskEditFragment extends Fragment {
     private TextView dateInFragment, timeInFragment;
     private Switch markAsDoneInFragment;
     private boolean newTask, isDone, dateChange = false, timeChanged = false, hasModified = false;
-    private int selectUrgency;
     private Calendar taskDate;
     private String title, remark;
     private Spinner urgencyInFragment;
@@ -73,15 +78,10 @@ public class TaskEditFragment extends Fragment {
         ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(getContext(),R.array.urgency_list, android.R.layout.simple_spinner_item);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         urgencyInFragment.setAdapter(arrayAdapter);
-        urgencyInFragment.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        urgencyInFragment.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                selectUrgency = i;
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                selectUrgency = 0;
+            public void onClick(View view) {
+                hasModified = true;
             }
         });
 
@@ -111,8 +111,8 @@ public class TaskEditFragment extends Fragment {
                 remarkInFragment.setText(taskCursor.getString(1));
 
                 // read time to date and time field
-                if (taskCursor.getLong(2) != 0L) {
-                    taskDate.setTimeInMillis(taskCursor.getLong(2));
+                if (taskCursor.getString(2).equals("0")) {
+                    taskDate.setTimeInMillis(Long.valueOf(taskCursor.getString(2)));
                     DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
                     dateInFragment.setText(dateFormat.format(taskDate.getTime()));
                     dateChange = true;
@@ -129,8 +129,7 @@ public class TaskEditFragment extends Fragment {
                     }
                 }
 
-                selectUrgency = taskCursor.getInt(3);
-                urgencyInFragment.setSelection(selectUrgency);
+                urgencyInFragment.setSelection(taskCursor.getInt(3));
 
                 if (taskCursor.getInt(4)==1) {
                     markAsDoneInFragment.setChecked(true);
@@ -182,6 +181,67 @@ public class TaskEditFragment extends Fragment {
             }
         });
 
+        final ImageButton showDropMenu = getActivity().findViewById(R.id.task_show_drop_menu);
+        showDropMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                PopupMenu editDropMenu = new PopupMenu(getContext(),showDropMenu);
+                editDropMenu.inflate(R.menu.task_edit_drop_menu);
+                editDropMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+                        switch (menuItem.getItemId()){
+                            case R.id.edit_drop_menu_delete:
+                                //Delete task
+                                new AlertDialog.Builder(getContext()).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete_edit)
+                                        .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                                        if (!newTask) {
+                                                            MyApplication.database.delete(DATABASE_NAME, "_id='" + taskDate + "'", null);
+                                                        }
+                                                        // No need to do saving
+                                                        hasTaskSave = true;
+                                                        Toast.makeText(getContext(), R.string.note_deleted_toast, Toast.LENGTH_SHORT).show();
+                                                        getActivity().finish();
+                                                    }
+                                                }
+                                        )
+                                        .setNegativeButton(R.string.cancel, null)
+                                        .show();
+                                return true;
+                            case R.id.edit_drop_menu_share:
+                                Intent shareIntent = new Intent();
+                                shareIntent.setAction(Intent.ACTION_SEND);
+                                shareIntent.setType("text/plain");
+                                StringBuilder stringBuilder = new StringBuilder();
+                                if (markAsDoneInFragment.isChecked()){
+                                    stringBuilder.append("[").append(getString(R.string.done)).append("] ");
+                                } else if (urgencyInFragment.getSelectedItemPosition()==1){
+                                    stringBuilder.append("[").append(getString(R.string.important)).append("] ");
+                                } else if (urgencyInFragment.getSelectedItemPosition()==2){
+                                    stringBuilder.append("[").append(getString(R.string.asap)).append("] ");
+                                }
+                                stringBuilder.append(titleInFragment.getText().toString());
+                                if (dateChange){
+                                    stringBuilder.append("\n").append(dateInFragment.getText());
+                                }
+                                if (timeChanged){
+                                    stringBuilder.append(" ").append(timeInFragment.getText().toString());
+                                }
+                                stringBuilder.append(remarkInFragment.getText().toString());
+                                shareIntent.putExtra(Intent.EXTRA_TEXT,stringBuilder.toString());
+                                shareIntent.putExtra(Intent.EXTRA_TITLE, titleInFragment.getText());
+                                startActivity(shareIntent);
+                                return true;
+                            default:
+                                return false;
+                        }
+                    }
+                });
+            }
+        });
+
         return view;
     }
 
@@ -215,7 +275,7 @@ public class TaskEditFragment extends Fragment {
         title = titleInFragment.getText().toString();
         remark = remarkInFragment.getText().toString();
         isDone = markAsDoneInFragment.isChecked();
-        selectUrgency = urgencyInFragment.getSelectedItemPosition();
+        hasTaskSave = false;
     }
 
     @Override
@@ -224,8 +284,6 @@ public class TaskEditFragment extends Fragment {
         if (checkModified() && !hasTaskSave){
             saveTask();
         }
-        // then reset it to not saved for the case when user come back
-        hasTaskSave = false;
         super.onPause();
     }
 
@@ -256,7 +314,7 @@ public class TaskEditFragment extends Fragment {
 
         values.put("starred", 0);
         values.put("type", 1);
-        values.put("urgency", selectUrgency);
+        values.put("urgency", urgencyInFragment.getSelectedItemPosition());
 
         if (markAsDoneInFragment.isChecked()) {
             values.put("done", 1);
@@ -278,13 +336,11 @@ public class TaskEditFragment extends Fragment {
             return !titleInFragment.getText().toString().trim().equals("")
                     || hasModified
                     || !remarkInFragment.getText().toString().trim().equals("")
-                    || urgencyInFragment.getSelectedItemPosition() != 0
                     || markAsDoneInFragment.isChecked();
         } else {
             return !titleInFragment.getText().toString().equals(title)
                     || markAsDoneInFragment.isChecked() != isDone
                     || hasModified
-                    || urgencyInFragment.getSelectedItemPosition() != selectUrgency
                     || !remarkInFragment.getText().toString().equals(remark);
         }
     }
