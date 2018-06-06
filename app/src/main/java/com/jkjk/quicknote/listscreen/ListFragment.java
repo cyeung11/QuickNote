@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -49,7 +50,7 @@ public class ListFragment extends Fragment{
     // 0 stands for note , 1 stands for task
     private int defaultPage;
     private char currentPage;
-    private boolean showingStarred = false, showingDone = false, sortingBytime = true;
+    private boolean showingStarred = false, sortingBytime = true;
 
     private MenuItem showStarred, search, settings, sortBy, showDone, switchTab;
     private NoteListFragment noteListFragment;
@@ -157,7 +158,7 @@ public class ListFragment extends Fragment{
         });
 
         FloatingActionButton addNote =  getActivity().findViewById(R.id.add_note);
-        addNote.setImageDrawable(getResources().getDrawable(R.drawable.pencil));
+        addNote.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.pencil));
         addNote.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.highlight)));
         addNote.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -382,14 +383,14 @@ public class ListFragment extends Fragment{
 
                 TaskListAdapter taskListAdapter = taskListFragment.getTaskListAdapter();
 
-                if(!showingDone){
-                    showingDone = true;
+                if(!taskListAdapter.showingDone){
+                    taskListAdapter.showingDone = true;
                     showDone.setTitle(R.string.show_all_task);
 
                     taskListAdapter.updateCursorForDone();
                     taskListAdapter.notifyDataSetChanged();
                 } else {
-                    showingDone = false;
+                    taskListAdapter.showingDone = false;
                     showDone.setTitle(R.string.show_done);
 
                     taskListAdapter.updateCursor();
@@ -476,7 +477,7 @@ public class ListFragment extends Fragment{
         showStarred.setTitle(R.string.show_starred);
         showingStarred = false;
         showDone.setTitle(R.string.show_done);
-        showingDone = false;
+        taskListFragment.getTaskListAdapter().showingDone = false;
         sortBy.setTitle(R.string.sort_by_urgency);
         sortingBytime = true;
         super.onStop();

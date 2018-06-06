@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,7 +38,9 @@ import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
 public class TaskEditFragment extends Fragment {
 
     private static final String TASK_ID = "taskId";
-    public static final int TIME_NOT_SET_INDICATOR = 0;
+    public static final int TIME_NOT_SET_MILLISECOND_INDICATOR = 999;
+    public static final int TIME_NOT_SET_MINUTE_SECOND_INDICATOR = 59;
+    public static final int TIME_NOT_SET_HOUR_INDICATOR = 23;
 
     boolean hasTaskSave = false;
     private long taskId;
@@ -116,7 +119,10 @@ public class TaskEditFragment extends Fragment {
                     timeInFragment.setVisibility(View.VISIBLE);
 
                     // to see if the save time is default or not. If default (999), time will be shown as not set
-                    if (taskDate.get(Calendar.MILLISECOND)!=TIME_NOT_SET_INDICATOR) {
+                    if (taskDate.get(Calendar.MILLISECOND)!= TIME_NOT_SET_MILLISECOND_INDICATOR
+                            && taskDate.get(Calendar.SECOND) != TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                            && taskDate.get(Calendar.MINUTE) != TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                            && taskDate.get(Calendar.HOUR_OF_DAY) != TIME_NOT_SET_HOUR_INDICATOR) {
                         DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
                         timeInFragment.setText(timeFormat.format(taskDate.getTime()));
                         timeChanged = true;
@@ -185,7 +191,7 @@ public class TaskEditFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         // Define save function for the done button
         FloatingActionButton done = getActivity().findViewById(R.id.done_fab);
-        done.setImageDrawable(getResources().getDrawable(R.drawable.sharp_done_24));
+        done.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.sharp_done_24));
         done.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.highlight)));
         done.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -236,13 +242,15 @@ public class TaskEditFragment extends Fragment {
 
         // if date is not set, save the time as 0
         if (!dateChange) {
-            values.put("time", 0L);
+            values.put("time", "9999999999999");
         } else {
             if(!timeChanged){
                 // if time is not set by user, set the millisecond to 0 to indicate so that we can determine if we should show the time in time field when user comeback
-                taskDate.set(Calendar.MILLISECOND, TIME_NOT_SET_INDICATOR);
-                // if time is set, set millisecond to 999 to show it
-            } else taskDate.set(Calendar.MILLISECOND, 999);
+                taskDate.set(Calendar.MILLISECOND, TIME_NOT_SET_MILLISECOND_INDICATOR);
+                taskDate.set(Calendar.SECOND, TIME_NOT_SET_MINUTE_SECOND_INDICATOR);
+                taskDate.set(Calendar.MINUTE, TIME_NOT_SET_MINUTE_SECOND_INDICATOR);
+                taskDate.set(Calendar.HOUR_OF_DAY, TIME_NOT_SET_HOUR_INDICATOR);
+            }
             values.put("time", Long.toString(taskDate.getTimeInMillis()));
         }
 

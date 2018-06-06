@@ -15,6 +15,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
@@ -221,7 +222,7 @@ public class NoteEditFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         // Define save function for the done button
         FloatingActionButton done = getActivity().findViewById(R.id.done_fab);
-        done.setImageDrawable(getResources().getDrawable(R.drawable.sharp_done_24));
+        done.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.sharp_done_24));
         done.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.highlight)));
         done.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -39,7 +39,7 @@
     <string name="search">Search</string>
     <string name="show_starred">Show starred notes</string>
     <string name="show_all_note">Show all notes</string>
-    <string name="show_all_task">Show all tasks</string>
+    <string name="show_all_task">Show pending tasks</string>
     <string name="starred">Star</string>
     <string name="unstarred">Unstar</string>
     <string name="settings">Settings</string>

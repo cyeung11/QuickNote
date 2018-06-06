@@ -10,6 +10,7 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -178,7 +179,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                             }
                             holder.cardView.setCardBackgroundColor(Color.LTGRAY);
                             //change the FAB to delete
-                            addNote.setImageDrawable(fragment.getResources().getDrawable(R.drawable.sharp_delete_24));
+                            addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.sharp_delete_24));
                             addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.alternative)));
 
                             // Get item count of not starred note
@@ -279,7 +280,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                             actionMode = null;
                             isInNoteActionMode = false;
                             selectedItems.clear();
-                            addNote.setImageDrawable(fragment.getResources().getDrawable(R.drawable.pencil));
+                            addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.pencil));
                             addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.highlight)));
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                 fragment.getActivity().getWindow().setStatusBarColor(fragment.getResources().getColor(R.color.colorPrimaryDark));

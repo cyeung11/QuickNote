@@ -10,6 +10,7 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -37,16 +38,19 @@ import java.util.Calendar;
 
 import static android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
-import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_INDICATOR;
+import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_HOUR_INDICATOR;
+import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_MILLISECOND_INDICATOR;
+import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_MINUTE_SECOND_INDICATOR;
 
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
 
+    boolean showingDone = false;
     private TaskListFragment fragment;
     private Cursor taskCursor;
     ActionMode actionMode;
     Boolean isInTaskActionMode = false;
     private ArrayList<Integer> selectedItems = new ArrayList<>();
-    private int itemCount, selectedNotDone, notDoneCount;
+    private int itemCount, notDoneCount;
     private MenuItem markAsDone;
 
     TaskListAdapter(TaskListFragment fragment){
@@ -117,23 +121,10 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
                         holder.cardView.setCardBackgroundColor(Color.WHITE);
 
-                        if (!holder.isDone){
-                            selectedNotDone -= 1;
-                        }
-
-                        // if all selected item are done, set title of menu item to pending
-                        if (selectedNotDone == 0){
-                            markAsDone.setTitle(fragment.getResources().getString(R.string.mark_as_pending));
-                        }
                     } else {
                         // Item not been selected, so select
                         selectedItems.add(clickPosition);
                         holder.cardView.setCardBackgroundColor(Color.LTGRAY);
-
-                        if (!holder.isDone){
-                            selectedNotDone += 1;
-                            markAsDone.setTitle(fragment.getResources().getString(R.string.mark_as_done));
-                        }
 
                         // if all have been select, change title to deselect all
                         if (selectedItems.size()==itemCount){
@@ -170,13 +161,10 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                             selectedItems.add(clickPosition);
 
                             markAsDone = menu.findItem(R.id.mark_as_done);
-                            if (holder.isDone){
-                                selectedNotDone = 0;
+
+                            if (showingDone){
                                 markAsDone.setTitle(fragment.getResources().getString(R.string.mark_as_pending));
-                            }else {
-                                selectedNotDone = 1;
-                                markAsDone.setTitle(fragment.getResources().getString(R.string.mark_as_done));
-                            }
+                            } else markAsDone.setTitle(fragment.getResources().getString(R.string.mark_as_done));
 
                             if (itemCount == 1){
                                 menu.findItem(R.id.select_all).setTitle(fragment.getResources().getString(R.string.deselect_all));
@@ -185,7 +173,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                             holder.cardView.setCardBackgroundColor(Color.LTGRAY);
 
                             //change the FAB to delete
-                            addNote.setImageDrawable(fragment.getResources().getDrawable(R.drawable.sharp_delete_24));
+                            addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.sharp_delete_24));
                             addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.alternative)));
 
                             // Get item count of pending tasks
@@ -216,14 +204,12 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                                             selectedItems.add(i);
                                         }
 
-                                        selectedNotDone = notDoneCount;
                                         notifyDataSetChanged();
                                     } else {
                                         //deselect all, change title to select all
                                         selectedItems.clear();
                                         menuItem.setTitle(fragment.getResources().getString(R.string.select_all));
                                         notifyDataSetChanged();
-                                        selectedNotDone = 0;
                                     }
                                     return true;
 
@@ -233,26 +219,25 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                                         ContentValues values = new ContentValues();
                                         //Convert selected items' position to note ID
 
-                                        if (selectedNotDone == 0) {
+                                        if (showingDone) {
                                             // When all selected notes are done, change them to pending
                                             values.put("done", 0);
                                             for (int pendingPosition : selectedItems) {
                                                 taskCursor.moveToPosition(pendingPosition);
                                                 String pendingId = taskCursor.getString(0);
-
                                                 //Update
                                                 MyApplication.database.update(DATABASE_NAME, values, "_id='" + pendingId + "'", null);
                                             }
 
-                                            updateCursor();
+                                            updateCursorForDone();
                                             for (int pendingPosition : selectedItems) {
-                                                notifyItemChanged(pendingPosition);
+                                                notifyItemRemoved(pendingPosition);
                                             }
 
                                             Toast.makeText(fragment.getContext(), R.string.pending_toast, Toast.LENGTH_SHORT).show();
 
-                                        } else if (selectedNotDone > 0) {
-                                            // When some of the selected notes are pending, mark all of them done
+                                        } else {
+                                            // When selected tasks are pending, mark all of them done
                                             values.put("done", 1);
                                             for (int pendingPosition : selectedItems) {
                                                 taskCursor.moveToPosition(pendingPosition);
@@ -264,7 +249,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
                                             updateCursor();
                                             for (int pendingPosition : selectedItems) {
-                                                notifyItemChanged(pendingPosition + 1);
+                                                notifyItemRemoved(pendingPosition);
                                             }
 
                                             Toast.makeText(fragment.getContext(), R.string.done_toast, Toast.LENGTH_SHORT).show();
@@ -285,7 +270,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                             actionMode = null;
                             isInTaskActionMode = false;
                             selectedItems.clear();
-                            addNote.setImageDrawable(fragment.getResources().getDrawable(R.drawable.pencil));
+                            addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.pencil));
                             addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.highlight)));
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                 fragment.getActivity().getWindow().setStatusBarColor(fragment.getResources().getColor(R.color.colorPrimaryDark));
@@ -301,65 +286,26 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.taskDone.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
-                ContentValues values = new ContentValues();
-                RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) holder.taskBody.getLayoutParams();
-                if (checked) {
-                    values.put("done", 1);
-                    holder.urgency.setVisibility(View.GONE);
-                    holder.taskTitle.setMaxLines(2);
-                    layoutParams.addRule(RelativeLayout.START_OF, R.id.task_date);
-                    holder.taskTitle.setPaintFlags(holder.taskTitle.getPaintFlags()|STRIKE_THRU_TEXT_FLAG);
 
-                    holder.isDone = true;
+                if (compoundButton.isPressed()) {
+                    ContentValues values = new ContentValues();
 
+                    if (checked) {
+                        values.put("done", 1);
+                        holder.isDone = true;
 
-                    if (isInTaskActionMode) {
-                        // Multi-select stuff
-                        if (selectedItems.size() != 0){
-                            selectedNotDone -= 1;
-                        }
-                        // if all selected item are done, set title of menu item to pending
-                        if (selectedNotDone == 0) {
-                            markAsDone.setTitle(fragment.getResources().getString(R.string.mark_as_pending));
-                        }
+                    } else {
+                        values.put("done", 0);
+                        holder.isDone = false;
                     }
-
-                } else {
-                    values.put("done", 0);
-                    holder.taskTitle.setPaintFlags(holder.taskTitle.getPaintFlags() & (~STRIKE_THRU_TEXT_FLAG));
-                    holder.isDone = false;
-
-                    if(isInTaskActionMode && selectedItems.size()!=0){
-                        selectedNotDone += 1;
-                        markAsDone.setTitle(fragment.getResources().getString(R.string.mark_as_done));
+                    MyApplication.database.update(DATABASE_NAME, values, "_id='" + holder.taskId + "'", null);
+                    if (showingDone) {
+                        updateCursorForDone();
+                    } else {
+                        updateCursor();
                     }
-
-                    if (taskCursor!=null) {
-                        taskCursor.moveToPosition(holder.getAdapterPosition());
-                        switch (taskCursor.getInt(2)) {
-                            case 2:
-                                layoutParams.removeRule(RelativeLayout.START_OF);
-                                holder.urgency.setVisibility(View.VISIBLE);
-                                holder.taskTitle.setMaxLines(1);
-                                holder.urgency.setText(R.string.asap);
-                                holder.urgency.setTextColor(fragment.getResources().getColor(R.color.highlight));
-                                break;
-                            case 1:
-                                layoutParams.removeRule(RelativeLayout.START_OF);
-                                holder.urgency.setVisibility(View.VISIBLE);
-                                holder.taskTitle.setMaxLines(1);
-                                holder.urgency.setText(R.string.important);
-                                holder.urgency.setTextColor(fragment.getResources().getColor(R.color.colorPrimaryDark));
-                                break;
-                            case 0:
-                                holder.urgency.setVisibility(View.GONE);
-                                holder.taskTitle.setMaxLines(2);
-                                layoutParams.addRule(RelativeLayout.START_OF, R.id.task_date);
-                                break;
-                        }
-                    }
+                    notifyItemRemoved(holder.getAdapterPosition());
                 }
-                MyApplication.database.update(DATABASE_NAME, values, "_id='" + holder.taskId +"'", null);
             }
         });
         return holder;
@@ -384,6 +330,24 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
             holder.cardView.setCardBackgroundColor(Color.WHITE);
         }
 
+        // if mark as done
+        if (showingDone) {
+            holder.isDone = true;
+            holder.urgency.setVisibility(View.GONE);
+            layoutParams.addRule(RelativeLayout.START_OF, R.id.task_date);
+            holder.taskDone.setChecked(true);
+            holder.taskTitle.setPaintFlags(holder.taskTitle.getPaintFlags()|STRIKE_THRU_TEXT_FLAG);
+            holder.taskTitle.setMaxLines(2);
+        } else {
+            holder.isDone = false;
+            holder.urgency.setVisibility(View.VISIBLE);
+            layoutParams.removeRule(RelativeLayout.START_OF);
+            holder.taskDone.setChecked(false);
+            holder.taskTitle.setPaintFlags(holder.taskTitle.getPaintFlags() & (~STRIKE_THRU_TEXT_FLAG));
+            holder.taskTitle.setMaxLines(1);
+        }
+
+
         if (taskCursor != null) {
             try {
                 taskCursor.moveToPosition(position);
@@ -407,22 +371,19 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                         break;
                 }
 
-                // if mark as done
-                if (taskCursor.getInt(4)==1) {
-                    holder.isDone = true;
-                    holder.urgency.setVisibility(View.GONE);
-                    layoutParams.addRule(RelativeLayout.START_OF, R.id.task_date);
-                    holder.taskDone.setChecked(true);
-                    holder.taskTitle.setPaintFlags(holder.taskTitle.getPaintFlags()|STRIKE_THRU_TEXT_FLAG);
-                    holder.taskTitle.setMaxLines(2);
-                } else holder.isDone = false;
-
                 long time = (Long.parseLong(taskCursor.getString(3)));
 
-                if (time!=0L) {
+                if (time!=9999999999999L) {
                     if (DateUtils.isToday(time)) {
-                        //get the millisecond to see if the time was set by user
-                        if ((time % 1000) == TIME_NOT_SET_INDICATOR) {
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeInMillis(time);
+
+                        //get the time to see if the time was set by user
+                        if (calendar.get(Calendar.MILLISECOND) == TIME_NOT_SET_MILLISECOND_INDICATOR
+                                && calendar.get(Calendar.SECOND) ==  TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                                && calendar.get(Calendar.MINUTE) ==  TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                                && calendar.get(Calendar.HOUR_OF_DAY) ==  TIME_NOT_SET_HOUR_INDICATOR) {
+
                             holder.taskTime.setText(R.string.today);
 
                         } else holder.taskTime.setText(DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_TIME));
@@ -457,8 +418,9 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         int currentDayOfYear, currentDay, currentYear, currentMonth, setTimeDayOfYear, setTimeYear;
 
         Calendar setTime = Calendar.getInstance();
-        Calendar currentTime = Calendar.getInstance();
         setTime.setTimeInMillis(time);
+
+        Calendar currentTime = Calendar.getInstance();
 
         currentDay = currentTime.get(Calendar.DAY_OF_MONTH);
         currentDayOfYear = currentTime.get(Calendar.DAY_OF_YEAR);
@@ -478,9 +440,8 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         return taskCursor;
     }
 
-    // TODO Hide done item
     public void updateCursor(){
-        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "time","done"}, "type = 1", null, null
+        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "time","done"}, "type = 1 AND done = 0", null, null
                 , null, "time ASC");
     }
 
@@ -490,7 +451,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     }
 
     public void updateCursorForDone(){
-        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "time","done"}, "type = 1 AND done = 1", null, null
+        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "time","done"}, "type=1 AND done=1", null, null
                 , null, "time ASC");
     }
 
