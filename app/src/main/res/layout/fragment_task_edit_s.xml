@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".taskeditscreen.TaskEditFragment">
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+
+                <EditText
+                    android:id="@+id/task_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginBottom="6dp"
+                    android:layout_marginEnd="4dp"
+                    android:fontFamily="serif"
+                    android:hint="@string/title_here"
+                    android:maxLines="1"
+                    android:textSize="18sp"
+                    android:inputType="textCapSentences" />
+
+                <ImageButton
+                    android:id="@+id/task_show_drop_menu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/sharp_more_vert_24"
+                    android:contentDescription="@string/menu"
+                    android:background="@android:color/transparent"
+                    android:layout_gravity="center_vertical"
+                    android:focusable="false" />
+
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/mark_as_done"
+                    android:textSize="12sp"/>
+
+                <Switch
+                    android:id="@+id/task_done"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/category_caption"
+                android:textSize="13sp"
+                android:layout_marginBottom="8dp"
+                android:textColor="@color/colorPrimary"/>
+
+            <Spinner
+                android:id="@+id/task_urgency"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="15dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/due_date_caption"
+                android:textSize="13sp"
+                android:layout_marginBottom="8dp"
+                android:textColor="@color/colorPrimary"/>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/task_date"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="16dp"
+                    android:hint="@string/date_hint"
+                    android:textSize="14sp"
+                    android:textColor="@android:color/black"/>
+
+                <TextView
+                    android:id="@+id/task_time"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:minWidth="160dp"
+                    android:hint="@string/time_hint"
+                    android:visibility="invisible"
+                    android:textSize="14sp"
+                    android:textColor="@android:color/black"/>
+
+            </LinearLayout>
+
+            <Spinner
+                android:id="@+id/task_reminder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="15dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/remark_caption"
+                android:textSize="13sp"
+                android:layout_marginBottom="8dp"
+                android:textColor="@color/colorPrimary"/>
+
+
+
+            <EditText
+                android:id="@+id/task_remark"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
+                android:textSize="14sp"
+                android:background="@android:color/transparent"
+                android:gravity="top"
+                android:hint="@string/remark_hint"
+                android:inputType="textCapSentences|textMultiLine" />
+
+        </LinearLayout>
+
+
+    </ScrollView>
+
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/done_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="40dp"
+        android:layout_marginEnd="24dp"/>
+
+
+</RelativeLayout>

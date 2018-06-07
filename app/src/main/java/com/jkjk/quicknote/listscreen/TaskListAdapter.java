@@ -38,6 +38,7 @@ import java.util.Calendar;
 
 import static android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
+import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.DATE_NOT_SET_INDICATOR;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_HOUR_INDICATOR;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_MILLISECOND_INDICATOR;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_MINUTE_SECOND_INDICATOR;
@@ -57,7 +58,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         this.fragment = fragment;
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder {
         CardView cardView;
         TextView taskTitle, taskTime, urgency;
         CheckBox taskDone;
@@ -373,7 +374,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
                 long time = (Long.parseLong(taskCursor.getString(3)));
 
-                if (time!=9999999999999L) {
+                if (time!=DATE_NOT_SET_INDICATOR) {
                     if (DateUtils.isToday(time)) {
                         Calendar calendar = Calendar.getInstance();
                         calendar.setTimeInMillis(time);

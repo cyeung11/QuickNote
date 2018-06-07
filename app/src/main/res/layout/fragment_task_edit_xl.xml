@@ -32,10 +32,11 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginBottom="8dp"
+                    android:layout_marginEnd="4dp"
                     android:fontFamily="serif"
                     android:hint="@string/title_here"
                     android:maxLines="1"
-                    android:textSize="22sp"
+                    android:textSize="33sp"
                     android:inputType="textCapSentences" />
 
                 <ImageButton
@@ -64,6 +65,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
+                    android:textSize="18sp"
                     android:text="@string/mark_as_done" />
 
                 <Switch
@@ -78,6 +80,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/category_caption"
                 android:layout_marginBottom="8dp"
+                android:textSize="18sp"
                 android:textColor="@color/colorPrimary"/>
 
             <Spinner
@@ -92,6 +95,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/due_date_caption"
+                android:textSize="18sp"
                 android:layout_marginBottom="8dp"
                 android:textColor="@color/colorPrimary"/>
 
@@ -99,7 +103,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
+                android:layout_marginBottom="8dp"
                 android:layout_marginEnd="4dp"
                 android:layout_marginStart="4dp"
                 android:orientation="horizontal">
@@ -111,7 +115,7 @@
                     android:layout_weight="1"
                     android:layout_marginEnd="16dp"
                     android:hint="@string/date_hint"
-                    android:textSize="16sp"
+                    android:textSize="24sp"
                     android:textColor="@android:color/black"/>
 
                 <TextView
@@ -122,17 +126,25 @@
                     android:minWidth="160dp"
                     android:hint="@string/time_hint"
                     android:visibility="invisible"
-                    android:textSize="16sp"
+                    android:textSize="24sp"
                     android:textColor="@android:color/black"/>
 
             </LinearLayout>
 
+            <Spinner
+                android:id="@+id/task_reminder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="20dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/remark_caption"
                 android:layout_marginBottom="8dp"
+                android:textSize="18sp"
                 android:textColor="@color/colorPrimary"/>
 
 
@@ -144,7 +156,7 @@
                 android:layout_weight="1"
                 android:layout_marginEnd="4dp"
                 android:layout_marginStart="4dp"
-                android:textSize="16sp"
+                android:textSize="24sp"
                 android:background="@android:color/transparent"
                 android:gravity="top"
                 android:hint="@string/remark_hint"

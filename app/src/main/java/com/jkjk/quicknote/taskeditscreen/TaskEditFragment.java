@@ -6,6 +6,7 @@ import android.app.TimePickerDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -34,11 +36,17 @@ import android.widget.Toast;
 
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.helper.AlarmHelper;
 
+import java.sql.Array;
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
+import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.DEFAULT_NOTE_ID;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
 
 public class TaskEditFragment extends Fragment {
@@ -47,6 +55,7 @@ public class TaskEditFragment extends Fragment {
     public static final int TIME_NOT_SET_MILLISECOND_INDICATOR = 999;
     public static final int TIME_NOT_SET_MINUTE_SECOND_INDICATOR = 59;
     public static final int TIME_NOT_SET_HOUR_INDICATOR = 23;
+    public static final long DATE_NOT_SET_INDICATOR = 9999999999999L;
 
     boolean hasTaskSave = false;
     private long taskId;
@@ -56,7 +65,7 @@ public class TaskEditFragment extends Fragment {
     private boolean newTask, isDone, dateChange = false, timeChanged = false, hasModified = false;
     private Calendar taskDate;
     private String title, remark;
-    private Spinner urgencyInFragment;
+    private Spinner urgencyInFragment, reminderInFragment;
 
     public TaskEditFragment() {
         // Required empty public constructor
@@ -66,24 +75,47 @@ public class TaskEditFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Obtain correspond value from preferences to show appropriate size for the view
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        String editViewSize = sharedPref.getString(getResources().getString(R.string.font_size_editing_screen),"m");
+        int editViewInt;
+        int spinnerDropDownInt;
+        int spinnerItemInt;
+        switch (editViewSize){
+            case ("s"):
+                editViewInt = R.layout.fragment_task_edit_s;
+                spinnerDropDownInt = R.layout.spinner_drop_down_s;
+                spinnerItemInt = R.layout.spinner_item_s;
+                break;
+            case ("m"):
+                editViewInt = R.layout.fragment_task_edit_m;
+                spinnerDropDownInt = android.R.layout.simple_spinner_dropdown_item;
+                spinnerItemInt = android.R.layout.simple_spinner_item;
+                break;
+            case ("l"):
+                editViewInt = R.layout.fragment_task_edit_l;
+                spinnerDropDownInt = R.layout.spinner_drop_down_l;
+                spinnerItemInt = R.layout.spinner_item_l;
+                break;
+            case ("xl"):
+                editViewInt = R.layout.fragment_task_edit_xl;
+                spinnerDropDownInt = R.layout.spinner_drop_down_xl;
+                spinnerItemInt = R.layout.spinner_item_xl;
+                break;
+            default:
+                editViewInt = R.layout.fragment_task_edit_m;
+                spinnerDropDownInt = android.R.layout.simple_spinner_dropdown_item;
+                spinnerItemInt = android.R.layout.simple_spinner_item;
+        }
+
+
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_task_edit, container, false);
+        View view = inflater.inflate(editViewInt, container, false);
         titleInFragment = view.findViewById(R.id.task_title);
         remarkInFragment = view.findViewById(R.id.task_remark);
         markAsDoneInFragment = view.findViewById(R.id.task_done);
         dateInFragment = view.findViewById(R.id.task_date);
         timeInFragment = view.findViewById(R.id.task_time);
-
-        urgencyInFragment = view.findViewById(R.id.task_urgency);
-        ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(getContext(),R.array.urgency_list, android.R.layout.simple_spinner_item);
-        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        urgencyInFragment.setAdapter(arrayAdapter);
-        urgencyInFragment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                hasModified = true;
-            }
-        });
 
         if (savedInstanceState !=null) {
             // case when restoring from saved instance
@@ -93,13 +125,74 @@ public class TaskEditFragment extends Fragment {
         }else if (getArguments() != null) {
 
             // case when argument has data, either note ID from the note list activity or text from external intent
-            taskId = getArguments().getLong(EXTRA_NOTE_ID, 999999999L);
-            newTask = (taskId == 999999999L);
+            taskId = getArguments().getLong(EXTRA_NOTE_ID, DEFAULT_NOTE_ID);
+            newTask = (taskId == DEFAULT_NOTE_ID);
 
         } else {
             newTask = true;}
 
         taskDate = Calendar.getInstance();
+
+
+        urgencyInFragment = view.findViewById(R.id.task_urgency);
+        ArrayAdapter<CharSequence> urgencyAdapter = ArrayAdapter.createFromResource(getContext(),R.array.urgency_list, spinnerItemInt);
+        urgencyAdapter.setDropDownViewResource(spinnerDropDownInt);
+        urgencyInFragment.setAdapter(urgencyAdapter);
+        urgencyInFragment.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                if (view.isPressed()){
+                    hasModified = true;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
+        List<String> reminderArray = Arrays.asList(getResources().getStringArray(R.array.reminder_list));
+
+        reminderInFragment = view.findViewById(R.id.task_reminder);
+        ArrayAdapter<String> reminderAdapter = new ArrayAdapter<>(getContext(), spinnerItemInt, reminderArray);
+        reminderAdapter.setDropDownViewResource(spinnerDropDownInt);
+        reminderInFragment.setAdapter(reminderAdapter);
+        reminderInFragment.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                if (view.isPressed()){
+                    hasModified = true;
+                }
+                // if select other, show date & time picker
+                if (i == 5){
+                    final Calendar reminderTime = Calendar.getInstance();
+                    new DatePickerDialog(getContext(), new DatePickerDialog.OnDateSetListener() {
+                        @Override
+                        public void onDateSet(DatePicker datePicker,int year, int month, int dayOfMonth) {
+                            reminderTime.set(Calendar.YEAR, year);
+                            reminderTime.set(Calendar.MONTH, month);
+                            reminderTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+                            new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
+                                @Override
+                                public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute){
+                                    reminderTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                                    reminderTime.set(Calendar.MINUTE, minute);
+                                    
+                                    //TODO insert select time into spinner
+                                }
+                            }, reminderTime.get(Calendar.HOUR_OF_DAY), reminderTime.get(Calendar.MINUTE), false).show();
+                        }
+
+                    }, reminderTime.get(Calendar.YEAR), reminderTime.get(Calendar.MONTH), reminderTime.get(Calendar.DAY_OF_MONTH)).show();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
 
         if (!newTask) {
             try {
@@ -111,7 +204,7 @@ public class TaskEditFragment extends Fragment {
                 remarkInFragment.setText(taskCursor.getString(1));
 
                 // read time to date and time field
-                if (taskCursor.getString(2).equals("0")) {
+                if (!taskCursor.getString(2).equals(Long.toString(DATE_NOT_SET_INDICATOR))) {
                     taskDate.setTimeInMillis(Long.valueOf(taskCursor.getString(2)));
                     DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
                     dateInFragment.setText(dateFormat.format(taskDate.getTime()));
@@ -181,11 +274,11 @@ public class TaskEditFragment extends Fragment {
             }
         });
 
-        final ImageButton showDropMenu = getActivity().findViewById(R.id.task_show_drop_menu);
+        final ImageButton showDropMenu = view.findViewById(R.id.task_show_drop_menu);
         showDropMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                PopupMenu editDropMenu = new PopupMenu(getContext(),showDropMenu);
+                PopupMenu editDropMenu = new PopupMenu(view.getContext(),showDropMenu);
                 editDropMenu.inflate(R.menu.task_edit_drop_menu);
                 editDropMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
@@ -198,7 +291,7 @@ public class TaskEditFragment extends Fragment {
                                                     @Override
                                                     public void onClick(DialogInterface dialogInterface, int i) {
                                                         if (!newTask) {
-                                                            MyApplication.database.delete(DATABASE_NAME, "_id='" + taskDate + "'", null);
+                                                            MyApplication.database.delete(DATABASE_NAME, "_id='" + taskId + "'", null);
                                                         }
                                                         // No need to do saving
                                                         hasTaskSave = true;
@@ -229,7 +322,7 @@ public class TaskEditFragment extends Fragment {
                                 if (timeChanged){
                                     stringBuilder.append(" ").append(timeInFragment.getText().toString());
                                 }
-                                stringBuilder.append(remarkInFragment.getText().toString());
+                                stringBuilder.append("\n").append(remarkInFragment.getText().toString());
                                 shareIntent.putExtra(Intent.EXTRA_TEXT,stringBuilder.toString());
                                 shareIntent.putExtra(Intent.EXTRA_TITLE, titleInFragment.getText());
                                 startActivity(shareIntent);
@@ -239,8 +332,10 @@ public class TaskEditFragment extends Fragment {
                         }
                     }
                 });
+                editDropMenu.show();
             }
         });
+
 
         return view;
     }
@@ -300,7 +395,7 @@ public class TaskEditFragment extends Fragment {
 
         // if date is not set, save the time as 0
         if (!dateChange) {
-            values.put("time", "9999999999999");
+            values.put("time", Long.toString(DATE_NOT_SET_INDICATOR));
         } else {
             if(!timeChanged){
                 // if time is not set by user, set the millisecond to 0 to indicate so that we can determine if we should show the time in time field when user comeback

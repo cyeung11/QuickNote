@@ -44,6 +44,7 @@ public class NoteEditFragment extends Fragment {
 
     private static final String NOTE_ID = "noteId";
     public final static String EXTRA_NOTE_ID = "extraNoteId";
+    public final static long DEFAULT_NOTE_ID = 999999999L;
 
     boolean hasNoteSave = false;
 
@@ -100,8 +101,8 @@ public class NoteEditFragment extends Fragment {
         }else if (getArguments() != null) {
 
             // case when argument has data, either note ID from the note list activity or text from external intent
-            noteId = getArguments().getLong(EXTRA_NOTE_ID, 999999999L);
-            newNote = (noteId == 999999999L);
+            noteId = getArguments().getLong(EXTRA_NOTE_ID, DEFAULT_NOTE_ID);
+            newNote = (noteId == DEFAULT_NOTE_ID);
 
             // Read data from external intent
             if (newNote){
