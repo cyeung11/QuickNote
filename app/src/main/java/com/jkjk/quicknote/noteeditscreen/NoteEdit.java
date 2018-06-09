@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
+import com.google.android.gms.actions.NoteIntents;
 import com.jkjk.quicknote.R;
 
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
@@ -25,7 +26,7 @@ public class NoteEdit extends AppCompatActivity {
         if (savedInstanceState == null) {
             //Case when the activity is newly created
 
-            if (getIntent().getAction()!= null && getIntent().getAction().equals(Intent.ACTION_SEND)) {
+            if (getIntent().getAction()!= null && (getIntent().getAction().equals(Intent.ACTION_SEND) || getIntent().getAction().equals(NoteIntents.ACTION_CREATE_NOTE))) {
                 //Case when activity is called by external intent
                 noteEditFragment = NoteEditFragment.newEditFragmentInstance(getIntent());
 

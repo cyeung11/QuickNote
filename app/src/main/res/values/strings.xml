@@ -126,6 +126,7 @@
     <string name="a_day_beofre">24 hrs before</string>
     <string name="custom">Custom…</string>
     <string name="repeat">Repeat</string>
+    <string name="due">Due </string>
 
 
     <string-array name="font_size">

@@ -105,6 +105,13 @@
                 android:layout_marginStart="4dp"
                 android:orientation="horizontal">
 
+                <ImageView
+                    android:layout_width="22sp"
+                    android:layout_height="22sp"
+                    app:srcCompat="@drawable/sharp_today_24"
+                    android:contentDescription="@string/date"
+                    android:layout_marginEnd="4dp"/>
+
                 <TextView
                     android:id="@+id/task_date"
                     android:layout_width="0dp"
@@ -113,9 +120,16 @@
                     android:layout_marginEnd="16dp"
                     android:hint="@string/date_hint"
                     android:textSize="16sp"
-                    android:drawableStart="@drawable/sharp_today_24"
-                    android:drawablePadding="6dp"
                     android:textColor="@android:color/black"/>
+
+                <ImageView
+                    android:id="@+id/task_time_icon"
+                    android:layout_width="22sp"
+                    android:layout_height="22sp"
+                    app:srcCompat="@drawable/sharp_time_24"
+                    android:contentDescription="@string/time"
+                    android:visibility="invisible"
+                    android:layout_marginEnd="4dp"/>
 
                 <TextView
                     android:id="@+id/task_time"
@@ -126,8 +140,6 @@
                     android:hint="@string/time_hint"
                     android:visibility="invisible"
                     android:textSize="16sp"
-                    android:drawablePadding="6dp"
-                    android:drawableStart="@drawable/sharp_time_24"
                     android:textColor="@android:color/black"/>
 
             </LinearLayout>
@@ -143,8 +155,8 @@
                 android:layout_marginBottom="20dp">
 
                 <ImageView
-                    android:layout_width="24sp"
-                    android:layout_height="24sp"
+                    android:layout_width="22sp"
+                    android:layout_height="22sp"
                     android:layout_marginEnd="4dp"
                     android:contentDescription="@string/repeat"
                     app:srcCompat="@drawable/sharp_repeat_24"/>
@@ -164,8 +176,8 @@
                 android:layout_marginBottom="20dp">
 
                 <ImageView
-                    android:layout_width="24sp"
-                    android:layout_height="24sp"
+                    android:layout_width="22sp"
+                    android:layout_height="22sp"
                     android:layout_marginEnd="4dp"
                     android:contentDescription="@string/reminder"
                     app:srcCompat="@drawable/sharp_add_alert_24"/>

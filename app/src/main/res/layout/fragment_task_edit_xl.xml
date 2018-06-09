@@ -96,17 +96,24 @@
                 android:layout_height="wrap_content"
                 android:text="@string/due_date_caption"
                 android:textSize="18sp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="12dp"
                 android:textColor="@color/colorPrimary"/>
 
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="16dp"
                 android:layout_marginEnd="4dp"
                 android:layout_marginStart="4dp"
                 android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="28sp"
+                    android:layout_height="28sp"
+                    app:srcCompat="@drawable/sharp_today_24"
+                    android:contentDescription="@string/date"
+                    android:layout_marginEnd="4dp"/>
 
                 <TextView
                     android:id="@+id/task_date"
@@ -117,6 +124,15 @@
                     android:hint="@string/date_hint"
                     android:textSize="24sp"
                     android:textColor="@android:color/black"/>
+
+                <ImageView
+                    android:id="@+id/task_time_icon"
+                    android:layout_width="28sp"
+                    android:layout_height="28sp"
+                    app:srcCompat="@drawable/sharp_time_24"
+                    android:contentDescription="@string/time"
+                    android:visibility="invisible"
+                    android:layout_marginEnd="4dp"/>
 
                 <TextView
                     android:id="@+id/task_time"
@@ -131,13 +147,49 @@
 
             </LinearLayout>
 
-            <Spinner
-                android:id="@+id/task_reminder"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/task_repeat_column"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="20dp">
+
+                <ImageView
+                    android:layout_width="28sp"
+                    android:layout_height="28sp"
+                    android:layout_marginEnd="4dp"
+                    android:contentDescription="@string/repeat"
+                    app:srcCompat="@drawable/sharp_repeat_24"/>
+
+                <Spinner
+                    android:id="@+id/task_repeat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
                 android:layout_marginStart="4dp"
-                android:layout_marginBottom="20dp"/>
+                android:layout_marginBottom="20dp">
+
+                <ImageView
+                    android:layout_width="28sp"
+                    android:layout_height="28sp"
+                    android:layout_marginEnd="4dp"
+                    android:contentDescription="@string/reminder"
+                    app:srcCompat="@drawable/sharp_add_alert_24"/>
+
+                <Spinner
+                    android:id="@+id/task_reminder"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"

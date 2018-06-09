@@ -27,17 +27,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_ALTER_V4_1 = "ALTER TABLE "
             + DATABASE_NAME + " ADD COLUMN event_time INTEGER NOT NULL DEFAULT '0';";
-    private static final String DATABASE_ALTER_V4_2 = "CREATE TEMPORARY TABLE note_backup " +
-            " (_id INTEGER PRIMARY KEY AUTOINCREMENT, " + "title TEXT NOT NULL, " +
-            "content TEXT NOT NULL, " + "event_time INTEGER NOT NULL, " + "starred INTEGER, " + "type INTEGER NOT NULL, " +
-            "urgency INTEGER NOT NULL, " + "done INTEGER NOT NULL)";
+    private static final String DATABASE_ALTER_V4_2 = "CREATE TEMPORARY TABLE note_backup (_id INTEGER PRIMARY KEY AUTOINCREMENT" +
+            ", title TEXT NOT NULL, content TEXT NOT NULL, event_time INTEGER NOT NULL, starred INTEGER NOT NULL DEFAULT '0'" +
+            ", type INTEGER NOT NULL, urgency INTEGER NOT NULL DEFAULT '0', done INTEGER NOT NULL DEFAULT '0')";
     private static final String DATABASE_ALTER_V4_3 = "INSERT INTO note_backup SELECT _id, title, content, event_time, starred, type, urgency, done FROM "
             + DATABASE_NAME + ";";
     private static final String DATABASE_ALTER_V4_4 = "DROP TABLE "
             + DATABASE_NAME + ";";
-    private static final String DATABASE_ALTER_V4_5 = "INSERT INTO " + DATABASE_NAME
+    private static final String DATABASE_ALTER_V4_5 = "CREATE TABLE IF NOT EXISTS " + DATABASE_NAME +
+            " (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, content TEXT NOT NULL" +
+            ", event_time INTEGER NOT NULL, starred INTEGER NOT NULL DEFAULT '0', type INTEGER NOT NULL" +
+            ", urgency INTEGER NOT NULL DEFAULT '0', done INTEGER NOT NULL DEFAULT '0')";
+    private static final String DATABASE_ALTER_V4_6 = "INSERT INTO " + DATABASE_NAME
             + " SELECT _id, title, content, event_time, starred, type, urgency, done FROM note_backup;";
-    private static final String DATABASE_ALTER_V4_6 = "DROP TABLE note_backup;";
+    private static final String DATABASE_ALTER_V4_7 = "DROP TABLE note_backup;";
 
     private static final String DATABASE_ALTER_V5 =  "ALTER TABLE "
             + DATABASE_NAME + " ADD COLUMN reminder_time INTEGER NOT NULL DEFAULT '0';";
@@ -53,14 +56,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
+        // Insert starred column for starring function
         if (oldVersion < 2) {
             sqLiteDatabase.execSQL(DATABASE_ALTER_V2);
         }
+        // Insert 3 task list related column into database for task list function
         if (oldVersion < 3) {
             sqLiteDatabase.execSQL(DATABASE_ALTER_V3_1);
             sqLiteDatabase.execSQL(DATABASE_ALTER_V3_2);
             sqLiteDatabase.execSQL(DATABASE_ALTER_V3_3);
         }
+        // rename column "time" to "event_time" and change its type to INTEGER
         if (oldVersion < 4) {
             sqLiteDatabase.execSQL(DATABASE_ALTER_V4_1);
             Cursor alterCursor = sqLiteDatabase.query(DATABASE_NAME, new String[]{"_id", "time"}, null, null, null
@@ -79,11 +85,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 sqLiteDatabase.execSQL(DATABASE_ALTER_V4_2);
                 sqLiteDatabase.execSQL(DATABASE_ALTER_V4_3);
                 sqLiteDatabase.execSQL(DATABASE_ALTER_V4_4);
-                sqLiteDatabase.execSQL(CREATE_STRING);
                 sqLiteDatabase.execSQL(DATABASE_ALTER_V4_5);
                 sqLiteDatabase.execSQL(DATABASE_ALTER_V4_6);
+                sqLiteDatabase.execSQL(DATABASE_ALTER_V4_7);
             }
         }
+        // Insert reminder related column for corresponding function
         if (oldVersion < 5) {
             sqLiteDatabase.execSQL(DATABASE_ALTER_V5);
         }

@@ -28,6 +28,7 @@ import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
+import com.google.android.gms.actions.NoteIntents;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.widget.AppWidgetService;
@@ -107,6 +108,7 @@ public class NoteEditFragment extends Fragment {
             // Read data from external intent
             if (newNote){
                 contentInFragment.setText(getArguments().getString(Intent.EXTRA_TEXT));
+                titleInFragment.setText(getArguments().getString(NoteIntents.EXTRA_NAME, ""));
             }
 
         } else {newNote = true;}
@@ -322,6 +324,9 @@ public class NoteEditFragment extends Fragment {
         Bundle bundle = new Bundle();
         try {
             bundle.putString(Intent.EXTRA_TEXT, intent.getStringExtra(Intent.EXTRA_TEXT));
+            if (intent.hasExtra(NoteIntents.EXTRA_NAME)){
+                bundle.putString(NoteIntents.EXTRA_NAME, intent.getStringExtra(NoteIntents.EXTRA_NAME));
+            }
         } catch (Exception e){
             Toast.makeText(fragment.getContext(),R.string.error_loading,Toast.LENGTH_SHORT).show();
             Log.e(fragment.getClass().getName(),"Loading from incoming intent",e);

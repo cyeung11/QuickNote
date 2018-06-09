@@ -59,18 +59,19 @@ public class AlarmReceiver extends BroadcastReceiver {
                             && calendar.get(Calendar.MINUTE) ==  TIME_NOT_SET_MINUTE_SECOND_INDICATOR
                             && calendar.get(Calendar.HOUR_OF_DAY) ==  TIME_NOT_SET_HOUR_INDICATOR) {
 
-                        builder.setContentText(context.getText(R.string.today));
+                        builder.setContentText(context.getString(R.string.due)+context.getString(R.string.today));
 
                     } else {
-                        builder.setContentText( context.getText(R.string.today).toString()
-                                + context.getText(R.string.at).toString()
+                        builder.setContentText(context.getString(R.string.due)
+                                + context.getString(R.string.today)
+                                + context.getString(R.string.at)
                                 + DateUtils.formatDateTime(context, eventTime, DateUtils.FORMAT_SHOW_TIME));
                     }
 
                 } else if (isTomorrow(eventTime)) {
-                    builder.setContentText(context.getText(R.string.tomorrow));
+                    builder.setContentText(context.getString(R.string.due) + context.getString(R.string.tomorrow));
                 } else {
-                    builder.setContentText(DateUtils.formatDateTime(context, eventTime, DateUtils.FORMAT_SHOW_DATE));
+                    builder.setContentText(context.getString(R.string.due) + DateUtils.formatDateTime(context, eventTime, DateUtils.FORMAT_SHOW_DATE));
                 }
             }
 

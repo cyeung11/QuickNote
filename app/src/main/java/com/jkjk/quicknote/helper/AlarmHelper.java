@@ -5,8 +5,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 
-import java.util.Calendar;
-
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
 
 public class AlarmHelper {
@@ -31,7 +29,7 @@ public class AlarmHelper {
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, remindTime, pendingIntent);
     }
 
-    public static void cancelRemind(Context context, long id){
+    public static void cancelReminder(Context context, long id){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(context, AlarmReceiver.class);
