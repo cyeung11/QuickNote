@@ -118,12 +118,15 @@
     <string name="show_done">Show done tasks</string>
     <string name="switch_note">Switch to Note</string>
     <string name="switch_task">Switch to Task</string>
-    <string name="no_reminder_set">No reminder set</string>
-    <string name="zero_min_before">At time of due</string>
-    <string name="ten_min_before">10 minutes before due</string>
-    <string name="thirty_min_before">30 minutes before due</string>
-    <string name="a_day_beofre">A day before due</string>
-    <string name="other">Other</string>
+    <string name="reminder">Reminder</string>
+    <string name="no_reminder_set">No reminder</string>
+    <string name="zero_min_before">When due</string>
+    <string name="ten_min_before">10 min before</string>
+    <string name="thirty_min_before">30 min before</string>
+    <string name="a_day_beofre">24 hrs before</string>
+    <string name="custom">Custom…</string>
+    <string name="repeat">Repeat</string>
+
 
     <string-array name="font_size">
         <item>Small</item>
@@ -176,13 +179,15 @@
         <item>Important</item>
         <item>ASAP</item>
     </string-array>
-    <string-array name="reminder_list">
-        <item>No reminder set</item>
-        <item>At time of due</item>
-        <item>10 minutes before due</item>
-        <item>30 minutes before due</item>
-        <item>A day before due</item>
-        <item>Other</item>
+    <string-array name="reminder_list_without_time">
+        <item>No reminder</item>
+        <item>Due</item>
+        <item>24 hrs before</item>
+        <item>Custom…</item>
+    </string-array>
+    <string-array name="reminder_list_with_time">
+        <item>10 min before</item>
+        <item>30 min before</item>
     </string-array>
 
 </resources>

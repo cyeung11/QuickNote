@@ -372,7 +372,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                         break;
                 }
 
-                long time = (Long.parseLong(taskCursor.getString(3)));
+                long time = taskCursor.getLong(3);
 
                 if (time!=DATE_NOT_SET_INDICATOR) {
                     if (DateUtils.isToday(time)) {
@@ -442,22 +442,22 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     }
 
     public void updateCursor(){
-        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "time","done"}, "type = 1 AND done = 0", null, null
-                , null, "time ASC");
+        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type = 1 AND done = 0", null, null
+                , null, "event_time ASC");
     }
 
     public void updateCursorForSearch(String result){
-        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "time","done"}, "_id in ("+result+") AND type = 1", null, null
-                , null, "time ASC");
+        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "_id in ("+result+") AND type = 1", null, null
+                , null, "event_time ASC");
     }
 
     public void updateCursorForDone(){
-        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "time","done"}, "type=1 AND done=1", null, null
-                , null, "time ASC");
+        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type=1 AND done=1", null, null
+                , null, "event_time ASC");
     }
 
     public void updateCursorForSorting(){
-        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "time","done"}, "type = 1 AND done = 0", null, null
-                , null, "urgency DESC, time ASC");
+        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type = 1 AND done = 0", null, null
+                , null, "urgency DESC, event_time ASC");
     }
 }

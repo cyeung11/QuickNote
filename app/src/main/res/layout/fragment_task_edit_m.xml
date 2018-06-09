@@ -93,14 +93,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/due_date_caption"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="12dp"
                 android:textColor="@color/colorPrimary"/>
 
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="16dp"
                 android:layout_marginEnd="4dp"
                 android:layout_marginStart="4dp"
                 android:orientation="horizontal">
@@ -113,6 +113,8 @@
                     android:layout_marginEnd="16dp"
                     android:hint="@string/date_hint"
                     android:textSize="16sp"
+                    android:drawableStart="@drawable/sharp_today_24"
+                    android:drawablePadding="6dp"
                     android:textColor="@android:color/black"/>
 
                 <TextView
@@ -124,17 +126,56 @@
                     android:hint="@string/time_hint"
                     android:visibility="invisible"
                     android:textSize="16sp"
+                    android:drawablePadding="6dp"
+                    android:drawableStart="@drawable/sharp_time_24"
                     android:textColor="@android:color/black"/>
 
             </LinearLayout>
 
-            <Spinner
-                android:id="@+id/task_reminder"
-                android:layout_width="wrap_content"
+            <!--TODO add repeat function-->
+            <LinearLayout
+                android:id="@+id/task_repeat_column"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="20dp">
+
+                <ImageView
+                    android:layout_width="24sp"
+                    android:layout_height="24sp"
+                    android:layout_marginEnd="4dp"
+                    android:contentDescription="@string/repeat"
+                    app:srcCompat="@drawable/sharp_repeat_24"/>
+
+                <Spinner
+                    android:id="@+id/task_repeat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
                 android:layout_marginStart="4dp"
-                android:layout_marginBottom="20dp"/>
+                android:layout_marginBottom="20dp">
+
+                <ImageView
+                    android:layout_width="24sp"
+                    android:layout_height="24sp"
+                    android:layout_marginEnd="4dp"
+                    android:contentDescription="@string/reminder"
+                    app:srcCompat="@drawable/sharp_add_alert_24"/>
+
+                <Spinner
+                    android:id="@+id/task_reminder"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"

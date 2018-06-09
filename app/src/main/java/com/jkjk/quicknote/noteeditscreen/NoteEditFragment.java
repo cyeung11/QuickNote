@@ -165,7 +165,7 @@ public class NoteEditFragment extends Fragment {
                                     }
                                     values.put("title", noteTitle);
                                     values.put("content", contentInFragment.getText().toString());
-                                    values.put("time", Long.toString(Calendar.getInstance().getTimeInMillis()));
+                                    values.put("event_time", Calendar.getInstance().getTimeInMillis());
                                     values.put("starred", isStarred);
                                     noteId = MyApplication.database.insert(DATABASE_NAME, "",values);
                                     newNote = false;
@@ -268,11 +268,10 @@ public class NoteEditFragment extends Fragment {
         }
         values.put("title", noteTitle);
         values.put("content", contentInFragment.getText().toString());
-        values.put("time", Long.toString(Calendar.getInstance().getTimeInMillis()));
+        values.put("event_time", Calendar.getInstance().getTimeInMillis());
         values.put("starred", isStarred);
         values.put("type", 0);
-        values.put("urgency", 0);
-        values.put("done", 0);
+
         if (!newNote) {
             MyApplication.database.update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
         }else {

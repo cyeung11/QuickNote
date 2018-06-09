@@ -328,7 +328,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 holder.noteContent.setText(noteCursor.getString(2).trim());
 
                 //Time formatting
-                long time = (Long.parseLong(noteCursor.getString(3)));
+                long time = noteCursor.getLong(3);
                 String shownTime;
                 // Get current time from Calendar and check how long ago was the note edited
                 long timeSpan = Calendar.getInstance().getTimeInMillis() - time;
@@ -397,18 +397,18 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
     }
 
     public void updateCursor(){
-        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"},  "type = 0", null, null
-                , null, "time DESC");
+        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"},  "type = 0", null, null
+                , null, "event_time DESC");
     }
 
     public void updateCursorForSearch(String result){
-        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "_id in ("+result+") AND type = 0", null, null
-                , null, "time DESC");
+        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "_id in ("+result+") AND type = 0", null, null
+                , null, "event_time DESC");
     }
 
     public void updateCursorForStarred(){
-        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "time","starred"}, "starred = 1 AND type = 0", null, null
-                , null, "time DESC");
+        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "starred = 1 AND type = 0", null, null
+                , null, "event_time DESC");
     }
 
     Cursor getNoteCursor(){

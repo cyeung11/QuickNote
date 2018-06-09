@@ -10,7 +10,7 @@ public class MyApplication extends Application {
 
     public static SQLiteDatabase database;
     private DatabaseHelper helper = null;
-    public static final int CURRENT_DB_VER = 3;
+    public static final int CURRENT_DB_VER = 5;
 
     @Override
     public void onCreate() {

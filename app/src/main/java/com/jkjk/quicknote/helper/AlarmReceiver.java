@@ -44,7 +44,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 
             Notification.Builder builder = new Notification.Builder(context).setContentTitle(intent.getStringExtra(ITEM_TITLE))
-                    .setSmallIcon(R.drawable.baseline_event_note_24).setContentIntent(startPendingIntent).setAutoCancel(true);
+                    .setSmallIcon(R.drawable.sharp_event_note_24).setContentIntent(startPendingIntent).setAutoCancel(true);
 
             long eventTime = intent.getLongExtra(EVENT_TIME, DATE_NOT_SET_INDICATOR);
 
