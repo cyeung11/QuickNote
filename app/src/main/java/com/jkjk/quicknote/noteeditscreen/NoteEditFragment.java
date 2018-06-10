@@ -117,7 +117,7 @@ public class NoteEditFragment extends Fragment {
         //read data from database and attach them into the fragment
         if (!newNote) {
             try {
-                Cursor noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title", "content", "starred"}, "_id='" + noteId +"'",
+                Cursor noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title", "content", "starred"}, "_id= " + noteId ,
                       null, null, null, null, null);
                 noteCursor.moveToFirst();
                 titleInFragment.setText(noteCursor.getString(0));

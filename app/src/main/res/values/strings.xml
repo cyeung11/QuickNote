@@ -13,6 +13,7 @@
     <string name="error_widget">Error loading for widget</string>
     <string name="error_back_up">Error backing up</string>
     <string name="error_restore">Error restoring</string>
+    <string name="error_reminder">Error setting reminder</string>
     <string name="text_here">Jot down your note here</string>
     <string name="title_here">Title</string>
     <string name="yesterday">Yesterday</string>
@@ -85,6 +86,7 @@
     <string name="report_summary">Report an issue to developer</string>
     <string name="backup_restore_cap">BACKUP &amp; RESTORE</string>
     <string name="other_cap">OTHERS</string>
+    <string name="task_cap">TASK</string>
     <string name="default_screen">Default Screen</string>
     <string name="default_screen_summary">Select default screen to show when launching app</string>
     <string name="date">Date</string>
@@ -126,7 +128,11 @@
     <string name="a_day_beofre">24 hrs before</string>
     <string name="custom">Custom…</string>
     <string name="repeat">Repeat</string>
-    <string name="due">Due </string>
+    <string name="due">Due</string>
+    <string name="notification_channel_name">Reminder</string>
+    <string name="snooze">Snooze</string>
+    <string name="snooze_duration">Snooze Duration</string>
+    <string name="snooze_duration_summary">Change the duration of snoozing</string>
 
 
     <string-array name="font_size">

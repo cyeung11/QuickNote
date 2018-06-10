@@ -50,18 +50,25 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:title="@string/task_cap">
+
+        <EditTextPreference android:title="@string/snooze_duration"
+            android:summary="@string/snooze_duration_summary"
+            android:key="@string/snooze_duration"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
         android:title="@string/backup_restore_cap">
 
 
         <Preference android:title="@string/back_up"
             android:summary="@string/back_up_summary"
-            android:key="@string/back_up">
-        </Preference>
+            android:key="@string/back_up"/>
 
         <Preference android:title="@string/restore"
             android:summary="@string/restore_summary"
-            android:key="@string/restore">
-        </Preference>
+            android:key="@string/restore"/>
 
         <!--<SwitchPreference-->
         <!--android:key="@string/auto_back_up"-->
