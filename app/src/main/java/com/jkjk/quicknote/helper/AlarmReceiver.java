@@ -8,8 +8,11 @@ import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.support.v7.preference.PreferenceManager;
 import android.text.format.DateUtils;
 
 import com.jkjk.quicknote.MyApplication;
@@ -80,6 +83,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                 PendingIntent snoozePendingIntent = PendingIntent.getBroadcast(context, 0, snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                 builder.setContentTitle(intent.getStringExtra(ITEM_TITLE)).setSmallIcon(R.drawable.sharp_event_note_24)
+                        .setLargeIcon(BitmapFactory.decodeResource(context.getResources(),R.mipmap.ic_launcher_round))
                         .setContentIntent(startPendingIntent).setAutoCancel(true);
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT_WATCH) {
                     builder.addAction(R.drawable.sharp_snooze_24, context.getString(R.string.snooze), snoozePendingIntent);
@@ -178,12 +182,14 @@ public class AlarmReceiver extends BroadcastReceiver {
                                 itemType = 'T';
                         }
 
-                        //TODO grab preference at snooze duration
+                        // grab preference at snooze duration
+                        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+                        long snoozeDuration = Long.valueOf(sharedPref.getString(context.getString(R.string.snooze_duration), "300000"));
                         // setReminder(Context context, char itemType, long id, String title, String content, long eventTime, long remindTime)
                         AlarmHelper.setReminder(context, itemType, id, cursor.getString(0)
-                                , cursor.getString(3), cursor.getLong(2),  Calendar.getInstance().getTimeInMillis() + 600000);
+                                , cursor.getString(3), cursor.getLong(2),  Calendar.getInstance().getTimeInMillis() + snoozeDuration);
                         ContentValues values = new ContentValues();
-                        values.put("reminder_time", Calendar.getInstance().getTimeInMillis() + 600000);
+                        values.put("reminder_time", Calendar.getInstance().getTimeInMillis() + snoozeDuration);
                         MyApplication.database.update(DATABASE_NAME, values, "_id='" + id + "'", null);
                         cursor.close();
                     }

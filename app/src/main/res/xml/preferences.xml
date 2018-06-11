@@ -4,19 +4,16 @@
     <PreferenceCategory
         android:title="@string/user_interface_cap">
 
-        <ListPreference
-        android:key="@string/default_screen"
-        android:title="@string/default_screen"
-        android:summary="@string/default_screen_summary"
-        android:dialogTitle="@string/default_screen"
-        android:entries="@array/default_screen"
-        android:entryValues="@array/default_screen_value"
-        android:defaultValue="0" />
+        <SwitchPreference
+            android:key="@string/default_screen"
+            android:title="@string/default_screen"
+            android:summary="@string/note_as_home_page"
+            android:defaultValue="false"/>
 
         <ListPreference
             android:key="@string/font_size_main_screen"
             android:title="@string/font_size_main_screen"
-            android:summary="@string/font_size_main_screen_summary"
+            android:summary="%s"
             android:dialogTitle="@string/font_size_main_screen"
             android:entries="@array/font_size"
             android:entryValues="@array/font_size_main_screen_value"
@@ -25,7 +22,7 @@
         <ListPreference
             android:key="@string/font_size_editing_screen"
             android:title="@string/font_size_editing_screen"
-            android:summary="@string/font_size_editing_screen_summary"
+            android:summary="%s"
             android:dialogTitle="@string/font_size_editing_screen"
             android:entries="@array/font_size"
             android:entryValues="@array/font_size_editing_screen_value"
@@ -34,7 +31,7 @@
         <ListPreference
             android:key="@string/font_size_widget"
             android:title="@string/font_size_widget"
-            android:summary="@string/font_size_widget_summary"
+            android:summary="%s"
             android:dialogTitle="@string/font_size_widget"
             android:entries="@array/font_size"
             android:entryValues="@array/font_size_widget_value"
@@ -52,9 +49,21 @@
     <PreferenceCategory
         android:title="@string/task_cap">
 
-        <EditTextPreference android:title="@string/snooze_duration"
-            android:summary="@string/snooze_duration_summary"
-            android:key="@string/snooze_duration"/>
+        <!--todo-->
+        <SwitchPreference
+            android:key="@string/change_default_sorting"
+            android:title="@string/change_default_sorting"
+            android:summary="@string/default_sort_by_time"
+            android:defaultValue="false"/>
+
+        <ListPreference
+        android:key="@string/snooze_duration"
+        android:title="@string/snooze_duration"
+        android:summary="%s"
+        android:dialogTitle="@string/snooze_duration"
+        android:entries="@array/snooze_duration"
+        android:entryValues="@array/snooze_duration_value"
+        android:defaultValue="300000" />
 
     </PreferenceCategory>
 

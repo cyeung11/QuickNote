@@ -2,8 +2,6 @@ package com.jkjk.quicknote.settings;
 
 
 import android.Manifest;
-import android.app.Activity;
-import android.app.Application;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
@@ -27,7 +25,6 @@ import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.RadioButton;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
@@ -57,12 +54,11 @@ import static com.jkjk.quicknote.helper.DatabaseHelper.dbColumn;
 import static com.jkjk.quicknote.listscreen.ListFragment.REWARD_VIDEO_AD_ID;
 import static com.jkjk.quicknote.listscreen.ListFragment.isAllowedToUse;
 
-public class SettingsFragment extends PreferenceFragmentCompat implements RewardedVideoAdListener {
+public class SettingsFragment extends PreferenceFragmentCompat implements RewardedVideoAdListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
 
     static final  int BACK_UP_REQUEST_CODE = 5555;
     static final  int RESTORE_REQUEST_CODE = 5556;
-    private SharedPreferences.OnSharedPreferenceChangeListener listener;
     private RewardedVideoAd mRewardedVideoAd;
 
     public SettingsFragment() {
@@ -77,24 +73,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
         mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(getActivity());
         mRewardedVideoAd.setRewardedVideoAdListener(this);
         loadRewardedVideoAd();
-
-        listener = new SharedPreferences.OnSharedPreferenceChangeListener(){
-            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                if (key.equals(getString(R.string.font_size_widget))){
-                    AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getActivity());
-                    ComponentName name = new ComponentName(getActivity().getPackageName(), NoteWidget.class.getName());
-                    int [] appWidgetIds = appWidgetManager.getAppWidgetIds(name);
-                    Intent intent = new Intent(getContext(), AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, appWidgetIds);
-                    PendingIntent pendingIntent = PendingIntent.getService(getContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    try {
-                        pendingIntent.send();
-                    } catch (Exception e) {
-                        Toast.makeText(getContext(), R.string.error_text, Toast.LENGTH_SHORT).show();
-                        Log.e(getClass().getName(), "updating widget",e);
-                    }
-                }
-            }
-        };
     }
 
 
@@ -102,8 +80,18 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.preferences, rootKey);
 
-        PreferenceManager.setDefaultValues(getActivity(), R.xml.preferences, false);
+        PreferenceManager.setDefaultValues(getContext(), R.xml.preferences, false);
 
+
+        Preference defaultScreen = findPreference(getString(R.string.default_screen));
+        if (defaultScreen.getSharedPreferences().getBoolean(getString(R.string.default_screen), false)){
+            defaultScreen.setSummary(R.string.task_as_home_page);
+        } else defaultScreen.setSummary(R.string.note_as_home_page);
+
+        Preference defaultSorting = findPreference(getString(R.string.change_default_sorting));
+        if (defaultSorting.getSharedPreferences().getBoolean(getString(R.string.change_default_sorting), false)){
+            defaultSorting.setSummary(R.string.default_sort_by_urgency);
+        } else defaultSorting.setSummary(R.string.default_sort_by_time);
 
         Preference backup = findPreference(getString(R.string.back_up));
         backup.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -268,7 +256,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
     public void onResume() {
         mRewardedVideoAd.resume(getContext());
         super.onResume();
-        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(listener);
+        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 
 
         //TODO Delete when release
@@ -278,7 +266,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
     @Override
     public void onStop() {
         mRewardedVideoAd.pause(getContext());
-        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(listener);
+        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         super.onStop();
     }
 
@@ -318,6 +306,37 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
         intent.setType("application/octet-stream");
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivityForResult(intent, RESTORE_REQUEST_CODE);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+
+        if (key.equals(getString(R.string.font_size_widget))){
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getActivity());
+            ComponentName name = new ComponentName(getActivity().getPackageName(), NoteWidget.class.getName());
+            int [] appWidgetIds = appWidgetManager.getAppWidgetIds(name);
+            Intent intent = new Intent(getContext(), AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, appWidgetIds);
+            PendingIntent pendingIntent = PendingIntent.getService(getContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            try {
+                pendingIntent.send();
+            } catch (Exception e) {
+                Toast.makeText(getContext(), R.string.error_text, Toast.LENGTH_SHORT).show();
+                Log.e(getClass().getName(), "updating widget",e);
+            }
+
+        } else if (key.equals(getString(R.string.default_screen))){
+            Preference defaultScreen = findPreference(getString(R.string.default_screen));
+            if (prefs.getBoolean(getString(R.string.default_screen), false)){
+                defaultScreen.setSummary(R.string.task_as_home_page);
+            } else defaultScreen.setSummary(R.string.note_as_home_page);
+
+
+        } else if (key.equals(getString(R.string.change_default_sorting))){
+            Preference defaultSorting = findPreference(getString(R.string.change_default_sorting));
+            if (prefs.getBoolean(getString(R.string.change_default_sorting), false)){
+                defaultSorting.setSummary(R.string.default_sort_by_urgency);
+            } else defaultSorting.setSummary(R.string.default_sort_by_time);
+        }
     }
 
     static class RestoreAysnTask extends AsyncTask<Uri, Void, Boolean>{

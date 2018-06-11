@@ -51,11 +51,33 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     ActionMode actionMode;
     Boolean isInTaskActionMode = false;
     private ArrayList<Integer> selectedItems = new ArrayList<>();
-    private int itemCount, notDoneCount;
+    private int itemCount, cardViewInt;
     private MenuItem markAsDone;
+    private boolean byUrgencyByDefault;
 
     TaskListAdapter(TaskListFragment fragment){
         this.fragment = fragment;
+        // Obtain correspond value from preferences to show appropriate size for the card view
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(fragment.getContext());
+        String cardViewSize = sharedPref.getString(fragment.getString(R.string.font_size_main_screen),"m");
+        byUrgencyByDefault = sharedPref.getBoolean(fragment.getString(R.string.change_default_sorting), false);
+
+        switch (cardViewSize){
+            case ("s"):
+                cardViewInt = R.layout.card_task_s;
+                break;
+            case ("m"):
+                cardViewInt = R.layout.card_task_m;
+                break;
+            case ("l"):
+                cardViewInt = R.layout.card_task_l;
+                break;
+            case ("xl"):
+                cardViewInt = R.layout.card_task_xl;
+                break;
+            default:
+                cardViewInt = R.layout.card_task_m;
+        }
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -81,27 +103,6 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     @NonNull
     @Override
     public TaskListAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
-        // Obtain correspond value from preferences to show appropriate size for the card view
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(fragment.getContext());
-        String cardViewSize = sharedPref.getString(fragment.getResources().getString(R.string.font_size_main_screen),"m");
-        int cardViewInt;
-        switch (cardViewSize){
-            case ("s"):
-                cardViewInt = R.layout.card_task_s;
-                break;
-            case ("m"):
-                cardViewInt = R.layout.card_task_m;
-                break;
-            case ("l"):
-                cardViewInt = R.layout.card_task_l;
-                break;
-            case ("xl"):
-                cardViewInt = R.layout.card_task_xl;
-                break;
-            default:
-                cardViewInt = R.layout.card_task_m;
-        }
 
         CardView v = (CardView) LayoutInflater.from(parent.getContext()).inflate(cardViewInt, parent, false);
         final ViewHolder holder = new ViewHolder(v);
@@ -180,7 +181,6 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                             // Get item count of pending tasks
                             Cursor checkPendingCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id"}, "done=0 AND type=1", null, null
                                     , null, null);
-                            notDoneCount = checkPendingCursor.getCount();
                             checkPendingCursor.close();
 
                             isInTaskActionMode = true;
@@ -394,6 +394,8 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                     } else {
                         holder.taskTime.setText(DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_DATE));
                     }
+                } else {
+                    holder.taskTime.setText("");
                 }
 
             }catch (Exception e) {
@@ -442,8 +444,13 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     }
 
     public void updateCursor(){
-        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type = 1 AND done = 0", null, null
-                , null, "event_time ASC");
+        if (byUrgencyByDefault){
+            taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type = 1 AND done = 0", null, null
+                    , null, "urgency DESC, event_time ASC");
+        } else {
+            taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "type = 1 AND done = 0", null, null
+                    , null, "event_time ASC");
+        }
     }
 
     public void updateCursorForSearch(String result){
@@ -456,8 +463,13 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                 , null, "event_time ASC");
     }
 
-    public void updateCursorForSorting(){
-        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type = 1 AND done = 0", null, null
+    public void updateCursorByUrgency(){
+        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "type = 1 AND done = 0", null, null
                 , null, "urgency DESC, event_time ASC");
+    }
+
+    public void updateCursorByTime(){
+        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "type = 1 AND done = 0", null, null
+                , null, "event_time ASC");
     }
 }

@@ -41,11 +41,30 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
     ActionMode actionMode;
     private ArrayList<Integer> selectedItems = new ArrayList<>();
     private Cursor noteCursor;
-    private int itemCount, selectedNotStarred, notStarredCount;
+    private int itemCount, selectedNotStarred, notStarredCount, cardViewInt;
 
 
     NoteListAdapter(NoteListFragment fragment){
         this.fragment = fragment;
+        // Obtain correspond value from preferences to show appropriate size for the card view
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(fragment.getContext());
+        String cardViewSize = sharedPref.getString(fragment.getResources().getString(R.string.font_size_main_screen),"m");
+        switch (cardViewSize){
+            case ("s"):
+                cardViewInt = R.layout.card_note_s;
+                break;
+            case ("m"):
+                cardViewInt = R.layout.card_note_m;
+                break;
+            case ("l"):
+                cardViewInt = R.layout.card_note_l;
+                break;
+            case ("xl"):
+                cardViewInt = R.layout.card_note_xl;
+                break;
+            default:
+                cardViewInt = R.layout.card_note_m;
+        }
     }
 
 
@@ -66,27 +85,6 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
 
     @Override
     public NoteListAdapter.ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
-
-        // Obtain correspond value from preferences to show appropriate size for the card view
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(fragment.getContext());
-        String cardViewSize = sharedPref.getString(fragment.getResources().getString(R.string.font_size_main_screen),"m");
-        int cardViewInt;
-        switch (cardViewSize){
-            case ("s"):
-                cardViewInt = R.layout.card_note_s;
-                break;
-            case ("m"):
-                cardViewInt = R.layout.card_note_m;
-                break;
-            case ("l"):
-                cardViewInt = R.layout.card_note_l;
-                break;
-            case ("xl"):
-                cardViewInt = R.layout.card_note_xl;
-                break;
-            default:
-                cardViewInt = R.layout.card_note_m;
-        }
 
         CardView v = (CardView) LayoutInflater.from(parent.getContext()).inflate(cardViewInt, parent, false);
         final ViewHolder holder = new ViewHolder(v);

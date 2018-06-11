@@ -14,14 +14,14 @@ import com.jkjk.quicknote.R;
 public class ListPageAdapter extends FragmentPagerAdapter {
 
     private Context context;
-    private int defaultScreen;
+    private boolean defaultScreen;
 
     ListPageAdapter(Context context, FragmentManager fragmentManager){
         super(fragmentManager);
         this.context = context;
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        defaultScreen = Integer.valueOf(sharedPref.getString(context.getResources().getString(R.string.default_screen), "0"));
+        defaultScreen = sharedPref.getBoolean(context.getString(R.string.default_screen), false);
     }
 
     @Nullable
@@ -29,11 +29,11 @@ public class ListPageAdapter extends FragmentPagerAdapter {
     public CharSequence getPageTitle(int position) {
         switch (position) {
             case 0:
-                if (defaultScreen ==0) return context.getResources().getString(R.string.note);
-                else return context.getResources().getString(R.string.task);
+                if (defaultScreen) return context.getString(R.string.task);
+                else return context.getString(R.string.note);
             case 1:
-                if (defaultScreen ==0) return context.getResources().getString(R.string.task);
-                else return context.getResources().getString(R.string.note);
+                if (defaultScreen) return context.getString(R.string.note);
+                else return context.getString(R.string.task);
             default:
                 return null;
         }
@@ -43,11 +43,11 @@ public class ListPageAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         switch (position){
             case 0:
-                if (defaultScreen ==0) return new NoteListFragment();
-                else return new TaskListFragment();
-            case 1:
-                if (defaultScreen ==0) return new TaskListFragment();
+                if (defaultScreen) return new TaskListFragment();
                 else return new NoteListFragment();
+            case 1:
+                if (defaultScreen) return new NoteListFragment();
+                else return new TaskListFragment();
             default:
                 return null;
         }

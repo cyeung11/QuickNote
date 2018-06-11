@@ -48,9 +48,9 @@ public class ListFragment extends Fragment{
     public static final String ADMOB_ID = "ca-app-pub-8833570917041672~2236425579";
     public static boolean isAllowedToUse = false;
     // 0 stands for note , 1 stands for task
-    private int defaultPage;
+    private boolean defaultPage;
     private char currentPage;
-    private boolean showingStarred = false, sortingBytime = true;
+    private boolean showingStarred = false, sortingBytime, byUrgencyByDefault;
 
     private MenuItem showStarred, search, settings, sortBy, showDone, switchTab;
     private NoteListFragment noteListFragment;
@@ -79,13 +79,16 @@ public class ListFragment extends Fragment{
         ((AppCompatActivity) getActivity()).setSupportActionBar(listMenu);
 
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
-        defaultPage = Integer.valueOf(sharedPref.getString(getString(R.string.default_screen), "0"));
-        if (defaultPage == 0) {
-            currentPage = 'N';
-            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.note);
-        } else {
+        defaultPage = sharedPref.getBoolean(getString(R.string.default_screen), false);
+        byUrgencyByDefault = sharedPref.getBoolean(getString(R.string.change_default_sorting), false);
+        sortingBytime = !byUrgencyByDefault;
+
+        if (defaultPage) {
             currentPage = 'T';
             ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.task);
+        } else {
+            currentPage = 'N';
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.note);
         }
 
         ListPageAdapter listPageAdapter = new ListPageAdapter(getContext(), getChildFragmentManager());
@@ -109,7 +112,7 @@ public class ListFragment extends Fragment{
                 }
 
                 // if default page is note, position 0 will be note, so current page is 0
-                if (defaultPage==0) {
+                if (!defaultPage) {
                     if (position==0) {
                         currentPage = 'N';
                         if (showStarred!=null) {
@@ -419,7 +422,12 @@ public class ListFragment extends Fragment{
             }
         });
 
-        sortBy.setTitle(R.string.sort_by_urgency);
+
+
+        if (byUrgencyByDefault) {
+            sortBy.setTitle(R.string.sort_by_time);
+        } else sortBy.setTitle(R.string.sort_by_urgency);
+
         sortBy.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
@@ -429,16 +437,13 @@ public class ListFragment extends Fragment{
                 if (sortingBytime){
                     sortingBytime = false;
                     sortBy.setTitle(R.string.sort_by_time);
-
-                    taskListAdapter.updateCursorForSorting();
-                    taskListAdapter.notifyDataSetChanged();
+                    taskListAdapter.updateCursorByUrgency();
                 } else {
                     sortingBytime = true;
                     sortBy.setTitle(R.string.sort_by_urgency);
-
-                    taskListAdapter.updateCursor();
-                    taskListAdapter.notifyDataSetChanged();
+                    taskListAdapter.updateCursorByTime();
                 }
+                taskListAdapter.notifyDataSetChanged();
                 return true;
             }
         });
@@ -447,21 +452,19 @@ public class ListFragment extends Fragment{
         switchTab.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
-                sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
-                defaultPage = Integer.valueOf(sharedPref.getString(getString(R.string.default_screen), "0"));
 
                 if (currentPage == 'N'){
-                    if (defaultPage == 0) {
+                    if (!defaultPage) {
                         viewPager.setCurrentItem(1, true);
-                    } else if (defaultPage == 1){
+                    } else {
                         viewPager.setCurrentItem(0, true);
                     }
                     switchTab.setTitle(R.string.switch_note);
 
                 } else if (currentPage == 'T'){
-                    if (defaultPage == 0) {
+                    if (!defaultPage) {
                         viewPager.setCurrentItem(0, true);
-                    } else if (defaultPage == 1){
+                    } else {
                         viewPager.setCurrentItem(1, true);
                     }
                     switchTab.setTitle(R.string.switch_task);
