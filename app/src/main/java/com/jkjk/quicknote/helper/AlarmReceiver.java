@@ -17,6 +17,7 @@ import android.text.format.DateUtils;
 
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.listscreen.List;
 import com.jkjk.quicknote.noteeditscreen.NoteEdit;
 import com.jkjk.quicknote.taskeditscreen.TaskEdit;
 
@@ -36,12 +37,14 @@ import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_MI
 
 public class AlarmReceiver extends BroadcastReceiver {
 
-    final String ACTION_SNOOZE = "snoozeReminder";
+    public static final String ACTION_TOOL_BAR = "showToolBar";
+    public static final int TOOL_BAR_REQUEST_CODE = 9981;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         long taskId;
         final String GROUP_KEY = context.getPackageName();
+        final String ACTION_SNOOZE = "snoozeReminder";
 
 
         if (intent != null && intent.hasExtra(EXTRA_NOTE_ID)
@@ -82,18 +85,21 @@ public class AlarmReceiver extends BroadcastReceiver {
                 snoozeIntent.putExtra(EXTRA_NOTE_ID, taskId);
                 PendingIntent snoozePendingIntent = PendingIntent.getBroadcast(context, 0, snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-                builder.setContentTitle(intent.getStringExtra(ITEM_TITLE)).setSmallIcon(R.drawable.sharp_event_note_24)
+                builder.setContentTitle(intent.getStringExtra(ITEM_TITLE)).setSmallIcon(R.drawable.ic_stat_name)
                         .setLargeIcon(BitmapFactory.decodeResource(context.getResources(),R.mipmap.ic_launcher_round))
                         .setContentIntent(startPendingIntent).setAutoCancel(true);
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT_WATCH) {
-                    builder.addAction(R.drawable.sharp_snooze_24, context.getString(R.string.snooze), snoozePendingIntent);
+                    builder.addAction(R.drawable.snooze_action, context.getString(R.string.snooze), snoozePendingIntent);
                 } else {
                     builder.addAction(new Notification.Action.Builder(R.drawable.sharp_snooze_24, context.getString(R.string.snooze), snoozePendingIntent).build());
                 }
 
                 // if reminder has content field, show it
-                if (!intent.getStringExtra(ITEM_CONTENT).equals("")) {
-                    builder.setStyle(new Notification.BigTextStyle().bigText(intent.getStringExtra(ITEM_CONTENT)));
+                // On kit katm big text style is showing improperly
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH) {
+                    if (!intent.getStringExtra(ITEM_CONTENT).equals("")) {
+                        builder.setStyle(new Notification.BigTextStyle().bigText(intent.getStringExtra(ITEM_CONTENT)));
+                    }
                 }
                 // if devices supports, use group notification
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -139,60 +145,147 @@ public class AlarmReceiver extends BroadcastReceiver {
             }
 
         } else if (intent != null && intent.getAction() != null) {
+            Cursor cursor;
+            switch (intent.getAction()) {
+                case Intent.ACTION_BOOT_COMPLETED:
 
-            if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
+                    cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "type", "event_time", "reminder_time", "content"}, "reminder_time > 0", null, null
+                            , null, null);
+                    if (cursor != null && cursor.moveToFirst()) {
+                        do {
+                            char itemType;
+                            switch (cursor.getInt(2)) {
+                                case 0:
+                                    itemType = 'N';
+                                    break;
+                                default:
+                                    itemType = 'T';
+                            }
+                            // setReminder(Context context, char itemType, long id, String title, String content, long eventTime, long remindTime)
+                            AlarmHelper.setReminder(context, itemType, cursor.getLong(0), cursor.getString(1), cursor.getString(5), cursor.getLong(3), cursor.getLong(4));
 
-                Cursor cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "type", "event_time", "reminder_time", "content"}, "reminder_time > 0", null, null
-                        , null, null);
-                if (cursor != null && cursor.moveToFirst()) {
-                    do {
-                        char itemType;
-                        switch (cursor.getInt(2)) {
-                            case 0:
-                                itemType = 'N';
-                                break;
-                            default:
-                                itemType = 'T';
-                        }
-                        // setReminder(Context context, char itemType, long id, String title, String content, long eventTime, long remindTime)
-                        AlarmHelper.setReminder(context, itemType, cursor.getLong(0), cursor.getString(1), cursor.getString(5), cursor.getLong(3), cursor.getLong(4));
-
-                    } while (cursor.moveToNext());
-                    cursor.close();
-                }
-            } else if (intent.getAction().equals(ACTION_SNOOZE)) {
-                long id;
-
-                if (intent.hasExtra(EXTRA_NOTE_ID) && (id = intent.getLongExtra(EXTRA_NOTE_ID, 98876146L)) != 98876146L) {
-                    NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                    if (notificationManager != null) {
-                        notificationManager.cancel((int)id);
-                    }
-
-                    Cursor cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title", "type", "event_time", "content"}
-                    , "_id= " + id
-                            , null, null, null, null);
-                    if (cursor!=null && cursor.moveToFirst()) {
-                        char itemType;
-                        switch (cursor.getInt(1)) {
-                            case 0:
-                                itemType = 'N';
-                                break;
-                            default:
-                                itemType = 'T';
-                        }
-
-                        // grab preference at snooze duration
-                        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-                        long snoozeDuration = Long.valueOf(sharedPref.getString(context.getString(R.string.snooze_duration), "300000"));
-                        // setReminder(Context context, char itemType, long id, String title, String content, long eventTime, long remindTime)
-                        AlarmHelper.setReminder(context, itemType, id, cursor.getString(0)
-                                , cursor.getString(3), cursor.getLong(2),  Calendar.getInstance().getTimeInMillis() + snoozeDuration);
-                        ContentValues values = new ContentValues();
-                        values.put("reminder_time", Calendar.getInstance().getTimeInMillis() + snoozeDuration);
-                        MyApplication.database.update(DATABASE_NAME, values, "_id='" + id + "'", null);
+                        } while (cursor.moveToNext());
                         cursor.close();
                     }
+                    break;
+
+                case ACTION_SNOOZE:
+                    long id;
+
+                    if (intent.hasExtra(EXTRA_NOTE_ID) && (id = intent.getLongExtra(EXTRA_NOTE_ID, 98876146L)) != 98876146L) {
+                        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                        if (notificationManager != null) {
+                            notificationManager.cancel((int) id);
+                        }
+
+                        cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title", "type", "event_time", "content"}
+                                , "_id= " + id
+                                , null, null, null, null);
+                        if (cursor != null && cursor.moveToFirst()) {
+                            char itemType;
+                            switch (cursor.getInt(1)) {
+                                case 0:
+                                    itemType = 'N';
+                                    break;
+                                default:
+                                    itemType = 'T';
+                            }
+
+                            // grab preference at snooze duration
+                            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+                            long snoozeDuration = Long.valueOf(sharedPref.getString(context.getString(R.string.snooze_duration), "300000"));
+                            // setReminder(Context context, char itemType, long id, String title, String content, long eventTime, long remindTime)
+                            AlarmHelper.setReminder(context, itemType, id, cursor.getString(0)
+                                    , cursor.getString(3), cursor.getLong(2), Calendar.getInstance().getTimeInMillis() + snoozeDuration);
+                            ContentValues values = new ContentValues();
+                            values.put("reminder_time", Calendar.getInstance().getTimeInMillis() + snoozeDuration);
+                            MyApplication.database.update(DATABASE_NAME, values, "_id='" + id + "'", null);
+                            cursor.close();
+
+                            if (sharedPref.getBoolean(context.getString(R.string.notification_pin), false)) {
+                                AlarmHelper.setToolbarUpdate(context);
+                            }
+                        }
+                    }
+                    break;
+
+                case ACTION_TOOL_BAR: {
+                    Intent startNoteActivity = new Intent(context, NoteEdit.class);
+                    startNoteActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    PendingIntent notePendingIntent = PendingIntent.getActivity(context, 0, startNoteActivity, PendingIntent.FLAG_UPDATE_CURRENT);
+                    Intent startTaskActivity = new Intent(context, TaskEdit.class);
+                    startTaskActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    PendingIntent taskPendingIntent = PendingIntent.getActivity(context, 0, startTaskActivity, PendingIntent.FLAG_UPDATE_CURRENT);
+                    Intent startMainActivity = new Intent(context, List.class);
+                    startMainActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    PendingIntent mainPendingIntent = PendingIntent.getActivity(context, 0, startMainActivity, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    // Get task due today
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.set(Calendar.HOUR_OF_DAY, 0);
+                    calendar.set(Calendar.MINUTE, 0);
+                    calendar.set(Calendar.SECOND, 0);
+                    calendar.set(Calendar.MILLISECOND, 0);
+                    long firstSecond = calendar.getTimeInMillis();
+                    calendar.set(Calendar.HOUR_OF_DAY, 23);
+                    calendar.set(Calendar.MINUTE, 59);
+                    calendar.set(Calendar.SECOND, 59);
+                    calendar.set(Calendar.MILLISECOND, 999);
+                    long lastSecond = calendar.getTimeInMillis();
+
+                    cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title"}, "type = 1 AND event_time BETWEEN " + firstSecond + " AND " + lastSecond
+                            , null, null, null, null);
+                    int taskCount = 0;
+                    StringBuilder stringBuilder = new StringBuilder();
+                    if (cursor.moveToFirst()) {
+                        do {
+                            taskCount += 1;
+                            stringBuilder.append(cursor.getString(0)).append(", ");
+                        } while (cursor.moveToNext());
+                    }
+                    cursor.close();
+                    if (taskCount > 0) {
+                        stringBuilder.delete(stringBuilder.length() - 2, stringBuilder.length());
+                    }
+                    String notificationTitle = context.getResources().getQuantityString(R.plurals.notification_title, taskCount, taskCount);
+
+                    Notification.Builder builder;
+                    NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        NotificationChannel notificationChannel = new NotificationChannel(context.getPackageName(), context.getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_HIGH);
+                        notificationChannel.enableLights(false);
+                        notificationChannel.enableVibration(false);
+                        notificationManager.createNotificationChannel(notificationChannel);
+                        builder = new Notification.Builder(context, context.getPackageName());
+                    } else {
+                        builder = new Notification.Builder(context);
+                        builder.setSound(null).setVibrate(null);
+                    }
+
+
+                    builder.setContentTitle(notificationTitle).setSmallIcon(R.drawable.ic_stat_name)
+                            .setContentIntent(mainPendingIntent).setAutoCancel(false).setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher_round));
+                    if (taskCount > 0){
+                        builder.setContentText(stringBuilder.toString());
+                    }
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT_WATCH) {
+                        builder.addAction(R.drawable.add_note_action, context.getString(R.string.add_note), notePendingIntent);
+                        builder.addAction(R.drawable.add_task_action, context.getString(R.string.add_task), taskPendingIntent);
+                    } else {
+                        builder.addAction(new Notification.Action.Builder(R.drawable.sharp_note_add_24, context.getString(R.string.add_note), notePendingIntent).build());
+                        builder.addAction(new Notification.Action.Builder(R.drawable.sharp_task_add_24, context.getString(R.string.add_task), taskPendingIntent).build());
+                    }
+
+                    Notification notification = builder.build();
+                    notification.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
+
+                    if (notificationManager != null) {
+                        notificationManager.notify(TOOL_BAR_REQUEST_CODE, notification);
+                    } else
+                    AlarmHelper.setToolbarUpdate(context);
+
+                    break;
                 }
             }
         }

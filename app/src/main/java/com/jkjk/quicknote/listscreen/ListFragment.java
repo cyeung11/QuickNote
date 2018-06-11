@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -44,7 +45,7 @@ public class ListFragment extends Fragment{
     debug id: ca-app-pub-3940256099942544/5224354917
     real id ca-app-pub-8833570917041672/9209453063
      */
-    public static final String REWARD_VIDEO_AD_ID = "ca-app-pub-3940256099942544/5224354917";
+    public static final String REWARD_VIDEO_AD_ID = "ca-app-pub-8833570917041672/9209453063";
     public static final String ADMOB_ID = "ca-app-pub-8833570917041672~2236425579";
     public static boolean isAllowedToUse = false;
     // 0 stands for note , 1 stands for task
@@ -56,7 +57,6 @@ public class ListFragment extends Fragment{
     private NoteListFragment noteListFragment;
     private TaskListFragment taskListFragment;
     private ViewPager viewPager;
-    private SharedPreferences sharedPref;
 
 
     public ListFragment() {
@@ -78,7 +78,7 @@ public class ListFragment extends Fragment{
         android.support.v7.widget.Toolbar listMenu = getActivity().findViewById(R.id.list_menu);
         ((AppCompatActivity) getActivity()).setSupportActionBar(listMenu);
 
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
         defaultPage = sharedPref.getBoolean(getString(R.string.default_screen), false);
         byUrgencyByDefault = sharedPref.getBoolean(getString(R.string.change_default_sorting), false);
         sortingBytime = !byUrgencyByDefault;
@@ -161,7 +161,11 @@ public class ListFragment extends Fragment{
         });
 
         FloatingActionButton addNote =  getActivity().findViewById(R.id.add_note);
-        addNote.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.pencil));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            addNote.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.pencil));
+        } else {
+            addNote.setImageResource(R.drawable.pencil);
+        }
         addNote.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.highlight)));
         addNote.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -403,6 +407,14 @@ public class ListFragment extends Fragment{
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
 
+                if (byUrgencyByDefault) {
+                    sortBy.setTitle(R.string.sort_by_time);
+                    sortingBytime = false;
+                } else {
+                    sortBy.setTitle(R.string.sort_by_urgency);
+                    sortingBytime = true;
+                }
+
                 TaskListAdapter taskListAdapter = taskListFragment.getTaskListAdapter();
 
                 if(!taskListAdapter.showingDone){
@@ -433,6 +445,8 @@ public class ListFragment extends Fragment{
             public boolean onMenuItemClick(MenuItem menuItem) {
 
                 TaskListAdapter taskListAdapter = taskListFragment.getTaskListAdapter();
+                taskListAdapter.showingDone = false;
+                showDone.setTitle(R.string.show_done);
 
                 if (sortingBytime){
                     sortingBytime = false;
@@ -500,8 +514,13 @@ public class ListFragment extends Fragment{
         showingStarred = false;
         showDone.setTitle(R.string.show_done);
         taskListFragment.getTaskListAdapter().showingDone = false;
-        sortBy.setTitle(R.string.sort_by_urgency);
-        sortingBytime = true;
+        if (byUrgencyByDefault) {
+            sortBy.setTitle(R.string.sort_by_time);
+            sortingBytime = false;
+        } else {
+            sortBy.setTitle(R.string.sort_by_urgency);
+            sortingBytime = true;
+        }
         super.onStop();
     }
 

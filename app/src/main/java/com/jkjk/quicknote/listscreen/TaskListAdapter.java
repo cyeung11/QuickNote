@@ -175,7 +175,11 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                             holder.cardView.setCardBackgroundColor(Color.LTGRAY);
 
                             //change the FAB to delete
-                            addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.sharp_delete_24));
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+                                addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.sharp_delete_24));
+                            } else {
+                                addNote.setImageResource(R.drawable.sharp_delete_24);
+                            }
                             addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.alternative)));
 
                             // Get item count of pending tasks
@@ -271,7 +275,12 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                             actionMode = null;
                             isInTaskActionMode = false;
                             selectedItems.clear();
-                            addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.pencil));
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+                                addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.pencil));
+                            } else {
+                                addNote.setImageResource(R.drawable.pencil);
+                            }
                             addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.highlight)));
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                 fragment.getActivity().getWindow().setStatusBarColor(fragment.getResources().getColor(R.color.colorPrimaryDark));
@@ -454,13 +463,23 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     }
 
     public void updateCursorForSearch(String result){
-        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "_id in ("+result+") AND type = 1", null, null
-                , null, "event_time ASC");
+        if (byUrgencyByDefault) {
+            taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "_id in (" + result + ") AND type = 1", null, null
+                    , null, "urgency DESC, event_time ASC");
+        } else {
+            taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "_id in (" + result + ") AND type = 1", null, null
+                    , null, "event_time ASC");
+        }
     }
 
     public void updateCursorForDone(){
-        taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type=1 AND done=1", null, null
-                , null, "event_time ASC");
+        if (byUrgencyByDefault){
+            taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type=1 AND done=1", null, null
+                    , null, "urgency DESC, event_time ASC");
+        } else {
+            taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type=1 AND done=1", null, null
+                    , null, "event_time ASC");
+        }
     }
 
     public void updateCursorByUrgency(){

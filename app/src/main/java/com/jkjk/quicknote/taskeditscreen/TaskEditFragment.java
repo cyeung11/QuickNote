@@ -2,6 +2,7 @@ package com.jkjk.quicknote.taskeditscreen;
 
 
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -9,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,6 +19,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.PreferenceManager;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -38,12 +41,14 @@ import android.widget.Toast;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
+import com.jkjk.quicknote.helper.AlarmReceiver;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import static com.jkjk.quicknote.helper.AlarmReceiver.ACTION_TOOL_BAR;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.DEFAULT_NOTE_ID;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
@@ -63,7 +68,7 @@ public class TaskEditFragment extends Fragment {
     private TextView dateInFragment, timeInFragment;
     private Switch markAsDoneInFragment;
     private boolean newTask, isDone, dateSet = false, timeSet = false, hasModified = false, urgencySelectByUser = false
-            , reminderSelectByUser = false, hasShowRemoveDateHint = false, hasShowRemoveTimeHint = false;
+            , reminderSelectByUser = false, hasShowRemoveDateHint = false, hasShowRemoveTimeHint = false, notificationToolEnable;
     private Calendar taskDate, reminderTime;
     private String title, remark;
     private Spinner urgencyInFragment, reminderInFragment;
@@ -82,6 +87,7 @@ public class TaskEditFragment extends Fragment {
         // Obtain correspond value from preferences to show appropriate size for the view
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
         String editViewSize = sharedPref.getString(getResources().getString(R.string.font_size_editing_screen),"m");
+        notificationToolEnable = sharedPref.getBoolean(getString(R.string.notification_pin), false);
         int editViewInt;
         int spinnerDropDownInt;
         int spinnerItemInt;
@@ -376,7 +382,7 @@ public class TaskEditFragment extends Fragment {
                         dateSet = true;
                         hasModified = true;
 
-                        if (!reminderArray.contains(getString(R.string.ten_min_before))) {
+                        if (!reminderArray.contains(getString(R.string.zero_min_before))) {
                             // add two option after "No reminder" for reminder if user has specify event date;
                             int duePosition = reminderArray.indexOf(getString(R.string.no_reminder_set));
                             reminderArray.add(duePosition + 1, getString(R.string.zero_min_before));
@@ -562,7 +568,11 @@ public class TaskEditFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         // Define save function for the done button
         FloatingActionButton done = getActivity().findViewById(R.id.done_fab);
-        done.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.sharp_done_24));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            done.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.sharp_done_24));
+        } else {
+            done.setImageResource(R.drawable.sharp_done_24);
+        }
         done.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.highlight)));
         done.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -622,6 +632,18 @@ public class TaskEditFragment extends Fragment {
             saveEventTime = taskDate.getTimeInMillis();
         }
         values.put("event_time", saveEventTime);
+
+        if (notificationToolEnable && DateUtils.isToday(saveEventTime)){
+
+            Intent toolBarIntent = new Intent(getContext(), AlarmReceiver.class);
+            toolBarIntent.setAction(ACTION_TOOL_BAR);
+            PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(getContext(), 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            try {
+                toolbarPendingIntent.send();
+            } catch (PendingIntent.CanceledException e) {
+                e.printStackTrace();
+            }
+        }
 
         values.put("type", 1);
         values.put("urgency", urgencyInFragment.getSelectedItemPosition());

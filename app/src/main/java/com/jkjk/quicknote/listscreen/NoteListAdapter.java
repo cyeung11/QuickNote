@@ -177,7 +177,11 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                             }
                             holder.cardView.setCardBackgroundColor(Color.LTGRAY);
                             //change the FAB to delete
-                            addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.sharp_delete_24));
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+                                addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.sharp_delete_24));
+                            } else {
+                                addNote.setImageResource(R.drawable.sharp_delete_24);
+                            }
                             addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.alternative)));
 
                             // Get item count of not starred note
@@ -278,7 +282,11 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                             actionMode = null;
                             isInNoteActionMode = false;
                             selectedItems.clear();
-                            addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.pencil));
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+                                addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.pencil));
+                            } else {
+                                addNote.setImageResource(R.drawable.pencil);
+                            }
                             addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.highlight)));
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                 fragment.getActivity().getWindow().setStatusBarColor(fragment.getResources().getColor(R.color.colorPrimaryDark));

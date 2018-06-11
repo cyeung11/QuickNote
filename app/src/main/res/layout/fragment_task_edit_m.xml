@@ -15,14 +15,14 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
             android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
                 android:orientation="horizontal">
 
 
@@ -47,7 +47,7 @@
                     android:contentDescription="@string/menu"
                     android:background="@android:color/transparent"
                     android:layout_gravity="center_vertical"
-                    android:focusable="false" />
+                    android:focusable="false"/>
 
 
             </LinearLayout>
@@ -57,8 +57,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
-                android:layout_marginEnd="4dp"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:orientation="horizontal">
 
                 <TextView
@@ -79,14 +79,16 @@
                 android:layout_height="wrap_content"
                 android:text="@string/category_caption"
                 android:layout_marginBottom="8dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
                 android:textColor="@color/colorPrimary"/>
 
             <Spinner
                 android:id="@+id/task_urgency"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:layout_marginBottom="20dp"/>
 
             <TextView
@@ -94,6 +96,8 @@
                 android:layout_height="wrap_content"
                 android:text="@string/due_date_caption"
                 android:layout_marginBottom="12dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:textColor="@color/colorPrimary"/>
 
 
@@ -101,14 +105,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:layout_marginEnd="4dp"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:orientation="horizontal">
 
                 <ImageView
                     android:layout_width="22sp"
                     android:layout_height="22sp"
-                    app:srcCompat="@drawable/sharp_today_24"
+                    app:srcCompat="@drawable/sharp_calendar_24"
                     android:contentDescription="@string/date"
                     android:layout_marginEnd="4dp"/>
 
@@ -150,8 +154,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                android:layout_marginEnd="4dp"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:layout_marginBottom="20dp">
 
                 <ImageView
@@ -171,8 +175,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:layout_marginBottom="20dp">
 
                 <ImageView
@@ -194,6 +198,8 @@
                 android:layout_height="wrap_content"
                 android:text="@string/remark_caption"
                 android:layout_marginBottom="8dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
                 android:textColor="@color/colorPrimary"/>
 
 
@@ -203,8 +209,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="4dp"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:textSize="16sp"
                 android:background="@android:color/transparent"
                 android:gravity="top"

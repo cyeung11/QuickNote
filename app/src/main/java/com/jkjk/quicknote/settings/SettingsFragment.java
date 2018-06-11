@@ -2,6 +2,7 @@ package com.jkjk.quicknote.settings;
 
 
 import android.Manifest;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
@@ -33,6 +34,8 @@ import com.google.android.gms.ads.reward.RewardItem;
 import com.google.android.gms.ads.reward.RewardedVideoAd;
 import com.google.android.gms.ads.reward.RewardedVideoAdListener;
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.helper.AlarmHelper;
+import com.jkjk.quicknote.helper.AlarmReceiver;
 import com.jkjk.quicknote.helper.DatabaseHelper;
 import com.jkjk.quicknote.listscreen.ListFragment;
 import com.jkjk.quicknote.widget.AppWidgetService;
@@ -49,10 +52,11 @@ import java.util.Date;
 import static android.app.Activity.RESULT_OK;
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
 import static com.jkjk.quicknote.MyApplication.CURRENT_DB_VER;
+import static com.jkjk.quicknote.helper.AlarmReceiver.ACTION_TOOL_BAR;
+import static com.jkjk.quicknote.helper.AlarmReceiver.TOOL_BAR_REQUEST_CODE;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.helper.DatabaseHelper.dbColumn;
 import static com.jkjk.quicknote.listscreen.ListFragment.REWARD_VIDEO_AD_ID;
-import static com.jkjk.quicknote.listscreen.ListFragment.isAllowedToUse;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements RewardedVideoAdListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -260,7 +264,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
 
 
         //TODO Delete when release
-        isAllowedToUse=true;
+//        isAllowedToUse=true;
     }
 
     @Override
@@ -336,7 +340,28 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
             if (prefs.getBoolean(getString(R.string.change_default_sorting), false)){
                 defaultSorting.setSummary(R.string.default_sort_by_urgency);
             } else defaultSorting.setSummary(R.string.default_sort_by_time);
+
+
+        } else if (key.equals(getString(R.string.notification_pin))){
+
+            if (prefs.getBoolean(getString(R.string.notification_pin), false)){
+
+                Intent toolBarIntent = new Intent(getContext(), AlarmReceiver.class);
+                toolBarIntent.setAction(ACTION_TOOL_BAR);
+                PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(getContext(), 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                try {
+                    toolbarPendingIntent.send();
+                } catch (PendingIntent.CanceledException e) {
+                    e.printStackTrace();
+                }
+
+            } else {
+                NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.cancel(TOOL_BAR_REQUEST_CODE);
+                AlarmHelper.cancelToolbarUpdate(getContext());
+            }
         }
+
     }
 
     static class RestoreAysnTask extends AsyncTask<Uri, Void, Boolean>{
