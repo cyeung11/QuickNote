@@ -89,6 +89,9 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity implements Re
     protected void onResume() {
         mRewardedVideoAd.resume(this);
         super.onResume();
+
+        // TODO Delete to enable ads
+        isAllowedToUse = true;
     }
 
     @Override

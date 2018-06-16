@@ -52,7 +52,10 @@ import java.util.Date;
 import static android.app.Activity.RESULT_OK;
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
 import static com.jkjk.quicknote.MyApplication.CURRENT_DB_VER;
+import static com.jkjk.quicknote.helper.AlarmReceiver.ACTION_DAILY_UPDATE;
 import static com.jkjk.quicknote.helper.AlarmReceiver.ACTION_TOOL_BAR;
+import static com.jkjk.quicknote.helper.AlarmReceiver.DAILY_UPDATE_REQUEST_CODE;
+import static com.jkjk.quicknote.helper.AlarmReceiver.TOOL_BAR_NOTIFICATION_ID;
 import static com.jkjk.quicknote.helper.AlarmReceiver.TOOL_BAR_REQUEST_CODE;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.helper.DatabaseHelper.dbColumn;
@@ -147,7 +150,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
             }
         });
 
-
         Preference restore = findPreference(getString(R.string.restore));
         restore.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -212,7 +214,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if (resultCode == RESULT_OK) {
-            Uri uri = null;
+            Uri uri;
             if (intent != null) {
                 uri = intent.getData();
 
@@ -263,8 +265,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 
 
-        //TODO Delete when release
-//        isAllowedToUse=true;
+        //TODO Delete to enable ads
+        ListFragment.isAllowedToUse=true;
     }
 
     @Override
@@ -357,11 +359,24 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
 
             } else {
                 NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-                notificationManager.cancel(TOOL_BAR_REQUEST_CODE);
-                AlarmHelper.cancelToolbarUpdate(getContext());
+                notificationManager.cancel(TOOL_BAR_NOTIFICATION_ID);
+                AlarmHelper.cancelNotificationUpdate(getContext(), ACTION_TOOL_BAR, TOOL_BAR_REQUEST_CODE);
+            }
+
+        } else if  (key.equals(getString(R.string.daily_update))){
+            if (prefs.getBoolean(getString(R.string.daily_update), false)){
+                Intent intent = new Intent(getContext(), AlarmReceiver.class);
+                intent.setAction(ACTION_DAILY_UPDATE);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(), DAILY_UPDATE_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                try {
+                    pendingIntent.send();
+                } catch (PendingIntent.CanceledException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                AlarmHelper.cancelNotificationUpdate(getContext(), ACTION_DAILY_UPDATE, DAILY_UPDATE_REQUEST_CODE);
             }
         }
-
     }
 
     static class RestoreAysnTask extends AsyncTask<Uri, Void, Boolean>{

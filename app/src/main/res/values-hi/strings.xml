@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">A Note &amp; To Do</string>
+    <string name="note">टिप्पणी</string>
+    <string name="task">चेकलिस्ट</string>
+    <string name="user_interface_cap">इंटरफेस</string>
+    <string name="done">किया हुआ</string>
+    <string name="saved_note">नोट सहेजा गया</string>
+    <string name="saved_task">चेकलिस्टसहेजा गया</string>
+    <string name="error_text">त्रुटि</string>
+    <string name="error_loading">लोड करने में त्रुटि</string>
+    <string name="error_saving">सहेजने में त्रुटि</string>
+    <string name="error_widget">विजेट के लिए लोड करने में त्रुटि</string>
+    <string name="error_back_up">बैक अप लेने में त्रुटि</string>
+    <string name="error_restore">बहाल करने में त्रुटि</string>
+    <string name="error_reminder">अनुस्मारक सेट करने में त्रुटि</string>
+    <string name="text_here">यहां अपना नोट जॉट करें</string>
+    <string name="title_here">शीर्षक</string>
+    <string name="yesterday">बिता कल</string>
+    <string name="untitled_note">शीर्षक रहित नोट</string>
+    <string name="untitled_task">शीर्षक रहित चेकलिस्ट</string>
+    <string name="confirm_discard">क्या आप इस मद में बदलावों को त्यागना चाहते हैं?</string>
+    <string name="discard_title">छोड़ना</string>
+    <string name="discard">परिवर्तन त्यागें</string>
+    <string name="save_instead">इसके बजाय सहेजें</string>
+    <string name="cancel">रद्द करना</string>
+    <string name="delete">हटाना</string>
+    <string name="delete_title">चीज़ें हटाएं</string>
+    <string name="confirm_delete_list">क्या आप चयनित आइटम को हटाना चाहते हैं?</string>
+    <string name="confirm_delete_edit">आप इस आइटम को मिटाना चाहते हैं?</string>
+    <string name="select_all">सभी का चयन करे</string>
+    <string name="deselect_all">सभी को अचिन्हिंत करें</string>
+    <string name="back">वापस</string>
+    <string name="appwidget_text">एक्साम्प्ले</string>
+    <string name="configure">कॉन्फ़िगर</string>
+    <string name="select_note_instruction">नोट का चयन करें</string>
+    <string name="just_now">अभी</string>
+    <string name="note_preview">नोट पूर्वावलोकन</string>
+    <string name="share">शेयर</string>
+    <string name="search">खोज</string>
+    <string name="show_starred">तारांकित नोट्स दिखाएं</string>
+    <string name="show_all_note">सभी नोट्स दिखाएं</string>
+    <string name="show_all_task">लंबित कार्य दिखाएं</string>
+    <string name="starred">तारा</string>
+    <string name="unstarred">अतारांकित</string>
+    <string name="settings">सेटिंग्स</string>
+    <string name="add_shortcut_short_label">पीछे का रंग</string>
+    <string name="color_default_title">पृष्ठभूमि रंग का चयन करें</string>
+    <string name="search_hint">खोज</string>
+    <string name="note_not_found">कुछ भी नहीं मिला है</string>
+    <string name="task_not_found">कुछ भी नहीं मिला हैा</string>
+    <string name="new_note">नया नोट</string>
+    <string name="menu">मेन्यू</string>
+    <string name="saved_starred_toast">नोट सहेजा और तारांकित</string>
+    <string name="starred_toast">नोट तारांकित</string>
+    <string name="unstarred_toast">नोट अतारांकित</string>
+    <string name="pending_toast">लंबित के रूप में चिह्नित चेकलिस्ट</string>
+    <string name="done_toast">समाप्त के रूप में चिह्नित चेकलिस्ट</string>
+    <string name="note_deleted_toast">नोट हटा दिया गया</string>
+    <string name="task_deleted_toast">चेकलिस्ट हटा दी गई</string>
+    <string name="back_up">बैकअप</string>
+    <string name="back_up_summary">भंडारण के लिए बैकअप नोट</string>
+    <string name="permission_required">अनुमति आवश्यक है</string>
+    <string name="permission">बैकअप सक्षम करने और फ़ंक्शन को पुनर्स्थापित करने के लिए संग्रहण अनुमति चालू करें।</string>
+    <string name="open_settings">सेटिंग्स खोलें</string>
+    <string name="restore">पुनर्स्थापित</string>
+    <string name="restore_summary">बैकअप फ़ाइल से नोट्स पुनर्स्थापित करें</string>
+    <string name="restore_success">पुनर्स्थापित समाप्त हो गया</string>
+    <string name="backup_success">बैकअप समाप्त हो गया</string>
+    <string name="ok">ठीक</string>
+    <string name="restore_confirm">पुनर्स्थापित करना सभी मौजूदा नोट्स को हटा देगा। जारी रहना?</string>
+    <string name="title_activity_settings">सेटिंग्स</string>
+    <string name="font_size_main_screen">होम पेज फ़ॉन्ट आकार</string>
+    <string name="font_size_editing_screen">पृष्ठ फ़ॉन्ट आकार संपादित करें</string>
+    <string name="font_size_main_screen_summary">होम पेज में फ़ॉन्ट आकार कॉन्फ़िगर करें</string>
+    <string name="font_size_editing_screen_summary">संपादन पृष्ठ में फ़ॉन्ट आकार कॉन्फ़िगर करें</string>
+    <string name="notification_pin">अधिसूचना के लिए पिन करें</string>
+    <string name="notification_pin_summary">अधिसूचना पैनल पर फ़ंक्शन बार पिन करें</string>
+    <string name="auto_back_up">ऑटो बैकअप</string>
+    <string name="auto_back_up_summary">बाहरी भंडारण के लिए स्वचालित रूप से बैक अप लें</string>
+    <string name="back_up_frequency">ऑटो बैकअप फ्रीक्वेंसी</string>
+    <string name="auto_back_up_frequency_summary">स्वचालित बैकअप की आवृत्ति सेट करें</string>
+    <string name="report">रिपोर्ट</string>
+    <string name="report_summary">डेवलपर को किसी समस्या की रिपोर्ट करें</string>
+    <string name="backup_restore_cap">बैकअप बहाल</string>
+    <string name="other_cap">दूसरों</string>
+    <string name="task_cap">चेकलिस्ट</string>
+    <string name="default_screen">घर बदलें</string>
+    <string name="default_screen_summary">ऐप लॉन्च करते समय दिखाने के लिए डिफ़ॉल्ट स्क्रीन का चयन करें</string>
+    <string name="time">पहर</string>
+    <string name="all_day">पूरे दिन</string>
+    <string name="font_size_widget">विजेट फ़ॉन्ट आकार</string>
+    <string name="font_size_widget_summary">विजेट में फ़ॉन्ट आकार कॉन्फ़िगर करें</string>
+    <string name="date">तारीख</string>
+    <string name="premium_function">"अनलॉक कार्य "</string>
+    <string name="ads_prompt">एक बार फ़ंक्शन अनलॉक करने के लिए एक विज्ञापन देखें।</string>
+    <string name="ads_wait">विज्ञापन लोड होने के दौरान कृपया प्रतीक्षा करें</string>
+    <string name="ads_complete">महान! अब इसका इस्तेमाल करने के लिए स्वतंत्र महसूस करें</string>
+    <string name="todo_title_caption">चेकलिस्ट क्या है?</string>
+    <string name="task_hint">चेकलिस्ट नाम</string>
+    <string name="due_date_caption">समाप्ति तिथि</string>
+    <string name="mark_as_done">समाप्त के रूप में चिह्नित करें</string>
+    <string name="mark_as_pending">लंबित के रूप में चिह्नित करें</string>
+    <string name="remark_caption">टिप्पणी</string>
+    <string name="remark_hint">प्रगति, निर्देश इत्यादि</string>
+    <string name="date_hint">तारीख सेट नहीं है</string>
+    <string name="time_hint">समय निर्धारित नहीं है</string>
+    <string name="category_caption">वर्ग</string>
+    <string name="asap">अविलंब</string>
+    <string name="important">महत्वपूर्ण</string>
+    <string name="priority_default">डीफ़ल्ट</string>
+    <string name="priority_done">ख़त्म होना</string>
+    <string name="tomorrow">आने वाला कल</string>
+    <string name="today">आज</string>
+    <string name="due_today">आज का विस्तार</string>
+    <string name="due_today_with_time">आज %s पर समाप्त हो गया</string>
+    <string name="due_tomorrow">कल समाप्त हो जाओ</string>
+    <string name="due_someday">%s पर समाप्त हो गया</string>
+    <string name="sort_by_time">समय के अनुसार क्रमबद्ध करें</string>
+    <string name="sort_by_urgency">तात्कालिकता से क्रमबद्ध करें</string>
+    <string name="show_done">समाप्त चेकलिस्ट दिखाएं</string>
+    <string name="switch_note">नोट पर स्विच करें</string>
+    <string name="switch_task">चेकलिस्ट पर स्विच करें</string>
+    <string name="reminder">अनुस्मारक</string>
+    <string name="no_reminder_set">कोई अनुस्मारक नहीं</string>
+    <string name="zero_min_before">समाप्त होने पर</string>
+    <string name="ten_min_before">10 मिनट पहले</string>
+    <string name="thirty_min_before">30 मिनट पहले</string>
+    <string name="a_day_beofre">24 घंटे पहले</string>
+    <string name="custom">"कस्टम "</string>
+    <string name="notification_channel_name">अनुस्मारक</string>
+    <string name="snooze">दिन में झपकी लेना</string>
+    <string name="snooze_duration">दिन में झपकी अवधि</string>
+    <string name="snooze_duration_summary">स्नूज़िंग की अवधि बदलें</string>
+    <string name="change_default_sorting">सॉर्टिंग ऑर्डर बदलें</string>
+    <string name="default_sort_by_time">डिफ़ॉल्ट रूप से समय के अनुसार छंटनी</string>
+    <string name="default_sort_by_urgency">डिफ़ॉल्ट रूप से तात्कालिकता से छंटनी</string>
+    <string name="repeat">दोहराना</string>
+    <string name="task_as_home_page">डिफ़ॉल्ट पृष्ठ के रूप में करने के लिए उपयोग करना</string>
+    <string name="note_as_home_page">डिफ़ॉल्ट पृष्ठ के रूप में नोट का उपयोग करना</string>
+    <string name="remove_date_hint">तारीख को हटाने के लिए लंबे समय तक दबाएं</string>
+    <string name="remove_time_hint">समय निकालने के लिए लंबे समय तक दबाएं</string>
+    <string name="add_note">नोट जोड़े</string>
+    <string name="add_task">चेकलिस्ट जोड़ें</string>
+    <string name="notification_unpin">नोटिफिकेशन रद्द करेंं</string>
+
+    <string-array name="font_size">
+        <item>छोटा</item>
+        <item>मध्यम</item>
+        <item>विशाल</item>
+        <item>ज्यादा बड़ा</item>
+    </string-array>
+    <string-array name="back_up_frequency">
+        <item>हर दिन</item>
+        <item>हर 3 दिन</item>
+        <item>प्रति सप्ताह</item>
+        <item>प्रत्येक 2 हफ्ते</item>
+        <item>हर महीने</item>
+    </string-array>
+    <string-array name="snooze_duration">
+        <item>5 मिनट</item>
+        <item>15 मिनट</item>
+        <item>30 मिनट</item>
+        <item>1 घंटा</item>
+        <item>3 घंटे</item>
+        <item>12 घंटे</item>
+        <item>1 दिन</item>
+    </string-array>
+    <string-array name="urgency_list">
+        <item>डीफ़ल्ट</item>
+        <item>महत्वपूर्ण</item>
+        <item>अविलंब</item>
+    </string-array>
+    <string-array name="reminder_list_without_time">
+        <item>कोई अनुस्मारक नहीं</item>
+        <item>समाप्त होने पर</item>
+        <item>24 घंटे पहले</item>
+        <item>कस्टम</item>
+    </string-array>
+    <string-array name="reminder_list_with_time">
+        <item>10 मिनट पहले</item>
+        <item>30 मिनट पहले</item>
+    </string-array>
+</resources>

@@ -26,7 +26,7 @@ public class LauncherShortcuts extends Activity {
     private void setupShortcut() {
         // set up the shortcut intent.
         Intent shortcutIntent = new Intent(this, NoteEdit.class);
-        shortcutIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        shortcutIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         // Then, set up the container intent (the response to the caller)
         Intent intent = new Intent();
         intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);

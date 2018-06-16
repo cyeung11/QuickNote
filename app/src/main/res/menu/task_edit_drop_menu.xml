@@ -7,6 +7,11 @@
         android:visible="true" />
 
     <item
+        android:id="@+id/edit_drop_menu_pin"
+        android:title="@string/notification_pin"
+        android:visible="false" />
+
+    <item
         android:id="@+id/edit_drop_menu_delete"
         android:title="@string/delete"
         android:visible="true" />

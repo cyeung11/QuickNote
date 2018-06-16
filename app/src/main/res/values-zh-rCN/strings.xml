@@ -1,0 +1,187 @@
+<resources>
+    <string name="app_name">笔记及待办</string>
+    <string name="note">笔记本</string>
+    <string name="task">待办清单</string>
+    <string name="user_interface_cap">版面设定</string>
+    <string name="done">储存</string>
+    <string name="saved_note">已储存</string>
+    <string name="saved_task">已储存</string>
+    <string name="error_text">错误</string>
+    <string name="error_loading">读取文件错误</string>
+    <string name="error_saving">储存文件错误</string>
+    <string name="error_widget">小工具读取文件错误</string>
+    <string name="error_back_up">备份错误</string>
+    <string name="error_restore">回复错误</string>
+    <string name="error_reminder">设定提醒错误</string>
+    <string name="text_here">请於此写下笔记</string>
+    <string name="title_here">标题</string>
+    <string name="yesterday">昨天</string>
+    <string name="untitled_note">未命名笔记</string>
+    <string name="untitled_task">未命名待办事件</string>
+    <string name="confirm_discard">您是否确定要放弃修改？</string>
+    <string name="discard_title">放弃修改</string>
+    <string name="discard">放弃修改</string>
+    <string name="save_instead">储存</string>
+    <string name="cancel">取消</string>
+    <string name="delete">删除</string>
+    <string name="delete_title">删除文件</string>
+    <string name="confirm_delete_list">您是否确定要删除选取的文件？</string>
+    <string name="confirm_delete_edit">您是否确定要删除此文件？</string>
+    <string name="select_all">选取全部</string>
+    <string name="deselect_all">取消选取</string>
+    <string name="back">返回</string>
+    <string name="appwidget_text">例子</string>
+    <string name="configure">设定</string>
+    <string name="select_note_instruction">选取笔记</string>
+    <string name="just_now">刚刚</string>
+    <string name="note_preview">笔记预览</string>
+    <string name="share">分享</string>
+    <string name="search">搜寻</string>
+    <string name="show_starred">显示标记笔记</string>
+    <string name="show_all_note">显示全部</string>
+    <string name="show_all_task">显示待办事件</string>
+    <string name="starred">标记</string>
+    <string name="unstarred">取消标记</string>
+    <string name="settings">设定</string>
+    <string name="add_shortcut_short_label">背景颜色</string>
+    <string name="color_default_title">选择背景颜色</string>
+    <string name="search_hint">搜寻</string>
+    <string name="note_not_found">未找到资料</string>
+    <string name="task_not_found">未找到资料</string>
+    <string name="new_note">新笔记</string>
+    <string name="menu">选项</string>
+    <string name="saved_starred_toast">已储存及标记</string>
+    <string name="starred_toast">已标记</string>
+    <string name="unstarred_toast">已取消标记</string>
+    <string name="pending_toast">已标示为待办</string>
+    <string name="done_toast">已标示为完成</string>
+    <string name="note_deleted_toast">已删除笔记</string>
+    <string name="task_deleted_toast">已删除待办事件</string>
+    <string name="back_up">备份</string>
+    <string name="back_up_summary">备份文件到储存空间</string>
+    <string name="permission_required">需要系统权限</string>
+    <string name="permission">请批准储存装置读写权限以开启备份及回复功能</string>
+    <string name="open_settings">前往设定</string>
+    <string name="restore">回复</string>
+    <string name="restore_summary">从备份文件回复笔记及待办事件</string>
+    <string name="restore_success">已回复文件</string>
+    <string name="backup_success">已备份文件</string>
+    <string name="ok">确定</string>
+    <string name="restore_confirm">回复文件前，将删除现有的文件。继续？</string>
+    <string name="title_activity_settings">设定</string>
+    <string name="font_size_main_screen">首页文字尺寸</string>
+    <string name="font_size_editing_screen">编辑页面文字尺寸</string>
+    <string name="font_size_main_screen_summary">设定首页文字尺寸</string>
+    <string name="font_size_editing_screen_summary">设定编辑首页文字尺寸</string>
+    <string name="notification_pin">钉到通知栏</string>
+    <string name="notification_pin_summary">於通知栏中加入小工具</string>
+    <string name="auto_back_up">自动备份</string>
+    <string name="auto_back_up_summary">自动备份到外置储存空间</string>
+    <string name="back_up_frequency">自动备份频率</string>
+    <string name="auto_back_up_frequency_summary">设定自动备份频率</string>
+    <string name="report">回报</string>
+    <string name="report_summary">向开发者报告问题</string>
+    <string name="backup_restore_cap">备份与回复</string>
+    <string name="other_cap">其他</string>
+    <string name="task_cap">待办事件</string>
+    <string name="default_screen">设定首页</string>
+    <string name="default_screen_summary">设定开启程式时显示的页面</string>
+    <string name="date">日期</string>
+    <string name="time">时间</string>
+    <string name="all_day">全日</string>
+    <string name="font_size_widget">小工具文字尺寸</string>
+    <string name="font_size_widget_summary">设定小工具文字尺寸</string>
+    <string name="premium_function">付费功能</string>
+    <string name="ads_prompt">观看一段广告以使用功能一次</string>
+    <string name="ads_wait">广告载入中</string>
+    <string name="ads_complete">多谢！功能已解锁</string>
+    <string name="todo_title_caption">待办事件</string>
+    <string name="task_hint">待办事件名称</string>
+    <string name="due_date_caption">到期日期</string>
+    <string name="mark_as_done">标记为已完成</string>
+    <string name="mark_as_pending">标记为待办</string>
+    <string name="remark_caption">备注</string>
+    <string name="remark_hint">进度丶指示等</string>
+    <string name="date_hint">未设定日期</string>
+    <string name="time_hint">未设定时间</string>
+    <string name="category_caption">分类</string>
+    <string name="asap">紧急</string>
+    <string name="important">重要</string>
+    <string name="priority_default">预设</string>
+    <string name="priority_done">完成</string>
+    <string name="tomorrow">明天</string>
+    <string name="today">今天</string>
+    <string name="due_today">今天到期</string>
+    <string name="due_today_with_time">今天%s到期</string>
+    <string name="due_tomorrow">明天到期</string>
+    <string name="due_someday">於%s到期</string>
+    <string name="sort_by_time">依时间排列</string>
+    <string name="sort_by_urgency">依分类排列</string>
+    <string name="show_done">显示已完成事件</string>
+    <string name="switch_note">显示笔记</string>
+    <string name="switch_task">显示待办</string>
+    <string name="reminder">提醒</string>
+    <string name="no_reminder_set">无提醒</string>
+    <string name="zero_min_before">到期时</string>
+    <string name="ten_min_before">到期前10分钟</string>
+    <string name="thirty_min_before">到期前30分钟</string>
+    <string name="a_day_beofre">到期前24小时</string>
+    <string name="custom">自订</string>
+    <string name="repeat">重复</string>
+    <string name="notification_channel_name">提醒</string>
+    <string name="snooze">延时</string>
+    <string name="snooze_duration">延迟间隔</string>
+    <string name="snooze_duration_summary">设定延迟提醒间隔的时长</string>
+    <string name="change_default_sorting">设定排列</string>
+    <string name="default_sort_by_time">预设依时间排列</string>
+    <string name="default_sort_by_urgency">预设依紧急程度排列</string>
+    <string name="task_as_home_page">使用待办事件为首页</string>
+    <string name="note_as_home_page">使用笔记本为首页</string>
+    <string name="remove_date_hint">长按以移除日期</string>
+    <string name="remove_time_hint">长按以移除时间</string>
+    <string name="add_note">新增笔记</string>
+    <string name="add_task">新增待办</string>
+    <string name="notification_unpin">从通知栏取消</string>
+    <plurals name="notification_title">
+        <item quantity="other">您今天有%d件待办事件</item>
+    </plurals>
+
+
+    <string-array name="font_size">
+        <item>小</item>
+        <item>中</item>
+        <item>大</item>
+        <item>特大</item>
+    </string-array>
+    <string-array name="back_up_frequency">
+        <item>每天</item>
+        <item>每3天</item>
+        <item>每星期</item>
+        <item>每2星期</item>
+        <item>每个月</item>
+    </string-array>
+    <string-array name="snooze_duration">
+        <item>5分钟</item>
+        <item>15分钟</item>
+        <item>30分钟</item>
+        <item>1小时</item>
+        <item>3小时</item>
+        <item>12小时</item>
+        <item>1天</item>
+    </string-array>
+    <string-array name="urgency_list">
+        <item>预设</item>
+        <item>重要</item>
+        <item>紧急</item>
+    </string-array>
+    <string-array name="reminder_list_without_time">
+        <item>无提醒</item>
+        <item>到期时</item>
+        <item>24小时前</item>
+        <item>自订</item>
+    </string-array>
+    <string-array name="reminder_list_with_time">
+        <item>10分钟前</item>
+        <item>30分钟前</item>
+    </string-array>
+</resources>

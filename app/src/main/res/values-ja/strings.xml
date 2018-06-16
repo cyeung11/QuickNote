@@ -1,0 +1,184 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">A Note &amp; To Do</string>
+    <string name="note">ノート</string>
+    <string name="task">Todoリスト</string>
+    <string name="user_interface_cap">インタフェース</string>
+    <string name="done">完了</string>
+    <string name="saved_note">すでに保存</string>
+    <string name="saved_task">すでに保存</string>
+    <string name="error_text">誤っ</string>
+    <string name="error_loading">読み間違えた</string>
+    <string name="error_saving">間違って保存</string>
+    <string name="error_widget">読み間違えた</string>
+    <string name="error_back_up">バックアップ間違って</string>
+    <string name="error_restore">復元間違って</string>
+    <string name="error_reminder">設定ミス</string>
+    <string name="text_here">こ記注</string>
+    <string name="title_here">タイトル</string>
+    <string name="yesterday">昨日</string>
+    <string name="untitled_note">無題ドキュメント</string>
+    <string name="untitled_task">無題Todoリスト</string>
+    <string name="confirm_discard">変更を破棄してもよろしいですか？</string>
+    <string name="discard_title">あきらめ</string>
+    <string name="discard">あきらめ</string>
+    <string name="save_instead">保存</string>
+    <string name="cancel">取り消し</string>
+    <string name="delete">削除</string>
+    <string name="delete_title">削除</string>
+    <string name="confirm_delete_list">ファイルを削除してもよろしいですか？</string>
+    <string name="confirm_delete_edit">ファイルを削除してもよろしいですか？</string>
+    <string name="select_all">すべて選択</string>
+    <string name="deselect_all">解除を選択</string>
+    <string name="back">戻る</string>
+    <string name="appwidget_text">例</string>
+    <string name="configure">設定</string>
+    <string name="select_note_instruction">選択</string>
+    <string name="just_now">さっき</string>
+    <string name="note_preview">プレビュー</string>
+    <string name="share">シェア</string>
+    <string name="search">検索</string>
+    <string name="show_starred">表示タグ</string>
+    <string name="show_all_note">全て表示</string>
+    <string name="show_all_task">Todoリスト表示</string>
+    <string name="starred">タグ</string>
+    <string name="unstarred">削除タグ</string>
+    <string name="settings">設定</string>
+    <string name="add_shortcut_short_label">背景色</string>
+    <string name="color_default_title">背景色を設定する</string>
+    <string name="search_hint">検索</string>
+    <string name="note_not_found">見つからない</string>
+    <string name="task_not_found">見つからない</string>
+    <string name="menu">オプション</string>
+    <string name="new_note">新しいノート</string>
+    <string name="saved_starred_toast">すでに保存、タグ付き</string>
+    <string name="starred_toast">タグ付き</string>
+    <string name="unstarred_toast">削除されたタグ</string>
+    <string name="pending_toast">Todo にマークされている</string>
+    <string name="done_toast">完了としてマーク</string>
+    <string name="note_deleted_toast">削除された</string>
+    <string name="task_deleted_toast">削除された</string>
+    <string name="back_up">バックアップ</string>
+    <string name="back_up_summary">SDカードにバックアップ</string>
+    <string name="permission_required">許可が必要です</string>
+    <string name="permission">この機能を有効にするには、許可を承認してください</string>
+    <string name="open_settings">設定を開く</string>
+    <string name="restore">復元</string>
+    <string name="restore_summary">復元ファイル</string>
+    <string name="restore_success">すでに復元ファイル</string>
+    <string name="backup_success">すでにバックアップファイル</string>
+    <string name="ok">OK</string>
+    <string name="title_activity_settings">設定</string>
+    <string name="restore_confirm">必要を復元し、既存のファイルを削除</string>
+    <string name="font_size_main_screen">ホーム文字サイズ</string>
+    <string name="font_size_editing_screen">文字ファイルのサイズ</string>
+    <string name="font_size_main_screen_summary">ホーム文字サイズの設定</string>
+    <string name="font_size_editing_screen_summary">文字ファイルの文字サイズの設定</string>
+    <string name="notification_pin">通知ドロワーに固定する</string>
+    <string name="notification_pin_summary">の通知ドロワーに追加ツール</string>
+    <string name="auto_back_up">自動バックアップ</string>
+    <string name="auto_back_up_summary">sdカードに自動バックアップ</string>
+    <string name="back_up_frequency">自動バックアップの頻度</string>
+    <string name="auto_back_up_frequency_summary">自動バックアップ頻度を設定する</string>
+    <string name="report">レポート</string>
+    <string name="report_summary">開発者に報告する問題</string>
+    <string name="backup_restore_cap">バックアップと回復</string>
+    <string name="other_cap">その他</string>
+    <string name="task_cap">Todoリスト</string>
+    <string name="default_screen">設定トップページ</string>
+    <string name="default_screen_summary">設定を開くプログラムの時によるとのページ</string>
+    <string name="date">日付</string>
+    <string name="time">時間</string>
+    <string name="all_day">終日</string>
+    <string name="font_size_widget">ウィジェットの文字サイズ</string>
+    <string name="font_size_widget_summary">ウィジェットの文字サイズの設定</string>
+    <string name="premium_function">ロック解除の機能</string>
+    <string name="ads_prompt">その機能を利用するには、一度見広告</string>
+    <string name="category_caption">カテゴリー</string>
+    <string name="asap">緊急事態</string>
+    <string name="important">重要</string>
+    <string name="priority_default">デフォルト</string>
+    <string name="priority_done">完了</string>
+    <string name="tomorrow">明日</string>
+    <string name="today">今日</string>
+    <string name="todo_title_caption">Todo</string>
+    <string name="ads_wait">広告のロード</string>
+    <string name="ads_complete">どうもありがとう</string>
+    <string name="task_hint">名前</string>
+    <string name="due_date_caption">締め切り</string>
+    <string name="mark_as_done">完了としてマーク</string>
+    <string name="mark_as_pending">マーク Todo</string>
+    <string name="remark_caption">注</string>
+    <string name="remark_hint">進度、指示など</string>
+    <string name="date_hint">未設定</string>
+    <string name="time_hint">未設定</string>
+    <string name="sort_by_time">による時間の配</string>
+    <string name="sort_by_urgency">による緊急事態の配</string>
+    <string name="show_done">表示完成し事件</string>
+    <string name="switch_note">表示ノート</string>
+    <string name="switch_task">表示Todoリスト</string>
+    <string name="reminder">アラーム</string>
+    <string name="no_reminder_set">ないリマインダ</string>
+    <string name="zero_min_before">締め切り</string>
+    <string name="ten_min_before">締め切り10分前</string>
+    <string name="thirty_min_before">締め切り30分前</string>
+    <string name="a_day_beofre">締め切り24時間前</string>
+    <string name="custom">カスタム</string>
+    <string name="repeat">繰り返される</string>
+    <string name="notification_channel_name">アラート</string>
+    <string name="snooze">遅れた</string>
+    <string name="snooze_duration">遅延間隔</string>
+    <string name="snooze_duration_summary">設定アラーム間隔の時長延期</string>
+    <string name="change_default_sorting">その順序を設定します</string>
+    <string name="default_sort_by_time">による時間の配</string>
+    <string name="default_sort_by_urgency">による緊急事態の配</string>
+    <string name="task_as_home_page">表示Todoリスト</string>
+    <string name="note_as_home_page">表示ノート</string>
+    <string name="remove_date_hint">長く押すと削除</string>
+    <string name="remove_time_hint">長く押すと削除</string>
+    <string name="add_note">メモの追加</string>
+    <string name="add_task">Todoの追加</string>
+    <string name="due_today">により、今日</string>
+    <string name="due_tomorrow">により、明日</string>
+    <string name="due_today_with_time">今日は%s過ぎ</string>
+    <string name="due_someday">%s のため</string>
+    <string name="notification_unpin">通知を取り消す</string>
+
+    <string-array name="font_size">
+        <item>小</item>
+        <item>中</item>
+        <item>大</item>
+        <item>特大</item>
+    </string-array>
+    <string-array name="back_up_frequency">
+        <item>毎日</item>
+        <item>3日ごと</item>
+        <item>毎週</item>
+        <item>隔週</item>
+        <item>毎月</item>
+    </string-array>
+    <string-array name="snooze_duration">
+        <item>5分</item>
+        <item>15分</item>
+        <item>30分</item>
+        <item>1時間</item>
+        <item>3時間</item>
+        <item>12時間</item>
+        <item>24時間</item>
+    </string-array>
+    <string-array name="urgency_list">
+        <item>デフォルト</item>
+        <item>重要</item>
+        <item>緊急</item>
+    </string-array>
+    <string-array name="reminder_list_without_time">
+        <item>ないリマインダ</item>
+        <item>締め切り</item>
+        <item>締め切り24時間前</item>
+        <item>カスタム…</item>
+    </string-array>
+    <string-array name="reminder_list_with_time">
+        <item>締め切り10分前</item>
+        <item>締め切り30分前</item>
+    </string-array>
+</resources>

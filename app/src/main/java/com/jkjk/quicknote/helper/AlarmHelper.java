@@ -10,15 +10,15 @@ import com.jkjk.quicknote.R;
 
 import java.util.Calendar;
 
-import static com.jkjk.quicknote.helper.AlarmReceiver.ACTION_TOOL_BAR;
+import static com.jkjk.quicknote.helper.AlarmReceiver.ACTION_POST_REMINDER;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
 
 public class AlarmHelper {
 
-    static final String ITEM_TYPE = "type";
-    static final String ITEM_TITLE = "title";
-    static final String ITEM_CONTENT = "content";
-    static final String EVENT_TIME = "eventTime";
+    public static final String ITEM_TYPE = "type";
+    public static final String ITEM_TITLE = "title";
+    public static final String ITEM_CONTENT = "content";
+    public static final String EVENT_TIME = "eventTime";
 
     public AlarmHelper(){
     }
@@ -27,6 +27,7 @@ public class AlarmHelper {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(context, AlarmReceiver.class);
+        intent.setAction(ACTION_POST_REMINDER);
         intent.putExtra(EXTRA_NOTE_ID, id);
         intent.putExtra(ITEM_TYPE, itemType);
         intent.putExtra(ITEM_TITLE, title);
@@ -39,11 +40,11 @@ public class AlarmHelper {
         } else Toast.makeText(context, R.string.error_reminder, Toast.LENGTH_SHORT).show();
     }
 
-    public static void setToolbarUpdate(Context context){
+    public static void setNotificationUpdate(Context context, String action, int requestCode){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.setAction(ACTION_TOOL_BAR);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        intent.setAction(action);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // get tomorrow midnight time
         Calendar calendar = Calendar.getInstance();
@@ -65,11 +66,11 @@ public class AlarmHelper {
         } else Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
     }
 
-    public static void cancelToolbarUpdate(Context context){
+    public static void cancelNotificationUpdate(Context context, String action, int requestCode){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.setAction(ACTION_TOOL_BAR);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        intent.setAction(action);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.cancel(pendingIntent);
     }
 
@@ -77,6 +78,7 @@ public class AlarmHelper {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(context, AlarmReceiver.class);
+        intent.setAction(ACTION_POST_REMINDER);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, (int)id, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         if (alarmManager != null) {

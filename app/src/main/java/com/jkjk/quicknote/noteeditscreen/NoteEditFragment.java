@@ -1,10 +1,12 @@
 package com.jkjk.quicknote.noteeditscreen;
 
 
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,8 +14,10 @@ import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
+import android.service.notification.StatusBarNotification;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -30,14 +34,20 @@ import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import com.google.android.gms.actions.NoteIntents;
+import com.google.android.gms.common.util.ArrayUtils;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.helper.AlarmReceiver;
 import com.jkjk.quicknote.widget.AppWidgetService;
 import com.jkjk.quicknote.widget.NoteWidget;
 
 import java.util.Calendar;
 
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
+import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_CONTENT;
+import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TITLE;
+import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TYPE;
+import static com.jkjk.quicknote.helper.AlarmReceiver.ACTION_PIN_ITEM;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 
 
@@ -132,11 +142,22 @@ public class NoteEditFragment extends Fragment {
         }
 
         final ImageButton showDropMenu = view.findViewById(R.id.edit_show_drop_menu);
+
         showDropMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 PopupMenu editDropMenu = new PopupMenu(view.getContext(), showDropMenu);
                 editDropMenu.inflate(R.menu.note_edit_drop_menu);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    MenuItem pinToNotification = editDropMenu.getMenu().findItem(R.id.edit_drop_menu_pin);
+                    if (!newNote && isItemAnActiveNotification()){
+                        pinToNotification.setTitle(R.string.notification_unpin);
+                    } else pinToNotification.setTitle(R.string.notification_pin);
+
+                    pinToNotification.setVisible(true);
+                }
+
                 MenuItem starredButton = editDropMenu.getMenu().findItem(R.id.edit_drop_menu_starred);
                 if (isStarred == 0){
                     // not starred, set button to starred
@@ -207,6 +228,24 @@ public class NoteEditFragment extends Fragment {
                                         .setNegativeButton(R.string.cancel, null)
                                         .show();
                                 return true;
+
+                            case R.id.edit_drop_menu_pin:
+                                // if it is a new note, save the note and then pin to notification
+                                if (newNote) {
+                                    saveNote();
+                                    hasNoteSave = false;
+                                }
+
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isItemAnActiveNotification()) {
+                                    pinNoteToNotification();
+                                } else {
+                                    NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                                    if (notificationManager!=null){
+                                        // to distinguish reminder and pin item, id of pin item is the item id * 887
+                                        notificationManager.cancel((int)noteId*887);
+                                    }
+                                }
+                                return true;
                             default:
                                 return false;
                         }
@@ -251,6 +290,8 @@ public class NoteEditFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        //  reset it to not saved when user come back
+        hasNoteSave = false;
         title = titleInFragment.getText().toString();
         content = contentInFragment.getText().toString();
     }
@@ -262,32 +303,72 @@ public class NoteEditFragment extends Fragment {
             saveNote();
             updateAllWidget();
         }
-        // then reset it to not saved for the case when user come back
-        hasNoteSave = false;
         super.onPause();
     }
 
     public void saveNote(){
         ContentValues values = new ContentValues();
-        String noteTitle = titleInFragment.getText().toString().trim();
-        if (noteTitle.length()<1){
-            noteTitle = getString(R.string.untitled_note);
+        title = titleInFragment.getText().toString().trim();
+        if (title.length()<1){
+            title = getString(R.string.untitled_note);
         }
-        values.put("title", noteTitle);
-        values.put("content", contentInFragment.getText().toString());
+        values.put("title", title);
+        content =  contentInFragment.getText().toString();
+        values.put("content", content);
         values.put("event_time", Calendar.getInstance().getTimeInMillis());
         values.put("starred", isStarred);
         values.put("type", 0);
 
         if (!newNote) {
             MyApplication.database.update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
+            // to update pinned notification if there is any, api 23 up exclusive
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if(isItemAnActiveNotification()){
+                    pinNoteToNotification();
+                }
+            }
         }else {
             noteId = MyApplication.database.insert(DATABASE_NAME, "",values);
         }
         values.clear();
+
         hasNoteSave = true;
         newNote = false;
         Toast.makeText(getActivity(), R.string.saved_note, Toast.LENGTH_SHORT).show();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private boolean isItemAnActiveNotification(){
+        boolean result = false;
+        NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (notificationManager != null) {
+            StatusBarNotification[] activeNotification = notificationManager.getActiveNotifications();
+            int[] notificationId = new int[activeNotification.length];
+            for (int i = 0; i < activeNotification.length; i++) {
+                notificationId[i] = activeNotification[i].getId();
+            }
+            // to distinguish reminder and pin item, id of pin item is the item id * 887
+            if (ArrayUtils.contains(notificationId, (int) noteId*887)){
+                result = true;
+            }
+        } else Toast.makeText(getContext(), R.string.error_text, Toast.LENGTH_SHORT).show();
+        return result;
+    }
+
+    private void pinNoteToNotification(){
+        Intent intent = new Intent(getContext(), AlarmReceiver.class);
+        intent.setAction(ACTION_PIN_ITEM);
+        intent.putExtra(EXTRA_NOTE_ID, noteId);
+        intent.putExtra(ITEM_TYPE, 'N');
+        intent.putExtra(ITEM_TITLE, title);
+        intent.putExtra(ITEM_CONTENT, content);
+        PendingIntent pinNotificationPI = PendingIntent.getBroadcast(getContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        try {
+            pinNotificationPI.send();
+        } catch (PendingIntent.CanceledException e) {
+            e.printStackTrace();
+        }
     }
 
     public void updateAllWidget(){

@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">A Note &amp; To Do</string>
-    <string name="note_list_name">NoteList</string>
     <string name="note">Note</string>
     <string name="task">To Do</string>
     <string name="user_interface_cap">INTERFACE</string>
@@ -47,8 +46,8 @@
     <string name="add_shortcut_short_label">Background Color</string>
     <string name="color_default_title">Select Background Color</string>
     <string name="search_hint">Search note</string>
-    <string name="note_not_found">No note found</string>
-    <string name="task_not_found">No task found</string>
+    <string name="note_not_found">Nothing found</string>
+    <string name="task_not_found">Nothing found</string>
     <string name="new_note">New note</string>
     <string name="menu">Menu</string>
     <string name="saved_starred_toast">Note saved &amp; starred</string>
@@ -60,7 +59,7 @@
     <string name="task_deleted_toast">Task deleted</string>
     <string name="back_up">Backup</string>
     <string name="back_up_summary">Backup note to storage</string>
-    <string name="back_up_name">notebackup-</string>
+    <string name="back_up_name" translatable="false">notebackup-</string>
     <string name="permission_required">Permission required</string>
     <string name="permission">Turn on storage permission to enable backup &amp; restore function.</string>
     <string name="open_settings">Open settings</string>
@@ -73,10 +72,11 @@
     <string name="title_activity_settings">Settings</string>
     <string name="font_size_main_screen">Home Page Font Size</string>
     <string name="font_size_editing_screen">Edit Page Font Size</string>
-    <string name="font_size_default">m</string>
+    <string name="font_size_default" translatable="false">m</string>
     <string name="font_size_main_screen_summary">Config font size in home page</string>
     <string name="font_size_editing_screen_summary">Config font size in edit page</string>
     <string name="notification_pin">Pin to Notification</string>
+    <string name="notification_unpin">Unpin Notification</string>
     <string name="notification_pin_summary">Pin a function bar on notification panel</string>
     <string name="auto_back_up">Auto Backup</string>
     <string name="auto_back_up_summary">Automatically backup to external storage</string>
@@ -114,7 +114,6 @@
     <string name="priority_done">DONE</string>
     <string name="tomorrow">Tomorrow</string>
     <string name="today">Today</string>
-    <string name="at">at</string>
     <string name="sort_by_time">Sort by time</string>
     <string name="sort_by_urgency">Sort by urgency</string>
     <string name="show_done">Show done tasks</string>
@@ -128,7 +127,6 @@
     <string name="a_day_beofre">24 hrs before</string>
     <string name="custom">Custom…</string>
     <string name="repeat">Repeat</string>
-    <string name="due">Due</string>
     <string name="notification_channel_name">Reminder</string>
     <string name="snooze">Snooze</string>
     <string name="snooze_duration">Snooze Duration</string>
@@ -142,9 +140,17 @@
     <string name="remove_time_hint">Long press to remove due time</string>
     <string name="add_note">Add Note</string>
     <string name="add_task">Add To Do</string>
+    <string name="due_today">Due Today</string>
+    <string name="due_today_with_time">Due Today at %s</string>
+    <string name="due_tomorrow">Due Tomorrow</string>
+    <string name="due_someday">Due %s</string>
+    <string name="daily_update">Send Daily Update</string>
+    <string name="send_daily_update">Post a daily notification if there is any To Dos pending</string>
+    <string name="notification_cap">NOTIFICATION</string>
+    
     <plurals name="notification_title">
         <item quantity="one">You have %d task due today.</item>
-        <item quantity="zero">You have %d task due today.</item>
+        <item quantity="zero">You have %d tasks due today.</item>
         <item quantity="other">You have %d tasks due today.</item>
     </plurals>
 
@@ -155,19 +161,19 @@
         <item>Large</item>
         <item>Extra large</item>
     </string-array>
-    <string-array name="font_size_main_screen_value">
+    <string-array name="font_size_main_screen_value" translatable="false">
         <item>s</item>
         <item>m</item>
         <item>l</item>
         <item>xl</item>
     </string-array>
-    <string-array name="font_size_editing_screen_value">
+    <string-array name="font_size_editing_screen_value" translatable="false">
         <item>s</item>
         <item>m</item>
         <item>l</item>
         <item>xl</item>
     </string-array>
-    <string-array name="font_size_widget_value">
+    <string-array name="font_size_widget_value" translatable="false">
         <item>s</item>
         <item>m</item>
         <item>l</item>
@@ -180,7 +186,7 @@
         <item>Bi-weekly</item>
         <item>Monthly</item>
     </string-array>
-    <string-array name="back_up_frequency_value">
+    <string-array name="back_up_frequency_value" translatable="false">
         <item>1</item>
         <item>3</item>
         <item>7</item>
@@ -194,9 +200,9 @@
         <item>1 hour</item>
         <item>3 hours</item>
         <item>12 hours</item>
-        <item>A day</item>
+        <item>1 day</item>
     </string-array>
-    <string-array name="snooze_duration_value">
+    <string-array name="snooze_duration_value" translatable="false">
         <item>300000</item>
         <item>900000</item>
         <item>1800000</item>
@@ -220,6 +226,4 @@
         <item>10 min before</item>
         <item>30 min before</item>
     </string-array>
-
-
 </resources>

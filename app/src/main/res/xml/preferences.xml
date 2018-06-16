@@ -60,13 +60,20 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="@string/other_cap">
+        android:title="@string/notification_cap">
 
         <!--<Preference android:title="@string/report"-->
             <!--android:summary="@string/report_summary">-->
             <!--<intent android:action="android.intent.action.SENDTO"-->
                 <!--android:data="mailto:cyeung11@gmail.com" />-->
         <!--</Preference>-->
+
+
+        <SwitchPreference
+            android:title="@string/daily_update"
+            android:key="@string/daily_update"
+            android:summary="@string/send_daily_update"
+            android:defaultValue="false"/>
 
         <SwitchPreference
         android:key="@string/notification_pin"

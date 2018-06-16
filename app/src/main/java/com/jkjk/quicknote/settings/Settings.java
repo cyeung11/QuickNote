@@ -49,7 +49,7 @@ public class Settings extends AppCompatActivity {
         switch (item.getItemId()){
             case android.R.id.home:
                 Intent intent = new Intent(this, List.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 finish();
                 return true;
@@ -61,7 +61,7 @@ public class Settings extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Intent intent = new Intent(this, List.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         super.onBackPressed();
     }

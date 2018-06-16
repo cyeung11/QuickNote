@@ -31,6 +31,7 @@ import java.util.Calendar;
 import static android.app.Activity.RESULT_CANCELED;
 import static android.content.Context.MODE_PRIVATE;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
+import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.listscreen.ListFragment.isAllowedToUse;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
@@ -142,7 +143,7 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
 
                 Intent startAppIntent = new Intent(activity, NoteEdit.class);
                 startAppIntent.putExtra(EXTRA_NOTE_ID, cursorForWidget.getLong(0)).putExtra(IS_FROM_WIDGET, true)
-                        .setFlags(FLAG_ACTIVITY_CLEAR_TOP);
+                        .setFlags(FLAG_ACTIVITY_CLEAR_TOP | FLAG_ACTIVITY_SINGLE_TOP);
                 PendingIntent pendingIntent = PendingIntent.getActivity(activity,(int)cursorForWidget.getLong(0),startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
                 remoteViews.setOnClickPendingIntent(R.id.widget, pendingIntent);
 
@@ -218,9 +219,7 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
 
                 // Show starred note
                 if (cursorForWidget.getInt(4) == 1) {
-                    holder.noteTitle.setTypeface(Typeface.SERIF, Typeface.BOLD_ITALIC);
-                    holder.noteTitle.setTextColor(Color.parseColor("#0099cc"));
-                    holder.noteContent.setTextColor(Color.parseColor("#000000"));
+                    holder.noteTitle.setTypeface(Typeface.SERIF, Typeface.BOLD);
                 }
 
             } catch (Exception e) {

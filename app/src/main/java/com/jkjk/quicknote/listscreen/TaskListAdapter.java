@@ -303,12 +303,15 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                     if (checked) {
                         values.put("done", 1);
                         holder.isDone = true;
-
+                        MyApplication.database.update(DATABASE_NAME, values, "_id='" + holder.taskId + "'", null);
+                        Toast.makeText(fragment.getContext(), R.string.done_toast, Toast.LENGTH_SHORT).show();
                     } else {
                         values.put("done", 0);
                         holder.isDone = false;
+                        MyApplication.database.update(DATABASE_NAME, values, "_id='" + holder.taskId + "'", null);
+                        Toast.makeText(fragment.getContext(), R.string.pending_toast, Toast.LENGTH_SHORT).show();
                     }
-                    MyApplication.database.update(DATABASE_NAME, values, "_id='" + holder.taskId + "'", null);
+
                     if (showingDone) {
                         updateCursorForDone();
                     } else {

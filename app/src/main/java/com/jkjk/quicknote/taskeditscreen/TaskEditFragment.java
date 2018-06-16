@@ -2,9 +2,11 @@ package com.jkjk.quicknote.taskeditscreen;
 
 
 import android.app.DatePickerDialog;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,8 +14,10 @@ import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
+import android.service.notification.StatusBarNotification;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -38,6 +42,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.android.gms.common.util.ArrayUtils;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
@@ -48,6 +53,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import static com.jkjk.quicknote.helper.AlarmHelper.EVENT_TIME;
+import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TITLE;
+import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TYPE;
+import static com.jkjk.quicknote.helper.AlarmReceiver.ACTION_PIN_ITEM;
 import static com.jkjk.quicknote.helper.AlarmReceiver.ACTION_TOOL_BAR;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.DEFAULT_NOTE_ID;
@@ -63,11 +72,11 @@ public class TaskEditFragment extends Fragment {
 
     boolean hasTaskSave = false;
     private long taskId;
-    private long reminderTimeInMillis;
+    private long initEventTime;
     private EditText titleInFragment, remarkInFragment;
     private TextView dateInFragment, timeInFragment;
     private Switch markAsDoneInFragment;
-    private boolean newTask, isDone, dateSet = false, timeSet = false, hasModified = false, urgencySelectByUser = false
+    private boolean newTask, isDone,  hasModified = false, urgencySelectByUser = false
             , reminderSelectByUser = false, hasShowRemoveDateHint = false, hasShowRemoveTimeHint = false, notificationToolEnable;
     private Calendar taskDate, reminderTime;
     private String title, remark;
@@ -92,8 +101,6 @@ public class TaskEditFragment extends Fragment {
         int spinnerDropDownInt;
         int spinnerItemInt;
         Cursor taskCursor = null;
-        long eventTimeInMillis = DATE_NOT_SET_INDICATOR;
-        reminderTimeInMillis = 0;
         final DateFormat dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,DateFormat.SHORT);
 
         switch (editViewSize){
@@ -161,18 +168,19 @@ public class TaskEditFragment extends Fragment {
         }
 
         taskDate = Calendar.getInstance();
+        taskDate.setTimeInMillis(DATE_NOT_SET_INDICATOR);
+        reminderTime = Calendar.getInstance();
+        reminderTime.setTimeInMillis(0);
 
         if (taskCursor != null) {
             titleInFragment.setText(taskCursor.getString(0));
             remarkInFragment.setText(taskCursor.getString(1));
 
             // read time to date and time field
-            eventTimeInMillis = taskCursor.getLong(2);
-            if (eventTimeInMillis != DATE_NOT_SET_INDICATOR) {
-                taskDate.setTimeInMillis(eventTimeInMillis);
+            taskDate.setTimeInMillis(taskCursor.getLong(2));
+            if (taskDate.getTimeInMillis() != DATE_NOT_SET_INDICATOR) {
                 DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
                 dateInFragment.setText(dateFormat.format(taskDate.getTime()));
-                dateSet = true;
                 timeInFragment.setVisibility(View.VISIBLE);
                 timeIcon.setVisibility(View.VISIBLE);
 
@@ -183,7 +191,6 @@ public class TaskEditFragment extends Fragment {
                         && taskDate.get(Calendar.HOUR_OF_DAY) == TIME_NOT_SET_HOUR_INDICATOR)) {
                     DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
                     timeInFragment.setText(timeFormat.format(taskDate.getTime()));
-                    timeSet = true;
                 }
             }
 
@@ -193,7 +200,7 @@ public class TaskEditFragment extends Fragment {
                 markAsDoneInFragment.setChecked(false);
             }
 
-            reminderTimeInMillis = taskCursor.getLong(5);
+            reminderTime.setTimeInMillis(taskCursor.getLong(5));
 
         }
 
@@ -224,9 +231,12 @@ public class TaskEditFragment extends Fragment {
          // Reminder
         reminderArray = new ArrayList<>();
         reminderArray.add(getString(R.string.no_reminder_set));
-        if (dateSet) {
+        if (taskDate.getTimeInMillis()!=DATE_NOT_SET_INDICATOR) {
             reminderArray.add(getString(R.string.zero_min_before));
-            if (timeSet) {
+            if (!(taskDate.get(Calendar.MILLISECOND) == TIME_NOT_SET_MILLISECOND_INDICATOR
+                    && taskDate.get(Calendar.SECOND) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                    && taskDate.get(Calendar.MINUTE) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                    && taskDate.get(Calendar.HOUR_OF_DAY) == TIME_NOT_SET_HOUR_INDICATOR)) {
                 reminderArray.add(getString(R.string.ten_min_before));
                 reminderArray.add(getString(R.string.thirty_min_before));
             }
@@ -240,7 +250,6 @@ public class TaskEditFragment extends Fragment {
         final ArrayAdapter<String> reminderAdapter = new ArrayAdapter<>(getContext(), spinnerItemInt, reminderArray);
         reminderAdapter.setDropDownViewResource(spinnerDropDownInt);
         reminderInFragment.setAdapter(reminderAdapter);
-        reminderTime = Calendar.getInstance();
         reminderInFragment.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -249,10 +258,28 @@ public class TaskEditFragment extends Fragment {
                     hasModified = true;
                     // if select other, show date & time picker
                     if (reminderInFragment.getItemAtPosition(i).equals(getString(R.string.custom))){
+                        int yr, mn, dy;
+                        if (reminderTime.getTimeInMillis()==0){
+                            yr = Calendar.getInstance().get(Calendar.YEAR);
+                            mn = Calendar.getInstance().get(Calendar.MONTH);
+                            dy = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+                        } else {
+                            yr = reminderTime.get(Calendar.YEAR);
+                            mn = reminderTime.get(Calendar.MONTH);
+                            dy = reminderTime.get(Calendar.DAY_OF_MONTH);
+                        }
 
                         DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(), new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker datePicker,int year, int month, int dayOfMonth) {
+                                int hr, min;
+                                if (reminderTime.getTimeInMillis()==0){
+                                    hr = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+                                    min = Calendar.getInstance().get(Calendar.MINUTE);
+                                } else {
+                                    hr = reminderTime.get(Calendar.HOUR_OF_DAY);
+                                    min = reminderTime.get(Calendar.MINUTE);
+                                }
                                 reminderTime.set(Calendar.YEAR, year);
                                 reminderTime.set(Calendar.MONTH, month);
                                 reminderTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
@@ -274,19 +301,20 @@ public class TaskEditFragment extends Fragment {
                                         reminderSelectByUser = false;
                                         reminderInFragment.setSelection(0);
                                     }
-                                }, reminderTime.get(Calendar.HOUR_OF_DAY), reminderTime.get(Calendar.MINUTE), false);
+                                }, hr, min, false);
 
                                 timePickerDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                                     @Override
                                     public void onCancel(DialogInterface dialogInterface) {
                                         reminderSelectByUser = false;
                                         reminderInFragment.setSelection(0);
+                                        reminderTime.setTimeInMillis(0);
                                     }
                                 });
                                 timePickerDialog.show();
                             }
 
-                        }, reminderTime.get(Calendar.YEAR), reminderTime.get(Calendar.MONTH), reminderTime.get(Calendar.DAY_OF_MONTH));
+                        }, yr, mn, dy);
 
                         datePickerDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                             @Override
@@ -317,47 +345,47 @@ public class TaskEditFragment extends Fragment {
         if (taskCursor!=null) {
             reminderSelectByUser = false;
             String customTime;
-            if (reminderTimeInMillis == 0L) {
+            if (reminderTime.getTimeInMillis()==0) {
                 reminderInFragment.setSelection(0);
-            } else if (timeSet) {
-                if (reminderTimeInMillis == eventTimeInMillis) {
+            } else if (!(taskDate.get(Calendar.MILLISECOND) == TIME_NOT_SET_MILLISECOND_INDICATOR
+                    && taskDate.get(Calendar.SECOND) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                    && taskDate.get(Calendar.MINUTE) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                    && taskDate.get(Calendar.HOUR_OF_DAY) == TIME_NOT_SET_HOUR_INDICATOR)) {
+                if (reminderTime.getTimeInMillis() == taskDate.getTimeInMillis()) {
                     reminderInFragment.setSelection(1);
-                } else if (reminderTimeInMillis == eventTimeInMillis - 600000) {
+                } else if (reminderTime.getTimeInMillis() == taskDate.getTimeInMillis() - 600000) {
                     reminderInFragment.setSelection(2);
-                } else if (reminderTimeInMillis == eventTimeInMillis - 1800000) {
+                } else if (reminderTime.getTimeInMillis() == taskDate.getTimeInMillis() - 1800000) {
                     reminderInFragment.setSelection(3);
-                } else if (reminderTimeInMillis == eventTimeInMillis - 86400000) {
+                } else if (reminderTime.getTimeInMillis() == taskDate.getTimeInMillis() - 86400000) {
                     reminderInFragment.setSelection(4);
                 } else {
-                    customTime = dateTimeFormat.format(new Date(reminderTimeInMillis));
+                    customTime = dateTimeFormat.format(new Date(reminderTime.getTimeInMillis()));
                     reminderArray.add(0, customTime);
                     reminderAdapter.notifyDataSetChanged();
                     reminderInFragment.setSelection(0);
                 }
-                reminderTime.setTimeInMillis(reminderTimeInMillis);
-            } else if (dateSet) {
+            } else if (taskDate.getTimeInMillis()!=0) {
                 Calendar calendar = taskDate;
                 calendar.set(Calendar.MILLISECOND, 0);
                 calendar.set(Calendar.SECOND, 0);
                 calendar.set(Calendar.MINUTE, 0);
                 calendar.set(Calendar.HOUR_OF_DAY, 0);
-                if (reminderTimeInMillis == calendar.getTimeInMillis()) {
+                if (reminderTime.getTimeInMillis() == calendar.getTimeInMillis()) {
                     reminderInFragment.setSelection(1);
-                } else if (reminderTimeInMillis == calendar.getTimeInMillis() - 86400000) {
+                } else if (reminderTime.getTimeInMillis() == calendar.getTimeInMillis() - 86400000) {
                     reminderInFragment.setSelection(2);
                 } else {
-                    customTime = dateTimeFormat.format(new Date(reminderTimeInMillis));
+                    customTime = dateTimeFormat.format(new Date(reminderTime.getTimeInMillis()));
                     reminderArray.add(0, customTime);
                     reminderAdapter.notifyDataSetChanged();
                     reminderInFragment.setSelection(0);
                 }
-                reminderTime.setTimeInMillis(reminderTimeInMillis);
             } else {
-                customTime = dateTimeFormat.format(new Date(reminderTimeInMillis));
+                customTime = dateTimeFormat.format(new Date(reminderTime.getTimeInMillis()));
                 reminderArray.add(0, customTime);
                 reminderAdapter.notifyDataSetChanged();
                 reminderInFragment.setSelection(0);
-                reminderTime.setTimeInMillis(reminderTimeInMillis);
             }
         }
 
@@ -369,19 +397,36 @@ public class TaskEditFragment extends Fragment {
                     hasShowRemoveDateHint = true;
                     Toast.makeText(getContext(), R.string.remove_date_hint, Toast.LENGTH_SHORT).show();
                 }
+
+                int year, month, dayOfMonth;
+                if (taskDate.getTimeInMillis()==DATE_NOT_SET_INDICATOR){
+                    year = Calendar.getInstance().get(Calendar.YEAR);
+                    month = Calendar.getInstance().get(Calendar.MONTH);
+                    dayOfMonth = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+                } else {
+                    year = taskDate.get(Calendar.YEAR);
+                    month = taskDate.get(Calendar.MONTH);
+                    dayOfMonth = taskDate.get(Calendar.DAY_OF_MONTH);
+                }
+
                 new DatePickerDialog(getContext(), new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker datePicker,int year, int month, int dayOfMonth) {
+                        if (taskDate.getTimeInMillis()==DATE_NOT_SET_INDICATOR){
+                            taskDate.set(Calendar.HOUR_OF_DAY, TIME_NOT_SET_HOUR_INDICATOR);
+                            taskDate.set(Calendar.MINUTE, TIME_NOT_SET_MINUTE_SECOND_INDICATOR);
+                            taskDate.set(Calendar.SECOND, TIME_NOT_SET_MINUTE_SECOND_INDICATOR);
+                            taskDate.set(Calendar.MILLISECOND, TIME_NOT_SET_MILLISECOND_INDICATOR);
+                        }
                         taskDate.set(Calendar.YEAR, year);
                         taskDate.set(Calendar.MONTH, month);
                         taskDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
                         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
                         dateInFragment.setText(dateFormat.format(taskDate.getTime()));
                         timeInFragment.setVisibility(View.VISIBLE);
                         timeIcon.setVisibility(View.VISIBLE);
-                        dateSet = true;
                         hasModified = true;
-
                         if (!reminderArray.contains(getString(R.string.zero_min_before))) {
                             // add two option after "No reminder" for reminder if user has specify event date;
                             int duePosition = reminderArray.indexOf(getString(R.string.no_reminder_set));
@@ -392,7 +437,7 @@ public class TaskEditFragment extends Fragment {
                         }
 
                     }
-                }, taskDate.get(Calendar.YEAR), taskDate.get(Calendar.MONTH), taskDate.get(Calendar.DAY_OF_MONTH)).show();
+                }, year, month, dayOfMonth).show();
             }
         });
 
@@ -400,9 +445,8 @@ public class TaskEditFragment extends Fragment {
         dateInFragment.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                if (dateSet) {
-                    dateSet = false;
-                    timeSet = false;
+                if (taskDate.getTimeInMillis() != DATE_NOT_SET_INDICATOR) {
+                    taskDate.setTimeInMillis(DATE_NOT_SET_INDICATOR);
                     dateInFragment.setText("");
                     timeInFragment.setVisibility(View.INVISIBLE);
                     timeIcon.setVisibility(View.INVISIBLE);
@@ -413,8 +457,8 @@ public class TaskEditFragment extends Fragment {
                     reminderArray.add(getString(R.string.custom));
                     reminderAdapter.notifyDataSetChanged();
 
-                    if (!newTask && reminderTimeInMillis != 0L){
-                        reminderArray.add(0, dateTimeFormat.format(new Date(reminderTimeInMillis)));
+                    if (reminderTime.getTimeInMillis() != 0){
+                        reminderArray.add(0, dateTimeFormat.format(new Date(reminderTime.getTimeInMillis())));
                         reminderAdapter.notifyDataSetChanged();
                         reminderSelectByUser = false;
                         reminderInFragment.setSelection(0);
@@ -452,7 +496,6 @@ public class TaskEditFragment extends Fragment {
                         taskDate.set(Calendar.MINUTE, minute);
                         DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
                         timeInFragment.setText(timeFormat.format(taskDate.getTime()));
-                        timeSet = true;
                         hasModified = true;
 
                         if (!reminderArray.contains(getString(R.string.ten_min_before))) {
@@ -471,26 +514,29 @@ public class TaskEditFragment extends Fragment {
         timeInFragment.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                if (timeSet){
-                    timeSet = false;
-                    hasModified = true;
-                    timeInFragment.setText("");
 
-                    reminderArray.clear();
-                    reminderArray.add(getString(R.string.no_reminder_set));
-                    reminderArray.add(getString(R.string.zero_min_before));
-                    reminderArray.add(getString(R.string.a_day_beofre));
-                    reminderArray.add(getString(R.string.custom));
+                taskDate.set(Calendar.HOUR_OF_DAY, TIME_NOT_SET_HOUR_INDICATOR);
+                taskDate.set(Calendar.MINUTE, TIME_NOT_SET_MINUTE_SECOND_INDICATOR);
+                taskDate.set(Calendar.SECOND, TIME_NOT_SET_MINUTE_SECOND_INDICATOR);
+                taskDate.set(Calendar.MILLISECOND, TIME_NOT_SET_MILLISECOND_INDICATOR);
+
+                hasModified = true;
+                timeInFragment.setText("");
+
+                reminderArray.clear();
+                reminderArray.add(getString(R.string.no_reminder_set));
+                reminderArray.add(getString(R.string.zero_min_before));
+                reminderArray.add(getString(R.string.a_day_beofre));
+                reminderArray.add(getString(R.string.custom));
+                reminderAdapter.notifyDataSetChanged();
+
+                if (reminderTime.getTimeInMillis() != 0 ) {
+                    reminderArray.add(0, dateTimeFormat.format(new Date(reminderTime.getTimeInMillis())));
                     reminderAdapter.notifyDataSetChanged();
-
-                    if (!newTask && reminderTimeInMillis!=0L) {
-                        reminderArray.add(0, dateTimeFormat.format(new Date(reminderTimeInMillis)));
-                        reminderAdapter.notifyDataSetChanged();
-                        reminderSelectByUser = false;
-                        reminderInFragment.setSelection(0);
-                    }
-                    return true;
-                } else return false;
+                    reminderSelectByUser = false;
+                    reminderInFragment.setSelection(0);
+                }
+                return true;
             }
         });
 
@@ -500,6 +546,16 @@ public class TaskEditFragment extends Fragment {
             public void onClick(View view) {
                 PopupMenu editDropMenu = new PopupMenu(view.getContext(),showDropMenu);
                 editDropMenu.inflate(R.menu.task_edit_drop_menu);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    MenuItem pinToNotification = editDropMenu.getMenu().findItem(R.id.edit_drop_menu_pin);
+                    if (!newTask && isItemAnActiveNotification()){
+                        pinToNotification.setTitle(R.string.notification_unpin);
+                    } else pinToNotification.setTitle(R.string.notification_pin);
+
+                    pinToNotification.setVisible(true);
+                }
+
                 editDropMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem menuItem) {
@@ -536,10 +592,13 @@ public class TaskEditFragment extends Fragment {
                                     stringBuilder.append("[").append(getString(R.string.asap)).append("] ");
                                 }
                                 stringBuilder.append(titleInFragment.getText().toString());
-                                if (dateSet){
+                                if (taskDate.getTimeInMillis()!=DATE_NOT_SET_INDICATOR){
                                     stringBuilder.append("\n").append(dateInFragment.getText());
                                 }
-                                if (timeSet){
+                                if (!(taskDate.get(Calendar.MILLISECOND) == TIME_NOT_SET_MILLISECOND_INDICATOR
+                                        && taskDate.get(Calendar.SECOND) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                                        && taskDate.get(Calendar.MINUTE) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                                        && taskDate.get(Calendar.HOUR_OF_DAY) == TIME_NOT_SET_HOUR_INDICATOR)){
                                     stringBuilder.append(" ").append(timeInFragment.getText().toString());
                                 }
                                 stringBuilder.append("\n").append(remarkInFragment.getText().toString());
@@ -547,6 +606,23 @@ public class TaskEditFragment extends Fragment {
                                 shareIntent.putExtra(Intent.EXTRA_TITLE, titleInFragment.getText());
                                 startActivity(shareIntent);
                                 return true;
+                            case R.id.edit_drop_menu_pin:
+                                // if it is a new note, save the note and then pin to notification
+                                if (newTask) {
+                                    saveTask();
+                                    hasTaskSave = false;
+                                }
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isItemAnActiveNotification()) {
+                                    pinTaskToNotification();
+                                } else {
+                                    NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                                    if (notificationManager!=null){
+                                        // to distinguish reminder and pin item, id of pin item is the item id * 887
+                                        notificationManager.cancel((int)taskId*887);
+                                    }
+                                }
+                                return true;
+
                             default:
                                 return false;
                         }
@@ -596,6 +672,7 @@ public class TaskEditFragment extends Fragment {
         title = titleInFragment.getText().toString();
         remark = remarkInFragment.getText().toString();
         isDone = markAsDoneInFragment.isChecked();
+        initEventTime = taskDate.getTimeInMillis();
         hasTaskSave = false;
     }
 
@@ -609,31 +686,18 @@ public class TaskEditFragment extends Fragment {
     public void saveTask(){
         ContentValues values = new ContentValues();
 
-        String noteTitle = titleInFragment.getText().toString().trim();
+        title = titleInFragment.getText().toString().trim();
 
-        if (noteTitle.length()<1) noteTitle = getString(R.string.untitled_task);
-        values.put("title", noteTitle);
+        if (title.length()<1) title = getString(R.string.untitled_task);
+        values.put("title", title);
 
-        String remark = remarkInFragment.getText().toString();
+        remark = remarkInFragment.getText().toString();
         values.put("content", remark);
 
-        // if date is not set, save the time as 0
-        long saveEventTime;
-        if (!dateSet) {
-            saveEventTime = DATE_NOT_SET_INDICATOR;
-        } else {
-            if(!timeSet){
-                // if time is not set by user, set the millisecond to 0 to indicate so that we can determine if we should show the time in time field when user comeback
-                taskDate.set(Calendar.MILLISECOND, TIME_NOT_SET_MILLISECOND_INDICATOR);
-                taskDate.set(Calendar.SECOND, TIME_NOT_SET_MINUTE_SECOND_INDICATOR);
-                taskDate.set(Calendar.MINUTE, TIME_NOT_SET_MINUTE_SECOND_INDICATOR);
-                taskDate.set(Calendar.HOUR_OF_DAY, TIME_NOT_SET_HOUR_INDICATOR);
-            }
-            saveEventTime = taskDate.getTimeInMillis();
-        }
-        values.put("event_time", saveEventTime);
+        values.put("event_time", taskDate.getTimeInMillis());
+        initEventTime = taskDate.getTimeInMillis();
 
-        if (notificationToolEnable && DateUtils.isToday(saveEventTime)){
+        if (notificationToolEnable && DateUtils.isToday(taskDate.getTimeInMillis())){
 
             Intent toolBarIntent = new Intent(getContext(), AlarmReceiver.class);
             toolBarIntent.setAction(ACTION_TOOL_BAR);
@@ -650,53 +714,63 @@ public class TaskEditFragment extends Fragment {
 
         if (markAsDoneInFragment.isChecked()) {
             values.put("done", 1);
-        } else values.put("done", 0);
+            isDone = true;
+        } else {
+            values.put("done", 0);
+            isDone = false;
+        }
 
-        long saveReminderTime;
+//        long saveReminderTime;
         if (reminderInFragment.getSelectedItem().toString().equals(getString(R.string.no_reminder_set))){
-            saveReminderTime = 0L;
             AlarmHelper.cancelReminder(getContext(),taskId);
 
         } else {
             if (reminderInFragment.getSelectedItem().toString().equals(getString(R.string.zero_min_before))){
-                if (timeSet) {
-                    saveReminderTime = saveEventTime;
+                if  (!(taskDate.get(Calendar.MILLISECOND) == TIME_NOT_SET_MILLISECOND_INDICATOR
+                        && taskDate.get(Calendar.SECOND) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                        && taskDate.get(Calendar.MINUTE) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                        && taskDate.get(Calendar.HOUR_OF_DAY) == TIME_NOT_SET_HOUR_INDICATOR)) {
+                    reminderTime.setTimeInMillis(taskDate.getTimeInMillis());
                 } else {
-                    Calendar calendar = taskDate;
-                    calendar.set(Calendar.MILLISECOND, 0);
-                    calendar.set(Calendar.SECOND, 0);
-                    calendar.set(Calendar.MINUTE, 0);
-                    calendar.set(Calendar.HOUR_OF_DAY, 0);
-                    saveReminderTime = calendar.getTimeInMillis();
+                    reminderTime = taskDate;
+                    reminderTime.set(Calendar.MILLISECOND, 0);
+                    reminderTime.set(Calendar.SECOND, 0);
+                    reminderTime.set(Calendar.MINUTE, 0);
+                    reminderTime.set(Calendar.HOUR_OF_DAY, 0);
                 }
 
             } else if (reminderInFragment.getSelectedItem().toString().equals(getString(R.string.ten_min_before))){
-                saveReminderTime = saveEventTime-600000;
+                reminderTime.setTimeInMillis(taskDate.getTimeInMillis()-600000);
 
             } else if (reminderInFragment.getSelectedItem().toString().equals(getString(R.string.thirty_min_before))){
-                saveReminderTime = saveEventTime-1800000;
+                reminderTime.setTimeInMillis(taskDate.getTimeInMillis()-1800000);
 
             } else if (reminderInFragment.getSelectedItem().toString().equals(getString(R.string.a_day_beofre))){
-                if (timeSet) {
-                    saveReminderTime = saveEventTime-86400000;
+                if (!(taskDate.get(Calendar.MILLISECOND) == TIME_NOT_SET_MILLISECOND_INDICATOR
+                        && taskDate.get(Calendar.SECOND) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                        && taskDate.get(Calendar.MINUTE) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                        && taskDate.get(Calendar.HOUR_OF_DAY) == TIME_NOT_SET_HOUR_INDICATOR)) {
+                    reminderTime.setTimeInMillis(taskDate.getTimeInMillis()-86400000);
                 } else {
-                    Calendar calendar = taskDate;
-                    calendar.set(Calendar.MILLISECOND, 0);
-                    calendar.set(Calendar.SECOND, 0);
-                    calendar.set(Calendar.MINUTE, 0);
-                    calendar.set(Calendar.HOUR_OF_DAY, 0);
-                    saveReminderTime = calendar.getTimeInMillis()-86400000;
+                    reminderTime = taskDate;
+                    reminderTime.set(Calendar.MILLISECOND, 0);
+                    reminderTime.set(Calendar.SECOND, 0);
+                    reminderTime.set(Calendar.MINUTE, 0);
+                    reminderTime.set(Calendar.HOUR_OF_DAY, 0);
                 }
-
-            } else {
-                saveReminderTime = reminderTime.getTimeInMillis();
             }
-            AlarmHelper.setReminder(getContext(), 'T', taskId, noteTitle, remark, saveEventTime, saveReminderTime);
+            AlarmHelper.setReminder(getContext(), 'T', taskId, title, remark, taskDate.getTimeInMillis(), reminderTime.getTimeInMillis());
         }
-        values.put("reminder_time", saveReminderTime);
+        values.put("reminder_time", reminderTime.getTimeInMillis());
 
         if (!newTask) {
             MyApplication.database.update(DATABASE_NAME, values, "_id='" + taskId +"'", null);
+            // to update pinned notification if there is any, api 23 up exclusive
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if(isItemAnActiveNotification()){
+                    pinTaskToNotification();
+                }
+            }
         }else {
             taskId = MyApplication.database.insert(DATABASE_NAME, "",values);
         }
@@ -704,6 +778,40 @@ public class TaskEditFragment extends Fragment {
         hasTaskSave = true;
         newTask = false;
         Toast.makeText(getActivity(),R.string.saved_task, Toast.LENGTH_SHORT).show();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private boolean isItemAnActiveNotification(){
+        boolean result = false;
+        NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (notificationManager != null) {
+            StatusBarNotification[] activeNotification = notificationManager.getActiveNotifications();
+            int[] notificationId = new int[activeNotification.length];
+            for (int i = 0; i < activeNotification.length; i++) {
+                notificationId[i] = activeNotification[i].getId();
+            }
+            // to distinguish reminder and pin item, id of pin item is the item id * 887
+            if (ArrayUtils.contains(notificationId, (int) taskId*887)){
+                result = true;
+            }
+        } else Toast.makeText(getContext(), R.string.error_text, Toast.LENGTH_SHORT).show();
+        return result;
+    }
+
+    private void pinTaskToNotification(){
+        Intent intent = new Intent(getContext(), AlarmReceiver.class);
+        intent.setAction(ACTION_PIN_ITEM);
+        intent.putExtra(EXTRA_NOTE_ID, taskId);
+        intent.putExtra(ITEM_TYPE, 'T');
+        intent.putExtra(ITEM_TITLE, title);
+        intent.putExtra(EVENT_TIME, initEventTime);
+        PendingIntent pinNotificationPI = PendingIntent.getBroadcast(getContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        try {
+            pinNotificationPI.send();
+        } catch (PendingIntent.CanceledException e) {
+            e.printStackTrace();
+        }
     }
 
     boolean checkModified() {
