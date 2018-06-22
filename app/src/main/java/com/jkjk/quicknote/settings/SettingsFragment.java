@@ -48,6 +48,7 @@ import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Locale;
 
 import static android.app.Activity.RESULT_OK;
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
@@ -61,12 +62,12 @@ import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.helper.DatabaseHelper.dbColumn;
 import static com.jkjk.quicknote.listscreen.ListFragment.REWARD_VIDEO_AD_ID;
 
-public class SettingsFragment extends PreferenceFragmentCompat implements RewardedVideoAdListener, SharedPreferences.OnSharedPreferenceChangeListener {
+public class SettingsFragment extends PreferenceFragmentCompat implements RewardedVideoAdListener, SharedPreferences.OnSharedPreferenceChangeListener{
 
 
-    static final  int BACK_UP_REQUEST_CODE = 5555;
-    static final  int RESTORE_REQUEST_CODE = 5556;
-    private RewardedVideoAd mRewardedVideoAd;
+    static final  int BACK_UP_REQUEST_CODE = 3433;
+    static final  int RESTORE_REQUEST_CODE = 3449;
+//    private RewardedVideoAd mRewardedVideoAd;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -77,9 +78,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(getActivity());
-        mRewardedVideoAd.setRewardedVideoAdListener(this);
-        loadRewardedVideoAd();
+//        mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(getActivity());
+//        mRewardedVideoAd.setRewardedVideoAdListener(this);
+//        loadRewardedVideoAd();
     }
 
 
@@ -138,11 +139,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
                             .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    if (mRewardedVideoAd.isLoaded()) {
-                                        mRewardedVideoAd.show();
-                                    } else {
-                                        Toast.makeText(getContext(),R.string.ads_wait,Toast.LENGTH_SHORT).show();
-                                    }
+//                                    if (mRewardedVideoAd.isLoaded()) {
+//                                        mRewardedVideoAd.show();
+//                                    } else {
+//                                        Toast.makeText(getContext(),R.string.ads_wait,Toast.LENGTH_SHORT).show();
+//                                    }
                                 }
                             }).setNegativeButton(R.string.cancel, null).show();
                 }
@@ -196,11 +197,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
                             .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    if (mRewardedVideoAd.isLoaded()) {
-                                        mRewardedVideoAd.show();
-                                    } else {
-                                        Toast.makeText(getContext(),R.string.ads_wait,Toast.LENGTH_SHORT).show();
-                                    }
+//                                    if (mRewardedVideoAd.isLoaded()) {
+//                                        mRewardedVideoAd.show();
+//                                    } else {
+//                                        Toast.makeText(getContext(),R.string.ads_wait,Toast.LENGTH_SHORT).show();
+//                                    }
                                 }
                             }).setNegativeButton(R.string.cancel, null).show();
                 }
@@ -217,6 +218,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
             Uri uri;
             if (intent != null) {
                 uri = intent.getData();
+                if (uri == null){
+                    Toast.makeText(getActivity(),R.string.error_text,Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
                 switch (requestCode){
                     case BACK_UP_REQUEST_CODE:
@@ -246,12 +251,14 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
                             e.printStackTrace();
                             Toast.makeText(getActivity(),R.string.error_back_up,Toast.LENGTH_SHORT).show();
                         }
-                        ListFragment.isAllowedToUse = false;
+                        //TODO ads related
+//                        ListFragment.isAllowedToUse = false;
                         break;
 
                     case RESTORE_REQUEST_CODE:
                         new RestoreAysnTask(getContext()).execute(uri);
-                        ListFragment.isAllowedToUse = false;
+                        //TODO ads related
+//                        ListFragment.isAllowedToUse = false;
                         break;
                 }
             }
@@ -260,7 +267,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
 
     @Override
     public void onResume() {
-        mRewardedVideoAd.resume(getContext());
+//        mRewardedVideoAd.resume(getContext());
         super.onResume();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 
@@ -271,20 +278,20 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
 
     @Override
     public void onStop() {
-        mRewardedVideoAd.pause(getContext());
+//        mRewardedVideoAd.pause(getContext());
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         super.onStop();
     }
 
     @Override
     public void onDestroy() {
-        mRewardedVideoAd.destroy(getContext());
+//        mRewardedVideoAd.destroy(getContext());
         super.onDestroy();
     }
 
     void selectBackUpLocation(){
         //Define back up file name
-        String backUpName = getString(R.string.back_up_name)+new SimpleDateFormat("yyMMddHHmmss").format(new Date())+"_db";
+        String backUpName = getString(R.string.back_up_name)+new SimpleDateFormat("yyMMddHHmmss", Locale.getDefault()).format(new Date())+"_db";
 
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
 
@@ -359,7 +366,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
 
             } else {
                 NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-                notificationManager.cancel(TOOL_BAR_NOTIFICATION_ID);
+                if (notificationManager != null) {
+                    notificationManager.cancel(TOOL_BAR_NOTIFICATION_ID);
+                }
                 AlarmHelper.cancelNotificationUpdate(getContext(), ACTION_TOOL_BAR, TOOL_BAR_REQUEST_CODE);
             }
 
@@ -379,6 +388,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
         }
     }
 
+
     static class RestoreAysnTask extends AsyncTask<Uri, Void, Boolean>{
 
         private WeakReference<Context> contextReference;
@@ -397,6 +407,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
             resultToast(contextReference, aBoolean);
         }
     }
+
 
     private static boolean restore(WeakReference<Context> contextWeakReference, Uri uri){
         File dataPath = Environment.getDataDirectory();
@@ -499,7 +510,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
 
 
     private void loadRewardedVideoAd() {
-        mRewardedVideoAd.loadAd(REWARD_VIDEO_AD_ID, new AdRequest.Builder().build());
+//        mRewardedVideoAd.loadAd(REWARD_VIDEO_AD_ID, new AdRequest.Builder().build());
     }
 
 

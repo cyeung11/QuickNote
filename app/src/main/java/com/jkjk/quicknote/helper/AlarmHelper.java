@@ -71,7 +71,9 @@ public class AlarmHelper {
         Intent intent = new Intent(context, AlarmReceiver.class);
         intent.setAction(action);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.cancel(pendingIntent);
+        if (alarmManager != null) {
+            alarmManager.cancel(pendingIntent);
+        }
     }
 
     public static void cancelReminder(Context context, long id){

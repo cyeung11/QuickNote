@@ -76,7 +76,7 @@ public class NoteEditFragment extends Fragment {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Obtain correspond value from preferences to show appropriate size for the view
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -185,7 +185,7 @@ public class NoteEditFragment extends Fragment {
                                     isStarred = 1;
                                     String noteTitle = titleInFragment.getText().toString().trim();
                                     if (noteTitle.length()<1){
-                                        noteTitle = getActivity().getResources().getString(R.string.untitled_note);
+                                        noteTitle = getActivity().getString(R.string.untitled_note);
                                     }
                                     values.put("title", noteTitle);
                                     values.put("content", contentInFragment.getText().toString());
@@ -221,7 +221,9 @@ public class NoteEditFragment extends Fragment {
                                                     // No need to do saving
                                                     hasNoteSave = true;
                                                     Toast.makeText(getContext(), R.string.note_deleted_toast, Toast.LENGTH_SHORT).show();
-                                                    getActivity().finish();
+                                                    if (getActivity() != null) {
+                                                        getActivity().finish();
+                                                    }
                                                 }
                                             }
                                         )

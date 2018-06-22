@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:minWidth="250dp"
+    android:layout_height="wrap_content"
+    android:paddingTop="20dp"
+    android:paddingBottom="20dp"
+    android:paddingLeft="30dp"
+    android:paddingRight="30dp"
+    tools:context=".taskeditscreen.SnoozeDurationDialog">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/title"
+        android:text="@string/snooze_for"
+        android:textColor="@android:color/black"
+        android:textSize="22sp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true" />
+
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/snooze_duration"
+        android:paddingTop="16dp"
+        android:layout_alignBaseline="@id/title">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/five_minute"
+            android:textSize="16sp"
+            android:layout_marginBottom="6dp"
+            android:paddingStart="12sp"
+            android:text="@string/five_minutes"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/fifthteen_minute"
+            android:paddingStart="12sp"
+            android:layout_marginBottom="6dp"
+            android:textSize="16sp"
+            android:text="@string/fifthteen_minute"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/thirty_minute"
+            android:paddingStart="12sp"
+            android:layout_marginBottom="6dp"
+            android:textSize="16sp"
+            android:text="@string/thirty_minute"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/one_hour"
+            android:paddingStart="12sp"
+            android:layout_marginBottom="6dp"
+            android:textSize="16sp"
+            android:text="@string/one_hour"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/three_hour"
+            android:paddingStart="12sp"
+            android:layout_marginBottom="6dp"
+            android:textSize="16sp"
+            android:text="@string/three_hour"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/twelve_hours"
+            android:paddingStart="12sp"
+            android:layout_marginBottom="6dp"
+            android:textSize="16sp"
+            android:text="@string/twelve_hours"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/twenty_four_hour"
+            android:paddingStart="12sp"
+            android:layout_marginBottom="6dp"
+            android:textSize="16sp"
+            android:text="@string/twenty_four_hour"/>
+
+    </RadioGroup>
+
+</RelativeLayout>

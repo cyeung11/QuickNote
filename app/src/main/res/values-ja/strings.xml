@@ -51,6 +51,7 @@
     <string name="task_not_found">見つからない</string>
     <string name="menu">オプション</string>
     <string name="new_note">新しいノート</string>
+    <string name="new_to_do">新しTodo</string>
     <string name="saved_starred_toast">すでに保存、タグ付き</string>
     <string name="starred_toast">タグ付き</string>
     <string name="unstarred_toast">削除されたタグ</string>
@@ -143,6 +144,17 @@
     <string name="due_today_with_time">今日は%s過ぎ</string>
     <string name="due_someday">%s のため</string>
     <string name="notification_unpin">通知を取り消す</string>
+    <string name="daily_update">毎日の通知</string>
+    <string name="send_daily_update">毎日私に知らせ完成todo</string>
+    <string name="notification_cap">通知</string>
+    <string name="snooze_for">遅れた</string>
+    <string name="five_minutes">5分</string>
+    <string name="fifthteen_minute">15分</string>
+    <string name="thirty_minute">30分</string>
+    <string name="three_hour">3時間</string>
+    <string name="one_hour">1時間</string>
+    <string name="twelve_hours">12時間</string>
+    <string name="twenty_four_hour">24時間</string>
 
     <string-array name="font_size">
         <item>小</item>

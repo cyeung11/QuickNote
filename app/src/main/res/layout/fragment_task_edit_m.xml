@@ -148,7 +148,6 @@
 
             </LinearLayout>
 
-            <!--TODO add repeat function-->
             <LinearLayout
                 android:id="@+id/task_repeat_column"
                 android:layout_width="match_parent"

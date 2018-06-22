@@ -572,7 +572,9 @@ public class TaskEditFragment extends Fragment {
                                                         // No need to do saving
                                                         hasTaskSave = true;
                                                         Toast.makeText(getContext(), R.string.note_deleted_toast, Toast.LENGTH_SHORT).show();
-                                                        getActivity().finish();
+                                                        if (getActivity()!=null) {
+                                                            getActivity().finish();
+                                                        }
                                                     }
                                                 }
                                         )

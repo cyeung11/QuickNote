@@ -49,6 +49,7 @@
     <string name="note_not_found">Nothing found</string>
     <string name="task_not_found">Nothing found</string>
     <string name="new_note">New note</string>
+    <string name="new_to_do">New To Do</string>
     <string name="menu">Menu</string>
     <string name="saved_starred_toast">Note saved &amp; starred</string>
     <string name="starred_toast">Note starred</string>
@@ -147,7 +148,15 @@
     <string name="daily_update">Send Daily Update</string>
     <string name="send_daily_update">Post a daily notification if there is any To Dos pending</string>
     <string name="notification_cap">NOTIFICATION</string>
-    
+    <string name="snooze_for">Snooze for…</string>
+    <string name="five_minutes">5 minutes</string>
+    <string name="fifthteen_minute">15 minutes</string>
+    <string name="thirty_minute">30 minutes</string>
+    <string name="three_hour">3 hours</string>
+    <string name="one_hour">1 hour</string>
+    <string name="twelve_hours">12 hours</string>
+    <string name="twenty_four_hour">24 hours</string>
+
     <plurals name="notification_title">
         <item quantity="one">You have %d task due today.</item>
         <item quantity="zero">You have %d tasks due today.</item>

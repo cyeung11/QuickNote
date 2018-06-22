@@ -9,7 +9,7 @@ import android.support.annotation.Nullable;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.noteeditscreen.NoteEdit;
 
-public class LauncherShortcuts extends Activity {
+public class NewNoteShortcuts extends Activity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

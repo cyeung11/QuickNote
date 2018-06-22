@@ -42,7 +42,7 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity implements Re
     private MenuItem showStarred, search;
     private TextView notFoundTextView;
     private boolean showingStarred;
-    private RewardedVideoAd mRewardedVideoAd;
+//    private RewardedVideoAd mRewardedVideoAd;
     private RadioButton white;
 
     public NoteWidgetConfigureActivity() {
@@ -53,9 +53,10 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity implements Re
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
 
-        mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(this);
-        mRewardedVideoAd.setRewardedVideoAdListener(this);
-        loadRewardedVideoAd();
+        //TODO Ad Related
+//        mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(this);
+//        mRewardedVideoAd.setRewardedVideoAdListener(this);
+//        loadRewardedVideoAd();
 
         // Find the widget id from the intent.
         Intent intent = getIntent();
@@ -87,7 +88,7 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity implements Re
 
     @Override
     protected void onResume() {
-        mRewardedVideoAd.resume(this);
+//        mRewardedVideoAd.resume(this);
         super.onResume();
 
         // TODO Delete to enable ads
@@ -96,13 +97,13 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity implements Re
 
     @Override
     protected void onStop() {
-        mRewardedVideoAd.pause(this);
+//        mRewardedVideoAd.pause(this);
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        mRewardedVideoAd.destroy(this);
+//        mRewardedVideoAd.destroy(this);
         super.onDestroy();
     }
 
@@ -112,7 +113,9 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity implements Re
         inflater.inflate(R.menu.widget_config_menu, menu);
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         SearchView searchView = (SearchView) menu.findItem(R.id.widget_config_search).getActionView();
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        if (searchManager != null) {
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        } else Toast.makeText(this, R.string.error_text, Toast.LENGTH_SHORT).show();
         searchView.setQueryHint(getResources().getString(R.string.search_hint));
         searchView.setSubmitButtonEnabled(false);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -203,18 +206,18 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity implements Re
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        if (mRewardedVideoAd.isLoaded()) {
-                            mRewardedVideoAd.show();
-                        } else {
-                            Toast.makeText(getBaseContext(),R.string.ads_wait,Toast.LENGTH_SHORT).show();
-                        }
+//                        if (mRewardedVideoAd.isLoaded()) {
+//                            mRewardedVideoAd.show();
+//                        } else {
+//                            Toast.makeText(getBaseContext(),R.string.ads_wait,Toast.LENGTH_SHORT).show();
+//                        }
                     }
                 }).setNegativeButton(R.string.cancel, null).show();
         }
     }
 
     private void loadRewardedVideoAd() {
-        mRewardedVideoAd.loadAd(REWARD_VIDEO_AD_ID, new AdRequest.Builder().build());
+//        mRewardedVideoAd.loadAd(REWARD_VIDEO_AD_ID, new AdRequest.Builder().build());
     }
 
     @Override

@@ -89,8 +89,9 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
         }
     }
 
+    @NonNull
     @Override
-    public WidgetAdapter.ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
+    public WidgetAdapter.ViewHolder onCreateViewHolder(@NonNull final ViewGroup parent, int viewType) {
         CardView v = (CardView) LayoutInflater.from(parent.getContext()).inflate(R.layout.card_note_m, parent, false);
         final ViewHolder holder = new ViewHolder(v);
 
@@ -115,9 +116,9 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
                 remoteViews.setTextViewText(R.id.widget_title, cursorForWidget.getString(1));
                 remoteViews.setTextViewText(R.id.widget_content, cursorForWidget.getString(2));
                 remoteViews.setInt(R.id.widget, "setBackgroundColor", color);
-                if (color != Color.parseColor("#FFFFFF")){
-                    isAllowedToUse = false;
-                }
+//                if (color != Color.parseColor("#FFFFFF")){
+//                    isAllowedToUse = false;
+//                }
 
                 switch (widgetSize){
                     case "s":
@@ -157,9 +158,8 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
 
                 SharedPreferences idPref = activity.getSharedPreferences("widget_id", MODE_PRIVATE);
                 SharedPreferences colorPref = activity.getSharedPreferences("widget_color", MODE_PRIVATE);
-                idPref.edit().putLong(Integer.toString(mAppWidgetId), cursorForWidget.getLong(0)).commit();
-                colorPref.edit().putInt(Integer.toString(mAppWidgetId), color).commit();
-
+                idPref.edit().putLong(Integer.toString(mAppWidgetId), cursorForWidget.getLong(0)).apply();
+                colorPref.edit().putInt(Integer.toString(mAppWidgetId), color).apply();
                 activity.finish();
             }
         });

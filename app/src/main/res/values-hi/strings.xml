@@ -50,6 +50,7 @@
     <string name="note_not_found">कुछ भी नहीं मिला है</string>
     <string name="task_not_found">कुछ भी नहीं मिला हैा</string>
     <string name="new_note">नया नोट</string>
+    <string name="new_to_do">नया चेकलिस्ट</string>
     <string name="menu">मेन्यू</string>
     <string name="saved_starred_toast">नोट सहेजा और तारांकित</string>
     <string name="starred_toast">नोट तारांकित</string>
@@ -143,6 +144,17 @@
     <string name="add_note">नोट जोड़े</string>
     <string name="add_task">चेकलिस्ट जोड़ें</string>
     <string name="notification_unpin">नोटिफिकेशन रद्द करेंं</string>
+    <string name="daily_update">दैनिक अधिसूचना</string>
+    <string name="send_daily_update">यदि कोई कार्य लंबित है तो दैनिक अधिसूचना पोस्ट करें</string>
+    <string name="notification_cap">अधिसूचना</string>
+    <string name="snooze_for">दिन में झपकी लेना</string>
+    <string name="five_minutes">5 िनट</string>
+    <string name="fifthteen_minute">15 िनट</string>
+    <string name="thirty_minute">30 िनट</string>
+    <string name="three_hour">3 घंटे</string>
+    <string name="one_hour">1 घंटे</string>
+    <string name="twelve_hours">12घ ंटे</string>
+    <string name="twenty_four_hour">1 दिन</string>
 
     <string-array name="font_size">
         <item>छोटा</item>

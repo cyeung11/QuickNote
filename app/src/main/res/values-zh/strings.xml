@@ -49,6 +49,7 @@
     <string name="note_not_found">未找到資料</string>
     <string name="task_not_found">未找到資料</string>
     <string name="new_note">新筆記</string>
+    <string name="new_to_do">新待辦事件</string>
     <string name="menu">選項</string>
     <string name="saved_starred_toast">已儲存及標記</string>
     <string name="starred_toast">已標記</string>
@@ -142,6 +143,18 @@
     <string name="remove_time_hint">長按以移除時間</string>
     <string name="add_note">新增筆記</string>
     <string name="add_task">新增待辦</string>
+    <string name="daily_update">每日提醒</string>
+    <string name="send_daily_update">每日發出通知提醒當日的待辦事件</string>
+    <string name="notification_cap">通知</string>
+    <string name="snooze_for">延遲</string>
+    <string name="five_minutes">5分鐘</string>
+    <string name="fifthteen_minute">15分鐘</string>
+    <string name="thirty_minute">30分鐘</string>
+    <string name="three_hour">3小時</string>
+    <string name="one_hour">1小時</string>
+    <string name="twelve_hours">12小時</string>
+    <string name="twenty_four_hour">24小時</string>
+
     <plurals name="notification_title">
         <item quantity="other">您今天有%d件待辦事件</item>
     </plurals>

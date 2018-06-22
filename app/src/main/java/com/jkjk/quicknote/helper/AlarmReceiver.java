@@ -9,11 +9,9 @@ import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.os.Build;
-import android.support.v7.preference.PreferenceManager;
 import android.text.format.DateUtils;
 import android.widget.Toast;
 
@@ -22,6 +20,7 @@ import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.listscreen.List;
 import com.jkjk.quicknote.listscreen.TaskListFragment;
 import com.jkjk.quicknote.noteeditscreen.NoteEdit;
+import com.jkjk.quicknote.taskeditscreen.SnoozeDurationDialog;
 import com.jkjk.quicknote.taskeditscreen.TaskEdit;
 
 import java.util.Calendar;
@@ -52,7 +51,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         final String GROUP_KEY = context.getPackageName();
-        final String ACTION_SNOOZE = "snoozeReminder";
+//        final String ACTION_SNOOZE = "snoozeReminder";
 
         if (intent != null && intent.getAction() != null) {
             long taskId;
@@ -98,11 +97,10 @@ public class AlarmReceiver extends BroadcastReceiver {
                         PendingIntent startPendingIntent = PendingIntent.getActivity(context, (int)taskId, openItemIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                         // Intent for snoozing
-                        Intent snoozeIntent = new Intent(context, AlarmReceiver.class);
-                        snoozeIntent.setAction(ACTION_SNOOZE);
+                        Intent snoozeIntent = new Intent(context, SnoozeDurationDialog.class);
                         snoozeIntent.putExtra(EXTRA_NOTE_ID, taskId);
                         // Distinguish snooze & open item
-                        PendingIntent snoozePendingIntent = PendingIntent.getBroadcast(context, (int)taskId*113, snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                        PendingIntent snoozePendingIntent = PendingIntent.getActivity(context, (int)taskId, snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                         builder.setContentTitle(intent.getStringExtra(ITEM_TITLE)).setSmallIcon(R.drawable.ic_stat_name)
                                 .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher_round))
@@ -182,40 +180,36 @@ public class AlarmReceiver extends BroadcastReceiver {
                     }
                     break;
 
-                case ACTION_SNOOZE:
+//                case ACTION_SNOOZE:
 
-                    if (intent.hasExtra(EXTRA_NOTE_ID) && (taskId = intent.getLongExtra(EXTRA_NOTE_ID, 98876146L)) != 98876146L) {
-                        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                        if (notificationManager != null) {
-                            notificationManager.cancel((int) taskId);
-                        }
-
-                        cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title", "type", "event_time", "content"}
-                                , "_id= " + taskId
-                                , null, null, null, null);
-                        if (cursor != null && cursor.moveToFirst()) {
-                            char itemType;
-                            switch (cursor.getInt(1)) {
-                                case 0:
-                                    itemType = 'N';
-                                    break;
-                                default:
-                                    itemType = 'T';
-                            }
-
-                            // grab preference at snooze duration
-                            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-                            long snoozeDuration = Long.valueOf(sharedPref.getString(context.getString(R.string.snooze_duration), "300000"));
-                            // setReminder(Context context, char itemType, long id, String title, String content, long eventTime, long remindTime)
-                            AlarmHelper.setReminder(context, itemType, taskId, cursor.getString(0)
-                                    , cursor.getString(3), cursor.getLong(2), Calendar.getInstance().getTimeInMillis() + snoozeDuration);
-                            ContentValues values = new ContentValues();
-                            values.put("reminder_time", Calendar.getInstance().getTimeInMillis() + snoozeDuration);
-                            MyApplication.database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
-                            cursor.close();
-                        }
-                    }
-                    break;
+//                    if (intent.hasExtra(EXTRA_NOTE_ID) && (taskId = intent.getLongExtra(EXTRA_NOTE_ID, 98876146L)) != 98876146L) {
+//
+//                        cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title", "type", "event_time", "content"}
+//                                , "_id= " + taskId
+//                                , null, null, null, null);
+//                        if (cursor != null && cursor.moveToFirst()) {
+//                            char itemType;
+//                            switch (cursor.getInt(1)) {
+//                                case 0:
+//                                    itemType = 'N';
+//                                    break;
+//                                default:
+//                                    itemType = 'T';
+//                            }
+//
+//                            // grab preference at snooze duration
+//                            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+//                            long snoozeDuration = Long.valueOf(sharedPref.getString(context.getString(R.string.snooze_duration), "300000"));
+//                            // setReminder(Context context, char itemType, long id, String title, String content, long eventTime, long remindTime)
+//                            AlarmHelper.setReminder(context, itemType, taskId, cursor.getString(0)
+//                                    , cursor.getString(3), cursor.getLong(2), Calendar.getInstance().getTimeInMillis() + snoozeDuration);
+//                            ContentValues values = new ContentValues();
+//                            values.put("reminder_time", Calendar.getInstance().getTimeInMillis() + snoozeDuration);
+//                            MyApplication.database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
+//                            cursor.close();
+//                        }
+//                    }
+//                    break;
 
                 case ACTION_TOOL_BAR: {
                     Intent startNoteActivity = new Intent(context, NoteEdit.class);
@@ -424,10 +418,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 
                     builder.setContentTitle(notificationTitle).setSmallIcon(R.drawable.ic_stat_name)
-                            .setContentIntent(taskPendingIntent).setAutoCancel(false).setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher_round));
-                    if (taskCount > 0) {
-                        builder.setContentText(stringBuilder.toString());
-                    }
+                            .setContentIntent(taskPendingIntent).setAutoCancel(false).setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher_round))
+                            .setContentText(stringBuilder.toString());
 
                     notificationManager.notify(TOOL_BAR_NOTIFICATION_ID, builder.build());
 

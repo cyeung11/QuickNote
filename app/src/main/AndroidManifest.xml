@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -14,7 +14,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <activity
             android:name=".noteeditscreen.NoteEdit"
             android:exported="true"
@@ -23,7 +22,7 @@
                 <action android:name="android.intent.action.SEND" />
                 <action android:name="com.google.android.gms.actions.CREATE_NOTE" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/plain"/>
+                <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
 
@@ -31,19 +30,29 @@
             android:name=".widget.AppWidgetService"
             android:exported="false" />
 
-        <activity android:name=".listscreen.List"
+        <activity
+            android:name=".listscreen.List"
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".widget.LauncherShortcuts"
+            android:name=".widget.NewNoteShortcuts"
             android:label="@string/new_note">
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_SHORTCUT" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
+        <activity
+            android:name=".widget.NewToDoShortcuts"
+            android:label="@string/new_to_do">
+            <intent-filter>
+                <action android:name="android.intent.action.CREATE_SHORTCUT" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -59,11 +68,11 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/note_preview_info" />
         </receiver>
-
-        <receiver android:name=".helper.AlarmReceiver"
+        <receiver
+            android:name=".helper.AlarmReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
@@ -73,7 +82,14 @@
             </intent-filter>
         </activity>
         <activity android:name=".settings.Settings" />
-        <activity android:name=".taskeditscreen.TaskEdit"/>
+        <activity android:name=".taskeditscreen.TaskEdit"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize"/>
+        <activity android:name=".taskeditscreen.SnoozeDurationDialog"
+            android:theme="@style/SnoozeDurationTheme"
+            android:launchMode="singleInstance"
+            android:excludeFromRecents="true"
+            android:exported="true"/>
     </application>
 
 </manifest>

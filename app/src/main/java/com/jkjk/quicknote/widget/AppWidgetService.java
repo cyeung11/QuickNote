@@ -95,12 +95,18 @@ public class AppWidgetService extends IntentService {
                     }
 
                 Intent startAppIntent = new Intent(this, NoteEdit.class);
-                startAppIntent.putExtra(EXTRA_NOTE_ID, cursorForWidget.getLong(0)).putExtra(IS_FROM_WIDGET, true)
-                        .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                PendingIntent pendingIntent = PendingIntent.getActivity(this,(int)cursorForWidget.getLong(0),startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
-                views[i].setOnClickPendingIntent(R.id.widget, pendingIntent);
+                    if (cursorForWidget != null) {
+                        startAppIntent.putExtra(EXTRA_NOTE_ID, cursorForWidget.getLong(0)).putExtra(IS_FROM_WIDGET, true)
+                                .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-                cursorForWidget.close();
+                        PendingIntent pendingIntent = PendingIntent.getActivity(this,(int)cursorForWidget.getLong(0),startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+                        views[i].setOnClickPendingIntent(R.id.widget, pendingIntent);
+
+                        cursorForWidget.close();
+                    } else {
+                        views[i].setTextViewText(R.id.widget_title, getResources().getString(R.string.error_loading));
+                        views[i].setTextViewText(R.id.widget_content, "");
+                    }
 
                 } catch (Exception e){
                     Toast.makeText(this,R.string.error_widget,Toast.LENGTH_SHORT).show();
