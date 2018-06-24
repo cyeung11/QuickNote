@@ -6,8 +6,8 @@ android {
         applicationId "com.jkjk.quicknote"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 10
-        versionName "1.180622"
+        versionCode 11
+        versionName "1.180623"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }

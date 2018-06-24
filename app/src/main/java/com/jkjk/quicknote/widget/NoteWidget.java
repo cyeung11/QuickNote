@@ -15,13 +15,13 @@ import java.util.ArrayList;
 
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
 import static android.content.Context.MODE_PRIVATE;
+import static com.jkjk.quicknote.widget.AppWidgetService.NOTE_WIDGET_REQUEST_CODE;
 
 /**
  * Implementation of App Widget functionality.
  * App Widget Configuration implemented in {@link NoteWidgetConfigureActivity NoteWidgetConfigureActivity}
  */
 public class NoteWidget extends AppWidgetProvider {
-
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -38,13 +38,14 @@ public class NoteWidget extends AppWidgetProvider {
                 checking.add(appWidgetId);
             }
         }
-        int [] result = new int [checking.size()];
-        for (int i = 0 ; i<result.length; i++){
-            result[i] = checking.get(i);
+        int [] resultId = new int [checking.size()];
+        for (int i = 0 ; i < resultId.length; i++){
+            resultId[i] = checking.get(i);
         }
 
-        Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, result);
-        PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, resultId)
+                .putExtra(AppWidgetService.EXTRA_WIDGET_CODE, NOTE_WIDGET_REQUEST_CODE);
+        PendingIntent pendingIntent = PendingIntent.getService(context, NOTE_WIDGET_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         try {
             pendingIntent.send();
         } catch (Exception e) {
@@ -59,10 +60,9 @@ public class NoteWidget extends AppWidgetProvider {
         SharedPreferences idPref = context.getSharedPreferences("widget_id", MODE_PRIVATE);
         SharedPreferences colorPref = context.getSharedPreferences("widget_color", MODE_PRIVATE);
         for (int appWidgetId : appWidgetIds) {
-            idPref.edit().remove(Integer.toString(appWidgetId)).commit();
-            colorPref.edit().remove(Integer.toString(appWidgetId)).commit();
+            idPref.edit().remove(Integer.toString(appWidgetId)).apply();
+            colorPref.edit().remove(Integer.toString(appWidgetId)).apply();
         }
         super.onDeleted(context, appWidgetIds);
     }
-
 }

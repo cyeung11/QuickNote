@@ -5,7 +5,7 @@
     <string name="user_interface_cap">INTERFACE</string>
     <string name="done">Done</string>
     <string name="saved_note">Note saved</string>
-    <string name="saved_task">Task saved</string>
+    <string name="saved_task">To Do saved</string>
     <string name="error_text">Error</string>
     <string name="error_loading">Error loading</string>
     <string name="error_saving">Error saving</string>
@@ -17,7 +17,7 @@
     <string name="title_here">Title</string>
     <string name="yesterday">Yesterday</string>
     <string name="untitled_note">Untitled Note</string>
-    <string name="untitled_task">Untitled Task</string>
+    <string name="untitled_task">Untitled To Do</string>
     <string name="confirm_discard">Do you want to discard the change to this note?</string>
     <string name="discard_title">Discard Change</string>
     <string name="discard">Discard</string>
@@ -34,12 +34,13 @@
     <string name="configure">Configure</string>
     <string name="select_note_instruction">Select Note</string>
     <string name="just_now">Just now</string>
-    <string name="note_preview">Note preview</string>
+    <string name="note_preview">Note Preview</string>
+    <string name="todo_list_preview">To Do List</string>
     <string name="share">Share</string>
     <string name="search">Search</string>
     <string name="show_starred">Show starred notes</string>
     <string name="show_all_note">Show all notes</string>
-    <string name="show_all_task">Show pending tasks</string>
+    <string name="show_all_task">Show pending To Do</string>
     <string name="starred">Star</string>
     <string name="unstarred">Unstar</string>
     <string name="settings">Settings</string>
@@ -54,10 +55,10 @@
     <string name="saved_starred_toast">Note saved &amp; starred</string>
     <string name="starred_toast">Note starred</string>
     <string name="unstarred_toast">Note unstarred</string>
-    <string name="pending_toast">Task marked as pending</string>
-    <string name="done_toast">Task marked as done</string>
+    <string name="pending_toast">Marked as to do</string>
+    <string name="done_toast">Marked as done</string>
     <string name="note_deleted_toast">Note deleted</string>
-    <string name="task_deleted_toast">Task deleted</string>
+    <string name="task_deleted_toast">To Do deleted</string>
     <string name="back_up">Backup</string>
     <string name="back_up_summary">Backup note to storage</string>
     <string name="back_up_name" translatable="false">notebackup-</string>
@@ -100,7 +101,7 @@
     <string name="ads_wait">Please wait while the ad is loading</string>
     <string name="ads_complete">Great! Feel free to use it now</string>
     <string name="todo_title_caption">What is the task?</string>
-    <string name="task_hint">Task name</string>
+    <string name="task_hint">To Do name</string>
     <string name="due_date_caption">DUE DATE</string>
     <string name="mark_as_done">Mark as done</string>
     <string name="mark_as_pending">Mark as pending</string>
@@ -156,11 +157,12 @@
     <string name="one_hour">1 hour</string>
     <string name="twelve_hours">12 hours</string>
     <string name="twenty_four_hour">24 hours</string>
+    <string name="loading">Loading…</string>
 
     <plurals name="notification_title">
-        <item quantity="one">You have %d task due today.</item>
-        <item quantity="zero">You have %d tasks due today.</item>
-        <item quantity="other">You have %d tasks due today.</item>
+        <item quantity="one">You have %d To Do due today.</item>
+        <item quantity="zero">You have %d To Dos due today.</item>
+        <item quantity="other">You have %d To Dos due today.</item>
     </plurals>
 
 

@@ -61,6 +61,7 @@ import static com.jkjk.quicknote.helper.AlarmReceiver.ACTION_TOOL_BAR;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.DEFAULT_NOTE_ID;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
+import static com.jkjk.quicknote.widget.TaskListWidget.updateListWidget;
 
 public class TaskEditFragment extends Fragment {
 
@@ -568,6 +569,7 @@ public class TaskEditFragment extends Fragment {
                                                     public void onClick(DialogInterface dialogInterface, int i) {
                                                         if (!newTask) {
                                                             MyApplication.database.delete(DATABASE_NAME, "_id='" + taskId + "'", null);
+                                                            updateListWidget(getContext());
                                                         }
                                                         // No need to do saving
                                                         hasTaskSave = true;
@@ -725,6 +727,7 @@ public class TaskEditFragment extends Fragment {
 //        long saveReminderTime;
         if (reminderInFragment.getSelectedItem().toString().equals(getString(R.string.no_reminder_set))){
             AlarmHelper.cancelReminder(getContext(),taskId);
+            reminderTime.setTimeInMillis(0);
 
         } else {
             if (reminderInFragment.getSelectedItem().toString().equals(getString(R.string.zero_min_before))){
@@ -779,6 +782,7 @@ public class TaskEditFragment extends Fragment {
         values.clear();
         hasTaskSave = true;
         newTask = false;
+        updateListWidget(getContext());
         Toast.makeText(getActivity(),R.string.saved_task, Toast.LENGTH_SHORT).show();
     }
 

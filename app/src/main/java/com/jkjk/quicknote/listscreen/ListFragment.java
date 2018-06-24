@@ -36,7 +36,7 @@ import com.jkjk.quicknote.settings.Settings;
 import java.util.ArrayList;
 
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
-
+import static com.jkjk.quicknote.widget.TaskListWidget.updateListWidget;
 
 
 public class ListFragment extends Fragment{
@@ -217,7 +217,11 @@ public class ListFragment extends Fragment{
                                         }
 
                                         Toast.makeText(getContext(), R.string.task_deleted_toast, Toast.LENGTH_SHORT).show();
+
                                         taskListAdapter.actionMode.finish();
+
+                                        updateListWidget(getContext());
+
                                         taskCursor.close();
                                     }
                                 }

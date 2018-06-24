@@ -63,11 +63,28 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/note_preview_info" />
         </receiver>
+
+        <receiver
+            android:name=".widget.TaskListWidget"
+            android:label="@string/todo_list_preview">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/task_list_info" />
+        </receiver>
+
+        <service
+            android:name=".widget.TaskListRemoteService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS">
+        </service>
+
         <receiver
             android:name=".helper.AlarmReceiver"
             android:exported="false">
@@ -81,10 +98,13 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
+
         <activity android:name=".settings.Settings" />
+
         <activity android:name=".taskeditscreen.TaskEdit"
             android:exported="true"
             android:windowSoftInputMode="adjustResize"/>
+
         <activity android:name=".taskeditscreen.SnoozeDurationDialog"
             android:theme="@style/SnoozeDurationTheme"
             android:launchMode="singleInstance"

@@ -42,6 +42,7 @@ import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.DATE_NOT_SET_IN
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_HOUR_INDICATOR;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_MILLISECOND_INDICATOR;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_MINUTE_SECOND_INDICATOR;
+import static com.jkjk.quicknote.widget.TaskListWidget.updateListWidget;
 
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
 
@@ -230,10 +231,11 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                                             for (int pendingPosition : selectedItems) {
                                                 taskCursor.moveToPosition(pendingPosition);
                                                 String pendingId = taskCursor.getString(0);
-                                                //Update
+                                                //Update to pending
                                                 MyApplication.database.update(DATABASE_NAME, values, "_id='" + pendingId + "'", null);
                                             }
 
+                                            updateListWidget(fragment.getContext());
                                             updateCursorForDone();
                                             for (int pendingPosition : selectedItems) {
                                                 notifyItemRemoved(pendingPosition);
@@ -248,10 +250,11 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                                                 taskCursor.moveToPosition(pendingPosition);
                                                 String doneId = taskCursor.getString(0);
 
-                                                //Update
+                                                //Update to done
                                                 MyApplication.database.update(DATABASE_NAME, values, "_id='" + doneId + "'", null);
                                             }
 
+                                            updateListWidget(fragment.getContext());
                                             updateCursor();
                                             for (int pendingPosition : selectedItems) {
                                                 notifyItemRemoved(pendingPosition);
@@ -301,14 +304,18 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                     ContentValues values = new ContentValues();
 
                     if (checked) {
+                        // update the task to done
                         values.put("done", 1);
                         holder.isDone = true;
                         MyApplication.database.update(DATABASE_NAME, values, "_id='" + holder.taskId + "'", null);
+                        updateListWidget(fragment.getContext());
                         Toast.makeText(fragment.getContext(), R.string.done_toast, Toast.LENGTH_SHORT).show();
                     } else {
+                        // update the task to pending
                         values.put("done", 0);
                         holder.isDone = false;
                         MyApplication.database.update(DATABASE_NAME, values, "_id='" + holder.taskId + "'", null);
+                        updateListWidget(fragment.getContext());
                         Toast.makeText(fragment.getContext(), R.string.pending_toast, Toast.LENGTH_SHORT).show();
                     }
 
@@ -429,7 +436,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         taskCursor.close();
     }
 
-    private boolean isTomorrow(long time) {
+    public static boolean isTomorrow(long time) {
         int currentDayOfYear, currentDay, currentYear, currentMonth, setTimeDayOfYear, setTimeYear;
 
         Calendar setTime = Calendar.getInstance();

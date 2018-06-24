@@ -33,9 +33,7 @@ import static android.content.Context.MODE_PRIVATE;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
 import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
-import static com.jkjk.quicknote.listscreen.ListFragment.isAllowedToUse;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
-import static com.jkjk.quicknote.widget.AppWidgetService.IS_FROM_WIDGET;
 
 public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder> {
 
@@ -109,7 +107,7 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(view.getContext());
                 String widgetSize = sharedPref.getString(view.getResources().getString(R.string.font_size_widget),"m");
 
-                RemoteViews remoteViews = new RemoteViews("com.jkjk.quicknote", R.layout.note_preview);
+                RemoteViews remoteViews = new RemoteViews("com.jkjk.quicknote", R.layout.note_preview_widget);
 
                 //Obtain correspond data according to the position the user click. As both the recyclerview and cursor are sorted chronically, position equals to cursor index
                 cursorForWidget.moveToPosition(holder.getAdapterPosition());
@@ -143,7 +141,7 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
                 }
 
                 Intent startAppIntent = new Intent(activity, NoteEdit.class);
-                startAppIntent.putExtra(EXTRA_NOTE_ID, cursorForWidget.getLong(0)).putExtra(IS_FROM_WIDGET, true)
+                startAppIntent.putExtra(EXTRA_NOTE_ID, cursorForWidget.getLong(0))
                         .setFlags(FLAG_ACTIVITY_CLEAR_TOP | FLAG_ACTIVITY_SINGLE_TOP);
                 PendingIntent pendingIntent = PendingIntent.getActivity(activity,(int)cursorForWidget.getLong(0),startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
                 remoteViews.setOnClickPendingIntent(R.id.widget, pendingIntent);

@@ -62,13 +62,6 @@
     <PreferenceCategory
         android:title="@string/notification_cap">
 
-        <!--<Preference android:title="@string/report"-->
-            <!--android:summary="@string/report_summary">-->
-            <!--<intent android:action="android.intent.action.SENDTO"-->
-                <!--android:data="mailto:cyeung11@gmail.com" />-->
-        <!--</Preference>-->
-
-
         <SwitchPreference
             android:title="@string/daily_update"
             android:key="@string/daily_update"
@@ -113,6 +106,17 @@
         <!--android:entries="@array/back_up_frequency"-->
         <!--android:entryValues="@array/back_up_frequency_value"-->
         <!--android:defaultValue="7" />-->
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/other_cap">
+
+        <Preference android:title="@string/report"
+        android:summary="@string/report_summary">
+        <intent android:action="android.intent.action.SENDTO"
+        android:data="mailto:cyeung11@gmail.com" />
+        </Preference>
 
     </PreferenceCategory>
 
