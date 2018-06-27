@@ -3,8 +3,6 @@ package com.jkjk.quicknote.noteeditscreen;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.appwidget.AppWidgetManager;
-import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -34,22 +32,21 @@ import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import com.google.android.gms.actions.NoteIntents;
-import com.google.android.gms.common.util.ArrayUtils;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
-import com.jkjk.quicknote.helper.AlarmReceiver;
-import com.jkjk.quicknote.widget.AppWidgetService;
-import com.jkjk.quicknote.widget.NoteWidget;
+import com.jkjk.quicknote.helper.NotificationHelper;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 
-import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
 import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_CONTENT;
 import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TITLE;
 import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TYPE;
-import static com.jkjk.quicknote.helper.AlarmReceiver.ACTION_PIN_ITEM;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
-
+import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_PIN_ITEM;
+import static com.jkjk.quicknote.helper.NotificationHelper.PIN_ITEM_NOTIFICATION_ID;
+import static com.jkjk.quicknote.widget.NoteListWidget.updateNoteListWidget;
+import static com.jkjk.quicknote.widget.NoteWidget.updateNoteWidget;
 
 
 public class NoteEditFragment extends Fragment {
@@ -217,6 +214,7 @@ public class NoteEditFragment extends Fragment {
                                             public void onClick(DialogInterface dialogInterface, int i) {
                                                 if (!newNote) {
                                                     MyApplication.database.delete(DATABASE_NAME, "_id='" + noteId + "'", null);
+                                                    updateNoteListWidget(getContext());
                                                 }
                                                     // No need to do saving
                                                     hasNoteSave = true;
@@ -243,8 +241,8 @@ public class NoteEditFragment extends Fragment {
                                 } else {
                                     NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
                                     if (notificationManager!=null){
-                                        // to distinguish reminder and pin item, id of pin item is the item id * 887
-                                        notificationManager.cancel((int)noteId*887);
+                                        // to distinguish reminder and pin item, id of pin item is the item id * PIN_ITEM_NOTIFICATION_ID
+                                        notificationManager.cancel((int)noteId*PIN_ITEM_NOTIFICATION_ID);
                                     }
                                 }
                                 return true;
@@ -276,7 +274,6 @@ public class NoteEditFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 saveNote();
-                updateAllWidget();
                 hasNoteSave = true;
                 getActivity().finish();
             }
@@ -303,7 +300,6 @@ public class NoteEditFragment extends Fragment {
         if (checkModified() && !hasNoteSave) {
             //when user quit the app without choosing save or discard, save the note
             saveNote();
-            updateAllWidget();
         }
         super.onPause();
     }
@@ -336,6 +332,8 @@ public class NoteEditFragment extends Fragment {
 
         hasNoteSave = true;
         newNote = false;
+        updateNoteWidget(getContext());
+        updateNoteListWidget(getContext());
         Toast.makeText(getActivity(), R.string.saved_note, Toast.LENGTH_SHORT).show();
     }
 
@@ -345,13 +343,13 @@ public class NoteEditFragment extends Fragment {
         NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (notificationManager != null) {
-            StatusBarNotification[] activeNotification = notificationManager.getActiveNotifications();
-            int[] notificationId = new int[activeNotification.length];
-            for (int i = 0; i < activeNotification.length; i++) {
-                notificationId[i] = activeNotification[i].getId();
+            StatusBarNotification[] activeNotifications = notificationManager.getActiveNotifications();
+            ArrayList<Integer> notificationId = new ArrayList<>();
+            for (StatusBarNotification activeNotification : activeNotifications) {
+                notificationId.add(activeNotification.getId());
             }
-            // to distinguish reminder and pin item, id of pin item is the item id * 887
-            if (ArrayUtils.contains(notificationId, (int) noteId*887)){
+            // to distinguish reminder and pin item, id of pin item is the item id * PIN_ITEM_NOTIFICATION_ID
+            if (notificationId.contains((int)noteId*PIN_ITEM_NOTIFICATION_ID)){
                 result = true;
             }
         } else Toast.makeText(getContext(), R.string.error_text, Toast.LENGTH_SHORT).show();
@@ -359,7 +357,7 @@ public class NoteEditFragment extends Fragment {
     }
 
     private void pinNoteToNotification(){
-        Intent intent = new Intent(getContext(), AlarmReceiver.class);
+        Intent intent = new Intent(getContext(), NotificationHelper.class);
         intent.setAction(ACTION_PIN_ITEM);
         intent.putExtra(EXTRA_NOTE_ID, noteId);
         intent.putExtra(ITEM_TYPE, 'N');
@@ -373,20 +371,6 @@ public class NoteEditFragment extends Fragment {
         }
     }
 
-    public void updateAllWidget(){
-        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getActivity());
-        ComponentName name = new ComponentName(getActivity().getPackageName(), NoteWidget.class.getName());
-        int [] appWidgetIds = appWidgetManager.getAppWidgetIds(name);
-        Intent intent = new Intent(getContext(), AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, appWidgetIds);
-        PendingIntent pendingIntent = PendingIntent.getService(getContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        try {
-            pendingIntent.send();
-        } catch (Exception e) {
-            Toast.makeText(getContext(), R.string.error_text, Toast.LENGTH_SHORT).show();
-            Log.e(getClass().getName(), "updating widget",e);
-        }
-
-    }
 
     boolean checkModified(){
         if (newNote){

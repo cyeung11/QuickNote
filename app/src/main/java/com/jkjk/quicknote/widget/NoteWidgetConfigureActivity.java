@@ -3,10 +3,8 @@ package com.jkjk.quicknote.widget;
 import android.app.SearchManager;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,35 +13,21 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.reward.RewardItem;
-import com.google.android.gms.ads.reward.RewardedVideoAd;
-import com.google.android.gms.ads.reward.RewardedVideoAdListener;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.SearchHelper;
 
-import static com.jkjk.quicknote.listscreen.ListFragment.REWARD_VIDEO_AD_ID;
-import static com.jkjk.quicknote.listscreen.ListFragment.isAllowedToUse;
 
-
-/**
- * The configuration screen for the {@link NoteWidget NoteWidget} AppWidget.
- */
-public class NoteWidgetConfigureActivity extends AppCompatActivity implements RewardedVideoAdListener {
+public class NoteWidgetConfigureActivity extends AppCompatActivity {
 
     private int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-    private WidgetAdapter widgetAdapter;
+    private NoteWidgetAdapter noteWidgetAdapter;
     private RecyclerView recyclerViewForWidget;
     private MenuItem showStarred, search;
     private TextView notFoundTextView;
     private boolean showingStarred;
-//    private RewardedVideoAd mRewardedVideoAd;
-    private RadioButton white;
 
     public NoteWidgetConfigureActivity() {
         super();
@@ -52,11 +36,6 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity implements Re
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
-
-        //TODO Ad Related
-//        mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(this);
-//        mRewardedVideoAd.setRewardedVideoAdListener(this);
-//        loadRewardedVideoAd();
 
         // Find the widget id from the intent.
         Intent intent = getIntent();
@@ -78,32 +57,25 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity implements Re
         recyclerViewForWidget = findViewById(R.id.recycler_view_widget);
         recyclerViewForWidget.setHasFixedSize(true);
         recyclerViewForWidget.setLayoutManager(new LinearLayoutManager(this));
-        widgetAdapter = new WidgetAdapter(this, mAppWidgetId);
-        widgetAdapter.updateCursorForWidget();
-        recyclerViewForWidget.setAdapter(widgetAdapter);
+        noteWidgetAdapter = new NoteWidgetAdapter(this, mAppWidgetId);
+        noteWidgetAdapter.updateCursorForWidget();
+        recyclerViewForWidget.setAdapter(noteWidgetAdapter);
 
         notFoundTextView =  findViewById(R.id.widget_config_result_not_found);
-        white = findViewById(R.id.color_white);
     }
 
     @Override
     protected void onResume() {
-//        mRewardedVideoAd.resume(this);
         super.onResume();
-
-        // TODO Delete to enable ads
-        isAllowedToUse = true;
     }
 
     @Override
     protected void onStop() {
-//        mRewardedVideoAd.pause(this);
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-//        mRewardedVideoAd.destroy(this);
         super.onDestroy();
     }
 
@@ -135,8 +107,8 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity implements Re
                 if (!result.equals("")) {
                     recyclerViewForWidget.setVisibility(View.VISIBLE);
                     notFoundTextView.setVisibility(View.INVISIBLE);
-                    widgetAdapter.updateCursorForSearchForWidget(result);
-                    widgetAdapter.notifyDataSetChanged();
+                    noteWidgetAdapter.updateCursorForSearchForWidget(result);
+                    noteWidgetAdapter.notifyDataSetChanged();
                 } else if (!newText.equals("")) {
                     //If search result is empty and the search input is not empty, show result not found
                     recyclerViewForWidget.setVisibility(View.INVISIBLE);
@@ -145,8 +117,8 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity implements Re
                     //after finish searching and user empty the search input, reset the view
                     recyclerViewForWidget.setVisibility(View.VISIBLE);
                     notFoundTextView.setVisibility(View.INVISIBLE);
-                    widgetAdapter.updateCursorForWidget();
-                    widgetAdapter.notifyDataSetChanged();
+                    noteWidgetAdapter.updateCursorForWidget();
+                    noteWidgetAdapter.notifyDataSetChanged();
                 }
                 return true;
             }
@@ -159,8 +131,8 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity implements Re
                 showStarred.setVisible(false);
                 showingStarred = false;
                 showStarred.setIcon(R.drawable.sharp_star_border_24);
-                widgetAdapter.updateCursorForWidget();
-                widgetAdapter.notifyDataSetChanged();
+                noteWidgetAdapter.updateCursorForWidget();
+                noteWidgetAdapter.notifyDataSetChanged();
                 return true;
             }
 
@@ -182,14 +154,14 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity implements Re
                     // to show only starred notes
                     showingStarred = true;
                     showStarred.setIcon(R.drawable.baseline_star_24);
-                    widgetAdapter.updateCursorForStarred();
-                    widgetAdapter.notifyDataSetChanged();
+                    noteWidgetAdapter.updateCursorForStarred();
+                    noteWidgetAdapter.notifyDataSetChanged();
                 } else {
                     // to show all notes
                     showingStarred = false;
                     showStarred.setIcon(R.drawable.sharp_star_border_24);
-                    widgetAdapter.updateCursorForWidget();
-                    widgetAdapter.notifyDataSetChanged();
+                    noteWidgetAdapter.updateCursorForWidget();
+                    noteWidgetAdapter.notifyDataSetChanged();
                 }
                 return true;
             }
@@ -199,67 +171,7 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity implements Re
     }
 
     public void onColorSelected(View view) {
-        if (isAllowedToUse) {
-            widgetAdapter.onColorSelected(view);
-        } else {
-        new AlertDialog.Builder(this).setTitle(R.string.premium_function).setMessage(R.string.ads_prompt)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-//                        if (mRewardedVideoAd.isLoaded()) {
-//                            mRewardedVideoAd.show();
-//                        } else {
-//                            Toast.makeText(getBaseContext(),R.string.ads_wait,Toast.LENGTH_SHORT).show();
-//                        }
-                    }
-                }).setNegativeButton(R.string.cancel, null).show();
-        }
-    }
-
-    private void loadRewardedVideoAd() {
-//        mRewardedVideoAd.loadAd(REWARD_VIDEO_AD_ID, new AdRequest.Builder().build());
-    }
-
-    @Override
-    public void onRewardedVideoAdLoaded() {
-
-    }
-
-    @Override
-    public void onRewardedVideoAdOpened() {
-
-    }
-
-    @Override
-    public void onRewardedVideoStarted() {
-
-    }
-
-    @Override
-    public void onRewardedVideoAdClosed() {
-        loadRewardedVideoAd();
-        white.setChecked(true);
-    }
-
-    @Override
-    public void onRewarded(RewardItem rewardItem) {
-        Toast.makeText(this, R.string.ads_complete, Toast.LENGTH_SHORT).show();
-        isAllowedToUse = true;
-    }
-
-    @Override
-    public void onRewardedVideoAdLeftApplication() {
-
-    }
-
-    @Override
-    public void onRewardedVideoAdFailedToLoad(int i) {
-
-    }
-
-    @Override
-    public void onRewardedVideoCompleted() {
-
+        noteWidgetAdapter.onColorSelected(view);
     }
 }
 

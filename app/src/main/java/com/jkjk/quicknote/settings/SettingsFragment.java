@@ -28,16 +28,10 @@ import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.reward.RewardItem;
-import com.google.android.gms.ads.reward.RewardedVideoAd;
-import com.google.android.gms.ads.reward.RewardedVideoAdListener;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
-import com.jkjk.quicknote.helper.AlarmReceiver;
 import com.jkjk.quicknote.helper.DatabaseHelper;
-import com.jkjk.quicknote.listscreen.ListFragment;
+import com.jkjk.quicknote.helper.NotificationHelper;
 import com.jkjk.quicknote.widget.AppWidgetService;
 import com.jkjk.quicknote.widget.NoteWidget;
 
@@ -53,21 +47,22 @@ import java.util.Locale;
 import static android.app.Activity.RESULT_OK;
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
 import static com.jkjk.quicknote.MyApplication.CURRENT_DB_VER;
-import static com.jkjk.quicknote.helper.AlarmReceiver.ACTION_DAILY_UPDATE;
-import static com.jkjk.quicknote.helper.AlarmReceiver.ACTION_TOOL_BAR;
-import static com.jkjk.quicknote.helper.AlarmReceiver.DAILY_UPDATE_REQUEST_CODE;
-import static com.jkjk.quicknote.helper.AlarmReceiver.TOOL_BAR_NOTIFICATION_ID;
-import static com.jkjk.quicknote.helper.AlarmReceiver.TOOL_BAR_REQUEST_CODE;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.helper.DatabaseHelper.dbColumn;
-import static com.jkjk.quicknote.listscreen.ListFragment.REWARD_VIDEO_AD_ID;
+import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_DAILY_UPDATE;
+import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_TOOL_BAR;
+import static com.jkjk.quicknote.helper.NotificationHelper.DAILY_UPDATE_REQUEST_CODE;
+import static com.jkjk.quicknote.helper.NotificationHelper.TOOL_BAR_NOTIFICATION_ID;
+import static com.jkjk.quicknote.helper.NotificationHelper.TOOL_BAR_REQUEST_CODE;
+import static com.jkjk.quicknote.widget.NoteListWidget.updateNoteListWidget;
+import static com.jkjk.quicknote.widget.NoteWidget.updateNoteWidget;
+import static com.jkjk.quicknote.widget.TaskListWidget.updateTaskListWidget;
 
-public class SettingsFragment extends PreferenceFragmentCompat implements RewardedVideoAdListener, SharedPreferences.OnSharedPreferenceChangeListener{
 
+public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener{
 
     static final  int BACK_UP_REQUEST_CODE = 3433;
     static final  int RESTORE_REQUEST_CODE = 3449;
-//    private RewardedVideoAd mRewardedVideoAd;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -77,10 +72,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-//        mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(getActivity());
-//        mRewardedVideoAd.setRewardedVideoAdListener(this);
-//        loadRewardedVideoAd();
     }
 
 
@@ -106,46 +97,32 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
             @Override
             public boolean onPreferenceClick(Preference preference) {
 
-                if (ListFragment.isAllowedToUse) {
-                    if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            != PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
 
-                        // Permission is not granted
-                        if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                            new AlertDialog.Builder(getActivity()).setTitle(R.string.permission_required).setMessage(R.string.permission)
-                                    .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialogInterface, int i) {
-                                            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                            Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
-                                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                            intent.setData(uri);
-                                            startActivity(intent);
-                                        }
-                                    })
-                                    .setNegativeButton(R.string.cancel, null)
-                                    .show();
-                        } else {
-                            // request the permission
-                            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                    BACK_UP_REQUEST_CODE);
-                        }
+                    // Permission is not granted
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                        new AlertDialog.Builder(getActivity()).setTitle(R.string.permission_required).setMessage(R.string.permission)
+                                .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                        Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                        intent.setData(uri);
+                                        startActivity(intent);
+                                    }
+                                })
+                                .setNegativeButton(R.string.cancel, null)
+                                .show();
                     } else {
-                        // Permission has already been granted
-                        selectBackUpLocation();
+                        // request the permission
+                        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                BACK_UP_REQUEST_CODE);
                     }
                 } else {
-                    new AlertDialog.Builder(getActivity()).setTitle(R.string.premium_function).setMessage(R.string.ads_prompt)
-                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-//                                    if (mRewardedVideoAd.isLoaded()) {
-//                                        mRewardedVideoAd.show();
-//                                    } else {
-//                                        Toast.makeText(getContext(),R.string.ads_wait,Toast.LENGTH_SHORT).show();
-//                                    }
-                                }
-                            }).setNegativeButton(R.string.cancel, null).show();
+                    // Permission has already been granted
+                    selectBackUpLocation();
                 }
                 return true;
             }
@@ -155,56 +132,42 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
         restore.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                if (ListFragment.isAllowedToUse) {
-                    new AlertDialog.Builder(getActivity()).setTitle(R.string.restore).setMessage(R.string.restore_confirm)
-                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
+                new AlertDialog.Builder(getActivity()).setTitle(R.string.restore).setMessage(R.string.restore_confirm)
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
 
-                                    //Check permission
-                                    if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
-                                            != PackageManager.PERMISSION_GRANTED) {
+                                //Check permission
+                                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                                        != PackageManager.PERMISSION_GRANTED) {
 
-                                        // Permission is not granted
-                                        if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                                            new AlertDialog.Builder(getActivity()).setTitle(R.string.permission_required).setMessage(R.string.permission)
-                                                    .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
-                                                        @Override
-                                                        public void onClick(DialogInterface dialogInterface, int i) {
-                                                            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                                            Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
-                                                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                                            intent.setData(uri);
-                                                            startActivity(intent);
-                                                        }
-                                                    })
-                                                    .setNegativeButton(R.string.cancel, null)
-                                                    .show();
-                                        } else {
-                                            // request the permission
-                                            ActivityCompat.requestPermissions(getActivity(),
-                                                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                                                    RESTORE_REQUEST_CODE);
-                                        }
+                                    // Permission is not granted
+                                    if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                                        new AlertDialog.Builder(getActivity()).setTitle(R.string.permission_required).setMessage(R.string.permission)
+                                                .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                                        Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
+                                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                        intent.setData(uri);
+                                                        startActivity(intent);
+                                                    }
+                                                })
+                                                .setNegativeButton(R.string.cancel, null)
+                                                .show();
                                     } else {
-                                        // Permission has already been granted
-                                        selectRestoreLocation();
+                                        // request the permission
+                                        ActivityCompat.requestPermissions(getActivity(),
+                                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                                RESTORE_REQUEST_CODE);
                                     }
+                                } else {
+                                    // Permission has already been granted
+                                    selectRestoreLocation();
                                 }
-                            }).setNegativeButton(R.string.cancel, null).show();
-                } else {
-                    new AlertDialog.Builder(getActivity()).setTitle(R.string.premium_function).setMessage(R.string.ads_prompt)
-                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-//                                    if (mRewardedVideoAd.isLoaded()) {
-//                                        mRewardedVideoAd.show();
-//                                    } else {
-//                                        Toast.makeText(getContext(),R.string.ads_wait,Toast.LENGTH_SHORT).show();
-//                                    }
-                                }
-                            }).setNegativeButton(R.string.cancel, null).show();
-                }
+                            }
+                        }).setNegativeButton(R.string.cancel, null).show();
                 return true;
             }
         });
@@ -267,25 +230,18 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
 
     @Override
     public void onResume() {
-//        mRewardedVideoAd.resume(getContext());
         super.onResume();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-
-
-        //TODO Delete to enable ads
-        ListFragment.isAllowedToUse=true;
     }
 
     @Override
     public void onStop() {
-//        mRewardedVideoAd.pause(getContext());
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         super.onStop();
     }
 
     @Override
     public void onDestroy() {
-//        mRewardedVideoAd.destroy(getContext());
         super.onDestroy();
     }
 
@@ -325,17 +281,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
 
         if (key.equals(getString(R.string.font_size_widget))){
-            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getActivity());
-            ComponentName name = new ComponentName(getActivity().getPackageName(), NoteWidget.class.getName());
-            int [] appWidgetIds = appWidgetManager.getAppWidgetIds(name);
-            Intent intent = new Intent(getContext(), AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, appWidgetIds);
-            PendingIntent pendingIntent = PendingIntent.getService(getContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            try {
-                pendingIntent.send();
-            } catch (Exception e) {
-                Toast.makeText(getContext(), R.string.error_text, Toast.LENGTH_SHORT).show();
-                Log.e(getClass().getName(), "updating widget",e);
-            }
+            // Update the 3 widget after widget font setting change
+            updateNoteWidget(getContext());
+            updateNoteListWidget(getContext());
+            updateTaskListWidget(getContext());
 
         } else if (key.equals(getString(R.string.default_screen))){
             Preference defaultScreen = findPreference(getString(R.string.default_screen));
@@ -348,14 +297,17 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
             Preference defaultSorting = findPreference(getString(R.string.change_default_sorting));
             if (prefs.getBoolean(getString(R.string.change_default_sorting), false)){
                 defaultSorting.setSummary(R.string.default_sort_by_urgency);
-            } else defaultSorting.setSummary(R.string.default_sort_by_time);
-
+                updateTaskListWidget(getContext());
+            } else {
+                defaultSorting.setSummary(R.string.default_sort_by_time);
+                updateTaskListWidget(getContext());
+            }
 
         } else if (key.equals(getString(R.string.notification_pin))){
 
             if (prefs.getBoolean(getString(R.string.notification_pin), false)){
 
-                Intent toolBarIntent = new Intent(getContext(), AlarmReceiver.class);
+                Intent toolBarIntent = new Intent(getContext(), NotificationHelper.class);
                 toolBarIntent.setAction(ACTION_TOOL_BAR);
                 PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(getContext(), 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                 try {
@@ -374,7 +326,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
 
         } else if  (key.equals(getString(R.string.daily_update))){
             if (prefs.getBoolean(getString(R.string.daily_update), false)){
-                Intent intent = new Intent(getContext(), AlarmReceiver.class);
+                Intent intent = new Intent(getContext(), NotificationHelper.class);
                 intent.setAction(ACTION_DAILY_UPDATE);
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(), DAILY_UPDATE_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
                 try {
@@ -507,50 +459,4 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Reward
             }
         }
     }
-
-
-    private void loadRewardedVideoAd() {
-//        mRewardedVideoAd.loadAd(REWARD_VIDEO_AD_ID, new AdRequest.Builder().build());
-    }
-
-
-    @Override
-    public void onRewardedVideoAdLoaded() {
-    }
-
-    @Override
-    public void onRewardedVideoAdOpened() {
-    }
-
-    @Override
-    public void onRewardedVideoStarted() {
-
-    }
-
-    @Override
-    public void onRewardedVideoAdClosed() {
-        loadRewardedVideoAd();
-    }
-
-    @Override
-    public void onRewarded(RewardItem rewardItem) {
-        Toast.makeText(getActivity(), R.string.ads_complete, Toast.LENGTH_SHORT).show();
-        ListFragment.isAllowedToUse = true;
-
-    }
-
-    @Override
-    public void onRewardedVideoAdLeftApplication() {
-
-    }
-
-    @Override
-    public void onRewardedVideoAdFailedToLoad(int i) {
-    }
-
-    @Override
-    public void onRewardedVideoCompleted() {
-
-    }
-
 }

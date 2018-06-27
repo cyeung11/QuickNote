@@ -1,6 +1,5 @@
 package com.jkjk.quicknote.helper;
 
-import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -18,7 +17,6 @@ import android.widget.Toast;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.listscreen.List;
-import com.jkjk.quicknote.listscreen.TaskListFragment;
 import com.jkjk.quicknote.noteeditscreen.NoteEdit;
 import com.jkjk.quicknote.taskeditscreen.SnoozeDurationDialog;
 import com.jkjk.quicknote.taskeditscreen.TaskEdit;
@@ -36,22 +34,23 @@ import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.DATE_NOT_SET_IN
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_HOUR_INDICATOR;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_MILLISECOND_INDICATOR;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_MINUTE_SECOND_INDICATOR;
+import static com.jkjk.quicknote.widget.TaskListWidget.updateTaskListWidget;
 
-public class AlarmReceiver extends BroadcastReceiver {
+public class NotificationHelper extends BroadcastReceiver {
 
     public static final String ACTION_TOOL_BAR = "showToolBar";
     public static final String ACTION_PIN_ITEM = "pinItemToNofification";
     public static final String ACTION_POST_REMINDER = "postReminderToNofification";
     public static final String ACTION_DAILY_UPDATE = "updateDailyPendingTask";
+    public static final String ACTION_MARK_AS_DONE = "markTaskAsDone";
     public static final int TOOL_BAR_NOTIFICATION_ID = 3221;
+    public static final int PIN_ITEM_NOTIFICATION_ID = 887;
     public static final int TOOL_BAR_REQUEST_CODE = 2417;
     public static final int DAILY_UPDATE_REQUEST_CODE = 2207;
 
-    @SuppressLint("StringFormatMatches")
     @Override
     public void onReceive(Context context, Intent intent) {
         final String GROUP_KEY = context.getPackageName();
-//        final String ACTION_SNOOZE = "snoozeReminder";
 
         if (intent != null && intent.getAction() != null) {
             long taskId;
@@ -102,13 +101,19 @@ public class AlarmReceiver extends BroadcastReceiver {
                         // Distinguish snooze & open item
                         PendingIntent snoozePendingIntent = PendingIntent.getActivity(context, (int)taskId, snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+                        Intent markAsDoneIntent = new Intent(context, NotificationHelper.class);
+                        markAsDoneIntent.setAction(ACTION_MARK_AS_DONE).putExtra(EXTRA_NOTE_ID, taskId);
+                        PendingIntent markAsDonePendingIntent = PendingIntent.getBroadcast(context, (int)taskId, markAsDoneIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
                         builder.setContentTitle(intent.getStringExtra(ITEM_TITLE)).setSmallIcon(R.drawable.ic_stat_name)
                                 .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher_round))
                                 .setContentIntent(startPendingIntent).setAutoCancel(true);
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT_WATCH) {
                             builder.addAction(R.drawable.snooze_action, context.getString(R.string.snooze), snoozePendingIntent);
+                            builder.addAction(R.drawable.ic_done, context.getString(R.string.done), markAsDonePendingIntent);
                         } else {
                             builder.addAction(new Notification.Action.Builder(R.drawable.sharp_snooze_24, context.getString(R.string.snooze), snoozePendingIntent).build());
+                            builder.addAction(new Notification.Action.Builder(R.drawable.sharp_done_24, context.getString(R.string.done), markAsDonePendingIntent).build());
                         }
 
                         // if reminder has content field, show it
@@ -180,6 +185,20 @@ public class AlarmReceiver extends BroadcastReceiver {
                     }
                     break;
 
+                case ACTION_MARK_AS_DONE:
+
+                    if (intent.hasExtra(EXTRA_NOTE_ID) && (taskId = intent.getLongExtra(EXTRA_NOTE_ID, 98876146L)) != 98876146L) {
+                        ContentValues values = new ContentValues();
+                        values.put("done", 1);
+                        MyApplication.database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
+                        updateTaskListWidget(context);
+
+                        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                        if (notificationManager != null) {
+                            notificationManager.cancel((int)taskId);
+                        }
+                    }
+                    break;
 //                case ACTION_SNOOZE:
 
 //                    if (intent.hasExtra(EXTRA_NOTE_ID) && (taskId = intent.getLongExtra(EXTRA_NOTE_ID, 98876146L)) != 98876146L) {
@@ -358,8 +377,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 
                         Notification notification = builder.build();
                         notification.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
-                        // to distinguish reminder and pin item, id of pin item is the item id * 887
-                        notificationManager.notify(((int)itemId*887), notification);
+                        // to distinguish reminder and pin item, id of pin item is the item id * PIN_ITEM_NOTIFICATION_ID
+                        notificationManager.notify(((int)itemId*PIN_ITEM_NOTIFICATION_ID), notification);
                     }
                     break;
                 }
@@ -396,7 +415,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
                     String notificationTitle = context.getResources().getQuantityString(R.plurals.notification_title, taskCount, taskCount);
 
-                    Intent startTaskActivity = new Intent(context, TaskListFragment.class);
+                    Intent startTaskActivity = new Intent(context, List.class);
                     startTaskActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     PendingIntent taskPendingIntent = PendingIntent.getActivity(context, 0, startTaskActivity, PendingIntent.FLAG_UPDATE_CURRENT);
 

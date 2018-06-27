@@ -27,6 +27,15 @@
             android:orientation="horizontal"
             android:layout_marginBottom="3dp">
 
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:adjustViewBounds="true"
+                android:id="@+id/flag"
+                android:contentDescription="@string/starred"
+                android:visibility="gone"
+                android:tint="@color/colorPrimary"
+                app:srcCompat="@drawable/sharp_flag_24"/>
 
             <TextView
                 android:layout_width="0dp"

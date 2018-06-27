@@ -3,6 +3,7 @@ package com.jkjk.quicknote.widget;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,6 +15,7 @@ import com.jkjk.quicknote.R;
 import java.util.ArrayList;
 
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
+import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_PROVIDER;
 import static android.content.Context.MODE_PRIVATE;
 import static com.jkjk.quicknote.widget.AppWidgetService.NOTE_WIDGET_REQUEST_CODE;
 
@@ -44,7 +46,7 @@ public class NoteWidget extends AppWidgetProvider {
         }
 
         Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, resultId)
-                .putExtra(AppWidgetService.EXTRA_WIDGET_CODE, NOTE_WIDGET_REQUEST_CODE);
+                .putExtra(EXTRA_APPWIDGET_PROVIDER, new ComponentName(context, NoteWidget.class));
         PendingIntent pendingIntent = PendingIntent.getService(context, NOTE_WIDGET_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         try {
             pendingIntent.send();
@@ -64,5 +66,20 @@ public class NoteWidget extends AppWidgetProvider {
             colorPref.edit().remove(Integer.toString(appWidgetId)).apply();
         }
         super.onDeleted(context, appWidgetIds);
+    }
+
+    public static void updateNoteWidget(Context context){
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+        ComponentName name = new ComponentName(context, NoteWidget.class);
+        int[] appWidgetIds = appWidgetManager.getAppWidgetIds(name);
+        Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, appWidgetIds)
+                .putExtra(EXTRA_APPWIDGET_PROVIDER, name);
+        PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        try {
+            pendingIntent.send();
+        } catch (Exception e) {
+            Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
+            Log.e(context.getClass().getName(), "updating widget", e);
+        }
     }
 }

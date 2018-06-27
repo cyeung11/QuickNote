@@ -23,6 +23,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -71,6 +72,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
     class ViewHolder extends RecyclerView.ViewHolder {
         CardView cardView;
         TextView noteTitle, noteTime, noteContent;
+        ImageView flagIcon;
         long noteId;
         boolean isStarred;
 
@@ -80,6 +82,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
             noteTitle = card.findViewById(R.id.note_title);
             noteTime = card.findViewById(R.id.note_date);
             noteContent = card.findViewById(R.id.note_content);
+            flagIcon = card.findViewById(R.id.flag);
         }
     }
 
@@ -313,8 +316,6 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
 
         final Context context = holder.cardView.getContext();
 
-        holder.noteTitle.setTypeface(Typeface.SERIF);
-
         // Reset card background color
         if (selectedItems.contains(holder.getAdapterPosition())) {
             holder.cardView.setCardBackgroundColor(Color.LTGRAY);
@@ -362,8 +363,11 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 if (noteCursor.getInt(4) == 1) {
                     holder.isStarred = true;
                     holder.noteTitle.setTypeface(Typeface.SERIF, Typeface.BOLD);
+                    holder.flagIcon.setVisibility(View.VISIBLE);
                 }else {
                     holder.isStarred = false;
+                    holder.noteTitle.setTypeface(Typeface.SERIF);
+                    holder.flagIcon.setVisibility(View.GONE);
                 }
 
             } catch (Exception e) {
@@ -380,7 +384,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
         noteCursor.close();
     }
 
-    private boolean isYesterday(long time) {
+    public static boolean isYesterday(long time) {
         int currentDayOfYear, currentYear, setTimeDayOfYear, setTimeYear, setTimeMonth, setTimeDay;
 
         Calendar setTime = Calendar.getInstance();

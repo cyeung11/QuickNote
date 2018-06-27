@@ -2,6 +2,8 @@
     <string name="app_name">笔记及待办</string>
     <string name="note">笔记本</string>
     <string name="task">待办清单</string>
+    <string name="todo_list_widget_label">笔记</string>
+    <string name="note_list_widget_label">待办清单</string>
     <string name="user_interface_cap">版面设定</string>
     <string name="done">储存</string>
     <string name="saved_note">已储存</string>
@@ -154,6 +156,8 @@
     <string name="twelve_hours">12小时</string>
     <string name="twenty_four_hour">24小时</string>
     <string name="new_to_do">新增待办</string>
+    <string name="loading">载入中…</string>
+    <string name="urgency">紧急程度</string>
     <plurals name="notification_title">
         <item quantity="other">您今天有%d件待办事件</item>
     </plurals>

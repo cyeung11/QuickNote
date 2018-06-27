@@ -3,6 +3,8 @@
     <string name="app_name">A Note &amp; To Do</string>
     <string name="note">ノート</string>
     <string name="task">Todoリスト</string>
+    <string name="todo_list_widget_label">ノート</string>
+    <string name="note_list_widget_label">Todoリスト</string>
     <string name="user_interface_cap">インタフェース</string>
     <string name="done">完了</string>
     <string name="saved_note">すでに保存</string>
@@ -155,7 +157,8 @@
     <string name="one_hour">1時間</string>
     <string name="twelve_hours">12時間</string>
     <string name="twenty_four_hour">24時間</string>
-
+    <string name="loading">読み込み中…</string>
+    <string name="urgency">緊急事態</string>
     <string-array name="font_size">
         <item>小</item>
         <item>中</item>

@@ -29,7 +29,7 @@
             android:textSize="18sp"
             android:textColor="@android:color/white"
             android:maxLines="1"
-            android:text="@string/task"/>
+            android:text="@string/note"/>
 
         <ImageView
             android:id="@+id/add_button"
@@ -40,7 +40,7 @@
             android:paddingRight="8dp"
             android:paddingLeft="8dp"
             android:src="@drawable/ic_add"
-            android:contentDescription="@string/add_task" />
+            android:contentDescription="@string/add_note" />
 
     </LinearLayout>
 

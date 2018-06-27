@@ -21,7 +21,9 @@
             <intent-filter android:label="@string/new_note">
                 <action android:name="android.intent.action.SEND" />
                 <action android:name="com.google.android.gms.actions.CREATE_NOTE" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
@@ -44,15 +46,16 @@
             android:label="@string/new_note">
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_SHORTCUT" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".widget.NewToDoShortcuts"
             android:label="@string/new_to_do">
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_SHORTCUT" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -63,34 +66,44 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
+
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/note_preview_info" />
         </receiver>
-
         <receiver
             android:name=".widget.TaskListWidget"
-            android:label="@string/todo_list_preview">
+            android:label="@string/todo_list_widget_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
+
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/task_list_info" />
+                android:resource="@xml/task_list_widget_info" />
         </receiver>
 
         <service
-            android:name=".widget.TaskListRemoteService"
+            android:name=".widget.TaskListWidgetRemoteService"
             android:exported="false"
-            android:permission="android.permission.BIND_REMOTEVIEWS">
-        </service>
+            android:permission="android.permission.BIND_REMOTEVIEWS"/>
+
+        <service
+            android:name=".widget.NoteListWidgetRemoteService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS"/>
 
         <receiver
-            android:name=".helper.AlarmReceiver"
+            android:name=".helper.NotificationHelper"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".helper.WidgetUpdateHelper"
+            android:exported="false">
         </receiver>
 
         <activity android:name=".widget.NoteWidgetConfigureActivity">
@@ -98,18 +111,28 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
-
         <activity android:name=".settings.Settings" />
-
-        <activity android:name=".taskeditscreen.TaskEdit"
+        <activity
+            android:name=".taskeditscreen.TaskEdit"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize"/>
-
-        <activity android:name=".taskeditscreen.SnoozeDurationDialog"
-            android:theme="@style/SnoozeDurationTheme"
-            android:launchMode="singleInstance"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".taskeditscreen.SnoozeDurationDialog"
             android:excludeFromRecents="true"
-            android:exported="true"/>
+            android:exported="true"
+            android:launchMode="singleInstance"
+            android:theme="@style/SnoozeDurationTheme" />
+
+        <receiver
+            android:name=".widget.NoteListWidget"
+            android:label="@string/note_list_widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/note_list_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

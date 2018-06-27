@@ -2,6 +2,8 @@
     <string name="app_name">筆記及待辦</string>
     <string name="note">筆記本</string>
     <string name="task">待辦清單</string>
+    <string name="todo_list_widget_label">筆記</string>
+    <string name="note_list_widget_label">待辦清單</string>
     <string name="user_interface_cap">版面設定</string>
     <string name="done">儲存</string>
     <string name="saved_note">已儲存</string>
@@ -154,6 +156,8 @@
     <string name="twelve_hours">12小時</string>
     <string name="twenty_four_hour">24小時</string>
     <string name="new_to_do">新待辦事件</string>
+    <string name="loading">載入中…</string>
+    <string name="urgency">緊急程度</string>
     <plurals name="notification_title">
         <item quantity="other">您今天有%d件待辦事件</item>
     </plurals>

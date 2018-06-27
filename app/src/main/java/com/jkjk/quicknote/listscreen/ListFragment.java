@@ -27,7 +27,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.MobileAds;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.SearchHelper;
@@ -36,7 +35,8 @@ import com.jkjk.quicknote.settings.Settings;
 import java.util.ArrayList;
 
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
-import static com.jkjk.quicknote.widget.TaskListWidget.updateListWidget;
+import static com.jkjk.quicknote.widget.NoteListWidget.updateNoteListWidget;
+import static com.jkjk.quicknote.widget.TaskListWidget.updateTaskListWidget;
 
 
 public class ListFragment extends Fragment{
@@ -45,9 +45,8 @@ public class ListFragment extends Fragment{
     debug id: ca-app-pub-3940256099942544/5224354917
     real id ca-app-pub-8833570917041672/9209453063
      */
-    public static final String REWARD_VIDEO_AD_ID = "ca-app-pub-8833570917041672/9209453063";
-    public static final String ADMOB_ID = "ca-app-pub-8833570917041672~2236425579";
-    public static boolean isAllowedToUse = false;
+//    public static final String REWARD_VIDEO_AD_ID = "ca-app-pub-8833570917041672/9209453063";
+//    public static final String ADMOB_ID = "ca-app-pub-8833570917041672~2236425579";
     // 0 stands for note , 1 stands for task
     private boolean defaultPage;
     private char currentPage;
@@ -73,7 +72,7 @@ public class ListFragment extends Fragment{
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        MobileAds.initialize(getActivity(),ADMOB_ID);
+//        MobileAds.initialize(getActivity(),ADMOB_ID);
 
         android.support.v7.widget.Toolbar listMenu = getActivity().findViewById(R.id.list_menu);
         ((AppCompatActivity) getActivity()).setSupportActionBar(listMenu);
@@ -197,6 +196,7 @@ public class ListFragment extends Fragment{
 
                                         Toast.makeText(getContext(), R.string.note_deleted_toast, Toast.LENGTH_SHORT).show();
                                         noteListAdapter.actionMode.finish();
+                                        updateNoteListWidget(getContext());
                                         noteCursor.close();
 
                                     } else if (currentPage == 'T'){
@@ -217,11 +217,8 @@ public class ListFragment extends Fragment{
                                         }
 
                                         Toast.makeText(getContext(), R.string.task_deleted_toast, Toast.LENGTH_SHORT).show();
-
                                         taskListAdapter.actionMode.finish();
-
-                                        updateListWidget(getContext());
-
+                                        updateTaskListWidget(getContext());
                                         taskCursor.close();
                                     }
                                 }

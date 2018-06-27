@@ -7,10 +7,10 @@ import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.preference.PreferenceManager;
 
-import com.jkjk.quicknote.helper.AlarmReceiver;
 import com.jkjk.quicknote.helper.DatabaseHelper;
+import com.jkjk.quicknote.helper.NotificationHelper;
 
-import static com.jkjk.quicknote.helper.AlarmReceiver.ACTION_TOOL_BAR;
+import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_TOOL_BAR;
 
 
 public class MyApplication extends Application {
@@ -27,7 +27,7 @@ public class MyApplication extends Application {
         // if pinned notification tool bar is enable, start it
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         if (sharedPref.getBoolean(getString(R.string.notification_pin), false)) {
-            Intent toolBarIntent = new Intent(this, AlarmReceiver.class);
+            Intent toolBarIntent = new Intent(this, NotificationHelper.class);
             toolBarIntent.setAction(ACTION_TOOL_BAR);
             PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(this, 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             try {

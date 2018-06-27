@@ -10,7 +10,7 @@ import com.jkjk.quicknote.R;
 
 import java.util.Calendar;
 
-import static com.jkjk.quicknote.helper.AlarmReceiver.ACTION_POST_REMINDER;
+import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_POST_REMINDER;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
 
 public class AlarmHelper {
@@ -26,7 +26,7 @@ public class AlarmHelper {
     public static void setReminder(Context context, char itemType, long id, String title, String content, long eventTime, long remindTime){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
-        Intent intent = new Intent(context, AlarmReceiver.class);
+        Intent intent = new Intent(context, NotificationHelper.class);
         intent.setAction(ACTION_POST_REMINDER);
         intent.putExtra(EXTRA_NOTE_ID, id);
         intent.putExtra(ITEM_TYPE, itemType);
@@ -40,9 +40,43 @@ public class AlarmHelper {
         } else Toast.makeText(context, R.string.error_reminder, Toast.LENGTH_SHORT).show();
     }
 
+    public static void setWidgetUpdate(Context context){
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, WidgetUpdateHelper.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // get tomorrow midnight time
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY,0);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.SECOND,0);
+        calendar.set(Calendar.MILLISECOND,1);
+        if (calendar.get(Calendar.DAY_OF_YEAR)<365) {
+            calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR) + 1);
+        } else if (calendar.get(Calendar.YEAR)%4 > 0){
+            calendar.set(Calendar.DAY_OF_YEAR, 1);
+        } else if (calendar.get(Calendar.DAY_OF_YEAR) == 365) {
+            calendar.set(Calendar.DAY_OF_YEAR, 366);
+        } else {
+            calendar.set(Calendar.DAY_OF_YEAR, 1);
+        }
+        if (alarmManager != null) {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+        } else Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
+    }
+
+    public static void cancelWidgetUpdate(Context context){
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, WidgetUpdateHelper.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        if (alarmManager != null) {
+            alarmManager.cancel(pendingIntent);
+        }
+    }
+
     public static void setNotificationUpdate(Context context, String action, int requestCode){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(context, AlarmReceiver.class);
+        Intent intent = new Intent(context, NotificationHelper.class);
         intent.setAction(action);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -68,7 +102,7 @@ public class AlarmHelper {
 
     public static void cancelNotificationUpdate(Context context, String action, int requestCode){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(context, AlarmReceiver.class);
+        Intent intent = new Intent(context, NotificationHelper.class);
         intent.setAction(action);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         if (alarmManager != null) {
@@ -79,7 +113,7 @@ public class AlarmHelper {
     public static void cancelReminder(Context context, long id){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
-        Intent intent = new Intent(context, AlarmReceiver.class);
+        Intent intent = new Intent(context, NotificationHelper.class);
         intent.setAction(ACTION_POST_REMINDER);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, (int)id, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 

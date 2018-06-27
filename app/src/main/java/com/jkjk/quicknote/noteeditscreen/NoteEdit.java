@@ -10,6 +10,8 @@ import com.google.android.gms.actions.NoteIntents;
 import com.jkjk.quicknote.R;
 
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
+import static com.jkjk.quicknote.widget.NoteListWidget.updateNoteListWidget;
+import static com.jkjk.quicknote.widget.NoteWidget.updateNoteWidget;
 
 
 public class NoteEdit extends AppCompatActivity {
@@ -68,7 +70,8 @@ public class NoteEdit extends AppCompatActivity {
                         public void onClick(DialogInterface dialogInterface, int i) {
                             //Save instantly instead of onStop so that when the note list's onResume get called, the note is already update
                             noteEditFragment.saveNote();
-                            noteEditFragment.updateAllWidget();
+                            updateNoteWidget(NoteEdit.this);
+                            updateNoteListWidget(NoteEdit.this);
                             noteEditFragment.hasNoteSave = true;
                             NoteEdit.super.onBackPressed();
                         }

@@ -25,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -42,7 +43,7 @@ import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.DATE_NOT_SET_IN
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_HOUR_INDICATOR;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_MILLISECOND_INDICATOR;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_MINUTE_SECOND_INDICATOR;
-import static com.jkjk.quicknote.widget.TaskListWidget.updateListWidget;
+import static com.jkjk.quicknote.widget.TaskListWidget.updateTaskListWidget;
 
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
 
@@ -84,6 +85,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     class ViewHolder extends RecyclerView.ViewHolder {
         CardView cardView;
         TextView taskTitle, taskTime, urgency;
+        ImageView flagIcon;
         CheckBox taskDone;
         LinearLayout taskBody;
         long taskId;
@@ -97,6 +99,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
             urgency = card.findViewById(R.id.task_urgency);
             taskDone = card.findViewById(R.id.task_done);
             taskBody = card.findViewById(R.id.task_body);
+            flagIcon = card.findViewById(R.id.flag);
         }
     }
 
@@ -235,7 +238,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                                                 MyApplication.database.update(DATABASE_NAME, values, "_id='" + pendingId + "'", null);
                                             }
 
-                                            updateListWidget(fragment.getContext());
+                                            updateTaskListWidget(fragment.getContext());
                                             updateCursorForDone();
                                             for (int pendingPosition : selectedItems) {
                                                 notifyItemRemoved(pendingPosition);
@@ -254,7 +257,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                                                 MyApplication.database.update(DATABASE_NAME, values, "_id='" + doneId + "'", null);
                                             }
 
-                                            updateListWidget(fragment.getContext());
+                                            updateTaskListWidget(fragment.getContext());
                                             updateCursor();
                                             for (int pendingPosition : selectedItems) {
                                                 notifyItemRemoved(pendingPosition);
@@ -308,14 +311,14 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                         values.put("done", 1);
                         holder.isDone = true;
                         MyApplication.database.update(DATABASE_NAME, values, "_id='" + holder.taskId + "'", null);
-                        updateListWidget(fragment.getContext());
+                        updateTaskListWidget(fragment.getContext());
                         Toast.makeText(fragment.getContext(), R.string.done_toast, Toast.LENGTH_SHORT).show();
                     } else {
                         // update the task to pending
                         values.put("done", 0);
                         holder.isDone = false;
                         MyApplication.database.update(DATABASE_NAME, values, "_id='" + holder.taskId + "'", null);
-                        updateListWidget(fragment.getContext());
+                        updateTaskListWidget(fragment.getContext());
                         Toast.makeText(fragment.getContext(), R.string.pending_toast, Toast.LENGTH_SHORT).show();
                     }
 
@@ -336,12 +339,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
         final Context context = holder.cardView.getContext();
 
-        holder.taskTitle.setTypeface(Typeface.SERIF);
-        holder.taskTitle.setMaxLines(1);
-        holder.taskDone.setChecked(false);
-        holder.urgency.setVisibility(View.VISIBLE);
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) holder.taskBody.getLayoutParams();
-        layoutParams.removeRule(RelativeLayout.START_OF);
 
         // Reset card background color
         if (selectedItems.contains(holder.getAdapterPosition())) {
@@ -350,17 +348,15 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
             holder.cardView.setCardBackgroundColor(Color.WHITE);
         }
 
-        // if mark as done
+        // if showing done item
         if (showingDone) {
             holder.isDone = true;
-            holder.urgency.setVisibility(View.GONE);
             layoutParams.addRule(RelativeLayout.START_OF, R.id.task_date);
             holder.taskDone.setChecked(true);
             holder.taskTitle.setPaintFlags(holder.taskTitle.getPaintFlags()|STRIKE_THRU_TEXT_FLAG);
             holder.taskTitle.setMaxLines(2);
         } else {
             holder.isDone = false;
-            holder.urgency.setVisibility(View.VISIBLE);
             layoutParams.removeRule(RelativeLayout.START_OF);
             holder.taskDone.setChecked(false);
             holder.taskTitle.setPaintFlags(holder.taskTitle.getPaintFlags() & (~STRIKE_THRU_TEXT_FLAG));
@@ -378,16 +374,21 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                 switch (taskCursor.getInt(2)){
                     case 2:
                         holder.urgency.setText(R.string.asap);
-                        holder.urgency.setTextColor(fragment.getResources().getColor(R.color.highlight));
+                        holder.urgency.setTextColor(fragment.getResources().getColor(R.color.colorPrimary));
+                        holder.urgency.setTypeface(Typeface.DEFAULT_BOLD);
+                        holder.flagIcon.setVisibility(showingDone ?View.GONE :View.VISIBLE);
                         break;
                     case 1:
                         holder.urgency.setText(R.string.important);
-                        holder.urgency.setTextColor(fragment.getResources().getColor(R.color.colorPrimaryDark));
+                        holder.urgency.setTextColor(fragment.getResources().getColor(R.color.darkGrey));
+                        holder.urgency.setTypeface(Typeface.DEFAULT);
+                        holder.flagIcon.setVisibility(showingDone ?View.GONE :View.VISIBLE);
                         break;
                     case 0:
                         holder.urgency.setVisibility(View.GONE);
                         layoutParams.addRule(RelativeLayout.START_OF, R.id.task_date);
                         holder.taskTitle.setMaxLines(2);
+                        holder.flagIcon.setVisibility(View.GONE);
                         break;
                 }
 
@@ -412,6 +413,10 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                         holder.taskTime.setText(R.string.tomorrow);
                     } else {
                         holder.taskTime.setText(DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_DATE));
+                        // Make the time red if the task is expired
+                        if (!showingDone && Calendar.getInstance().getTimeInMillis()>time){
+                            holder.taskTime.setTextColor(fragment.getResources().getColor(R.color.alternative));
+                        } else holder.taskTime.setTextColor(fragment.getResources().getColor(R.color.darkGrey));
                     }
                 } else {
                     holder.taskTime.setText("");

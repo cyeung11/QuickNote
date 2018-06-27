@@ -33,9 +33,10 @@ import static android.content.Context.MODE_PRIVATE;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
 import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
+import static com.jkjk.quicknote.listscreen.NoteListAdapter.isYesterday;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
 
-public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder> {
+public class NoteWidgetAdapter extends RecyclerView.Adapter<NoteWidgetAdapter.ViewHolder> {
 
     private Activity activity;
     private int mAppWidgetId;
@@ -43,7 +44,7 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
     private Cursor cursorForWidget;
 
 
-    WidgetAdapter(Activity activity, int mAppWidgetId){
+    NoteWidgetAdapter(Activity activity, int mAppWidgetId){
         this.activity = activity;
         this.mAppWidgetId = mAppWidgetId;
         //There can only be one widget to be create for each adapter , so create an array with only one widget Id to send back to widget for update
@@ -89,7 +90,7 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
 
     @NonNull
     @Override
-    public WidgetAdapter.ViewHolder onCreateViewHolder(@NonNull final ViewGroup parent, int viewType) {
+    public NoteWidgetAdapter.ViewHolder onCreateViewHolder(@NonNull final ViewGroup parent, int viewType) {
         CardView v = (CardView) LayoutInflater.from(parent.getContext()).inflate(R.layout.card_note_m, parent, false);
         final ViewHolder holder = new ViewHolder(v);
 
@@ -114,9 +115,6 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
                 remoteViews.setTextViewText(R.id.widget_title, cursorForWidget.getString(1));
                 remoteViews.setTextViewText(R.id.widget_content, cursorForWidget.getString(2));
                 remoteViews.setInt(R.id.widget, "setBackgroundColor", color);
-//                if (color != Color.parseColor("#FFFFFF")){
-//                    isAllowedToUse = false;
-//                }
 
                 switch (widgetSize){
                     case "s":
@@ -250,20 +248,4 @@ public class WidgetAdapter extends RecyclerView.Adapter<WidgetAdapter.ViewHolder
                 , null, "event_time DESC");
     }
 
-    private boolean isYesterday(long time) {
-        int currentDayOfYear, currentYear, setTimeDayOfYear, setTimeYear, setTimeMonth, setTimeDay;
-
-        Calendar dateOfSetTime = Calendar.getInstance();
-        Calendar currentTime = Calendar.getInstance();
-        dateOfSetTime.setTimeInMillis(time);
-
-        currentDayOfYear = currentTime.get(Calendar.DAY_OF_YEAR);
-        currentYear = currentTime.get(Calendar.YEAR);
-        setTimeDayOfYear = dateOfSetTime.get(Calendar.DAY_OF_YEAR);
-        setTimeYear = dateOfSetTime.get(Calendar.YEAR);
-        setTimeMonth = dateOfSetTime.get(Calendar.MONTH);
-        setTimeDay = dateOfSetTime.get(Calendar.DAY_OF_MONTH);
-
-        return (currentDayOfYear == 1 && setTimeYear == currentYear - 1 && setTimeMonth == 11 && setTimeDay == 31) || (setTimeDayOfYear == currentDayOfYear - 1 && setTimeYear == currentYear);
-    }
 }

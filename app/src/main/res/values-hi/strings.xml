@@ -3,6 +3,8 @@
     <string name="app_name">A Note &amp; To Do</string>
     <string name="note">टिप्पणी</string>
     <string name="task">चेकलिस्ट</string>
+    <string name="todo_list_widget_label">टिप्पणी</string>
+    <string name="note_list_widget_label">चेकलिस्ट</string>
     <string name="user_interface_cap">इंटरफेस</string>
     <string name="done">किया हुआ</string>
     <string name="saved_note">नोट सहेजा गया</string>
@@ -60,12 +62,12 @@
     <string name="note_deleted_toast">नोट हटा दिया गया</string>
     <string name="task_deleted_toast">चेकलिस्ट हटा दी गई</string>
     <string name="back_up">बैकअप</string>
-    <string name="back_up_summary">भंडारण के लिए बैकअप नोट</string>
+    <string name="back_up_summary">भंडारण के लिए बैकअप</string>
     <string name="permission_required">अनुमति आवश्यक है</string>
     <string name="permission">बैकअप सक्षम करने और फ़ंक्शन को पुनर्स्थापित करने के लिए संग्रहण अनुमति चालू करें।</string>
     <string name="open_settings">सेटिंग्स खोलें</string>
     <string name="restore">पुनर्स्थापित</string>
-    <string name="restore_summary">बैकअप फ़ाइल से नोट्स पुनर्स्थापित करें</string>
+    <string name="restore_summary">बैकअप फ़ाइल से पुनर्स्थापित करें</string>
     <string name="restore_success">पुनर्स्थापित समाप्त हो गया</string>
     <string name="backup_success">बैकअप समाप्त हो गया</string>
     <string name="ok">ठीक</string>
@@ -155,7 +157,8 @@
     <string name="one_hour">1 घंटे</string>
     <string name="twelve_hours">12घ ंटे</string>
     <string name="twenty_four_hour">1 दिन</string>
-
+    <string name="loading">लदान…</string>
+    <string name="urgency">तात्कालिकता</string>
     <string-array name="font_size">
         <item>छोटा</item>
         <item>मध्यम</item>
