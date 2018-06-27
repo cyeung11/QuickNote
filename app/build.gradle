@@ -6,8 +6,8 @@ android {
         applicationId "com.jkjk.quicknote"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 11
-        versionName "1.180623"
+        versionCode 12
+        versionName "1.180627"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -32,6 +32,6 @@ dependencies {
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support:recyclerview-v7:27.1.1'
     implementation 'com.android.support:cardview-v7:27.1.1'
-    implementation 'com.google.android.gms:play-services-ads:15.0.1'
+    implementation 'com.google.android.gms:play-services-base:15.0.1'
 
 }
