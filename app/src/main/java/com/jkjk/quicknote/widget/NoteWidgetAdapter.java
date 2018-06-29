@@ -82,8 +82,8 @@ public class NoteWidgetAdapter extends RecyclerView.Adapter<NoteWidgetAdapter.Vi
         private ViewHolder(CardView card) {
             super(card);
             cardView = card;
-            noteTitle = card.findViewById(R.id.note_title);
-            noteTime = card.findViewById(R.id.note_date);
+            noteTitle = card.findViewById(R.id.item_title);
+            noteTime = card.findViewById(R.id.item_date);
             noteContent = card.findViewById(R.id.note_content);
         }
     }

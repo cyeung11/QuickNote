@@ -23,7 +23,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -66,19 +65,12 @@ public class NoteListAdapter extends ItemListAdapter {
 
 
     class ViewHolder extends ItemListAdapter.ViewHolder {
-        CardView cardView;
-        TextView noteTitle, noteTime, noteContent;
-        ImageView flagIcon;
-        long noteId;
+        TextView noteContent;
         boolean isStarred;
 
         private ViewHolder(CardView card) {
             super(card);
-            cardView = card;
-            noteTitle = card.findViewById(R.id.note_title);
-            noteTime = card.findViewById(R.id.note_date);
             noteContent = card.findViewById(R.id.note_content);
-            flagIcon = card.findViewById(R.id.flag);
         }
     }
 
@@ -133,7 +125,7 @@ public class NoteListAdapter extends ItemListAdapter {
                         }
                     }
 
-                }else fragment.onNoteEdit(holder.noteId);
+                }else fragment.onNoteEdit(holder.itemId);
 
             }
         });
@@ -324,9 +316,9 @@ public class NoteListAdapter extends ItemListAdapter {
             try {
                 itemCursor.moveToPosition(position);
 
-                holder.noteId = itemCursor.getLong(0);
+                holder.itemId = itemCursor.getLong(0);
 
-                holder.noteTitle.setText(itemCursor.getString(1).trim());
+                holder.itemTitle.setText(itemCursor.getString(1).trim());
 
                 holder.noteContent.setText(itemCursor.getString(2).trim());
 
@@ -353,16 +345,16 @@ public class NoteListAdapter extends ItemListAdapter {
                 } else {
                     shownTime = DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_DATE);
                 }
-                holder.noteTime.setText(shownTime);
+                holder.itemTime.setText(shownTime);
 
                 // Show starred note
                 if (itemCursor.getInt(4) == 1) {
                     holder.isStarred = true;
-                    holder.noteTitle.setTypeface(Typeface.SERIF, Typeface.BOLD);
+                    holder.itemTitle.setTypeface(Typeface.SERIF, Typeface.BOLD);
                     holder.flagIcon.setVisibility(View.VISIBLE);
                 }else {
                     holder.isStarred = false;
-                    holder.noteTitle.setTypeface(Typeface.SERIF);
+                    holder.itemTitle.setTypeface(Typeface.SERIF);
                     holder.flagIcon.setVisibility(View.GONE);
                 }
 

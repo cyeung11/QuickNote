@@ -172,7 +172,7 @@ public class ListFragment extends Fragment{
 
                                         // delete task from  selectedItems
                                         ArrayList<Integer> mSelect = taskListAdapter.getSelected();
-                                        Cursor taskCursor = taskListAdapter.getTaskCursor();
+                                        Cursor taskCursor = taskListAdapter.getItemCursor();
                                         for (int removedPosition : mSelect) {
                                             taskCursor.moveToPosition(removedPosition);
                                             String removedId = taskCursor.getString(0);

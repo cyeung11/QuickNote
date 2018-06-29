@@ -78,7 +78,7 @@ public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFact
 
         noteCursor.moveToPosition(i);
 
-        remoteViews.setTextViewText(R.id.note_title, noteCursor.getString(1));
+        remoteViews.setTextViewText(R.id.item_title, noteCursor.getString(1));
 
         remoteViews.setTextViewText(R.id.note_content, noteCursor.getString(2));
 
@@ -104,7 +104,7 @@ public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFact
         } else {
             shownTime = DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_DATE);
         }
-        remoteViews.setTextViewText(R.id.note_date, shownTime);
+        remoteViews.setTextViewText(R.id.item_date, shownTime);
 
         if (noteCursor.getInt(4) == 0){
             remoteViews.setViewVisibility(R.id.flag, View.GONE);

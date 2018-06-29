@@ -34,7 +34,7 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:id="@+id/note_title"
+            android:id="@+id/item_title"
             android:maxLines="1"
             android:layout_weight="1"
             android:textSize="14sp"
@@ -45,7 +45,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/note_date"
+            android:id="@+id/item_date"
             android:maxLines="1"
             android:textSize="12sp"
             android:textColor="@android:color/darker_gray"
