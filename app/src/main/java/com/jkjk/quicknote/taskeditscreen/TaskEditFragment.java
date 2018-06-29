@@ -134,10 +134,10 @@ public class TaskEditFragment extends Fragment {
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(editViewInt, container, false);
-        titleInFragment = view.findViewById(R.id.task_title);
+        titleInFragment = view.findViewById(R.id.item_title);
         remarkInFragment = view.findViewById(R.id.task_remark);
         markAsDoneInFragment = view.findViewById(R.id.task_done);
-        dateInFragment = view.findViewById(R.id.task_date);
+        dateInFragment = view.findViewById(R.id.item_date);
         timeInFragment = view.findViewById(R.id.task_time);
         urgencyInFragment = view.findViewById(R.id.task_urgency);
         timeIcon = view.findViewById(R.id.task_time_icon);

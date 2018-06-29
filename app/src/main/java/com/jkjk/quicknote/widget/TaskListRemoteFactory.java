@@ -114,7 +114,7 @@ public class TaskListRemoteFactory implements RemoteViewsService.RemoteViewsFact
         }
 
         long time = taskCursor.getLong(3);
-        remoteViews.setTextColor(R.id.task_date, context.getResources().getColor(R.color.darkGrey));
+        remoteViews.setTextColor(R.id.item_date, context.getResources().getColor(R.color.darkGrey));
 
         if (time!=DATE_NOT_SET_INDICATOR) {
             if (DateUtils.isToday(time)) {
@@ -127,23 +127,23 @@ public class TaskListRemoteFactory implements RemoteViewsService.RemoteViewsFact
                         && calendar.get(Calendar.MINUTE) ==  TIME_NOT_SET_MINUTE_SECOND_INDICATOR
                         && calendar.get(Calendar.HOUR_OF_DAY) ==  TIME_NOT_SET_HOUR_INDICATOR) {
 
-                    remoteViews.setTextViewText(R.id.task_date, context.getString(R.string.today));
+                    remoteViews.setTextViewText(R.id.item_date, context.getString(R.string.today));
 
-                } else remoteViews.setTextViewText(R.id.task_date, DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_TIME));
+                } else remoteViews.setTextViewText(R.id.item_date, DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_TIME));
 
             } else if (isTomorrow(time)) {
-                remoteViews.setTextViewText(R.id.task_date, context.getString(R.string.tomorrow));
+                remoteViews.setTextViewText(R.id.item_date, context.getString(R.string.tomorrow));
             } else {
-                remoteViews.setTextViewText(R.id.task_date, DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_DATE));
+                remoteViews.setTextViewText(R.id.item_date, DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_DATE));
                 if (Calendar.getInstance().getTimeInMillis()>time){
-                    remoteViews.setTextColor(R.id.task_date, context.getResources().getColor(R.color.alternative));
+                    remoteViews.setTextColor(R.id.item_date, context.getResources().getColor(R.color.alternative));
                 }
             }
         } else {
-            remoteViews.setTextViewText(R.id.task_date, "");
+            remoteViews.setTextViewText(R.id.item_date, "");
         }
 
-        remoteViews.setTextViewText(R.id.task_title, taskCursor.getString(1));
+        remoteViews.setTextViewText(R.id.item_title, taskCursor.getString(1));
 
         Intent openTaskIntent = new Intent();
         openTaskIntent.putExtra(EXTRA_NOTE_ID, taskCursor.getLong(0));

@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.support.v7.preference.PreferenceManager;
 import android.text.format.DateUtils;
 import android.widget.Toast;
 
@@ -174,6 +175,9 @@ public class NotificationHelper extends BroadcastReceiver {
                                 case 0:
                                     itemType = 'N';
                                     break;
+                                case 1:
+                                    itemType = 'T';
+                                    break;
                                 default:
                                     itemType = 'T';
                             }
@@ -183,6 +187,12 @@ public class NotificationHelper extends BroadcastReceiver {
                         } while (cursor.moveToNext());
                         cursor.close();
                     }
+
+                    // Schedule daily update if setting is on
+                    if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.daily_update), false)){
+                        setDailyUpdate(context);
+                    }
+
                     break;
 
                 case ACTION_MARK_AS_DONE:
@@ -199,36 +209,6 @@ public class NotificationHelper extends BroadcastReceiver {
                         }
                     }
                     break;
-//                case ACTION_SNOOZE:
-
-//                    if (intent.hasExtra(EXTRA_NOTE_ID) && (taskId = intent.getLongExtra(EXTRA_NOTE_ID, 98876146L)) != 98876146L) {
-//
-//                        cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title", "type", "event_time", "content"}
-//                                , "_id= " + taskId
-//                                , null, null, null, null);
-//                        if (cursor != null && cursor.moveToFirst()) {
-//                            char itemType;
-//                            switch (cursor.getInt(1)) {
-//                                case 0:
-//                                    itemType = 'N';
-//                                    break;
-//                                default:
-//                                    itemType = 'T';
-//                            }
-//
-//                            // grab preference at snooze duration
-//                            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-//                            long snoozeDuration = Long.valueOf(sharedPref.getString(context.getString(R.string.snooze_duration), "300000"));
-//                            // setReminder(Context context, char itemType, long id, String title, String content, long eventTime, long remindTime)
-//                            AlarmHelper.setReminder(context, itemType, taskId, cursor.getString(0)
-//                                    , cursor.getString(3), cursor.getLong(2), Calendar.getInstance().getTimeInMillis() + snoozeDuration);
-//                            ContentValues values = new ContentValues();
-//                            values.put("reminder_time", Calendar.getInstance().getTimeInMillis() + snoozeDuration);
-//                            MyApplication.database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
-//                            cursor.close();
-//                        }
-//                    }
-//                    break;
 
                 case ACTION_TOOL_BAR: {
                     Intent startNoteActivity = new Intent(context, NoteEdit.class);
@@ -307,7 +287,7 @@ public class NotificationHelper extends BroadcastReceiver {
 
                     notificationManager.notify(TOOL_BAR_NOTIFICATION_ID, notification);
 
-                    AlarmHelper.setNotificationUpdate(context, ACTION_TOOL_BAR, TOOL_BAR_REQUEST_CODE);
+                    AlarmHelper.setDailyUpdate(context, ACTION_TOOL_BAR, TOOL_BAR_REQUEST_CODE);
 
                     break;
                 }
@@ -383,69 +363,71 @@ public class NotificationHelper extends BroadcastReceiver {
                     break;
                 }
                 case ACTION_DAILY_UPDATE: {
-                    AlarmHelper.setNotificationUpdate(context, ACTION_DAILY_UPDATE, DAILY_UPDATE_REQUEST_CODE);
-
-                    // Get task due today
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.set(Calendar.HOUR_OF_DAY, 0);
-                    calendar.set(Calendar.MINUTE, 0);
-                    calendar.set(Calendar.SECOND, 0);
-                    calendar.set(Calendar.MILLISECOND, 0);
-                    long firstSecond = calendar.getTimeInMillis();
-                    calendar.set(Calendar.HOUR_OF_DAY, 23);
-                    calendar.set(Calendar.MINUTE, 59);
-                    calendar.set(Calendar.SECOND, 59);
-                    calendar.set(Calendar.MILLISECOND, 999);
-                    long lastSecond = calendar.getTimeInMillis();
-
-                    cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title"}, "type = 1 AND event_time BETWEEN " + firstSecond + " AND " + lastSecond
-                            , null, null, null, null);
-                    int taskCount = cursor.getCount();
-                    StringBuilder stringBuilder = new StringBuilder();
-                    if (taskCount > 0) {
-                        if (cursor.moveToFirst()) {
-                            do {
-                                stringBuilder.append(cursor.getString(0)).append(", ");
-                            } while (cursor.moveToNext());
-                        }
-                        cursor.close();
-                        stringBuilder.delete(stringBuilder.length() - 2, stringBuilder.length());
-                        // Dont post notification if no task that day
-                    } else break;
-
-                    String notificationTitle = context.getResources().getQuantityString(R.plurals.notification_title, taskCount, taskCount);
-
-                    Intent startTaskActivity = new Intent(context, List.class);
-                    startTaskActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    PendingIntent taskPendingIntent = PendingIntent.getActivity(context, 0, startTaskActivity, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                    Notification.Builder builder;
-                    NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                    if (notificationManager == null){
-                        Toast.makeText(context,R.string.error_reminder,Toast.LENGTH_SHORT).show();
-                        break;
-                    }
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        NotificationChannel notificationChannel = new NotificationChannel(context.getPackageName(), context.getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_DEFAULT);
-                        notificationManager.createNotificationChannel(notificationChannel);
-                        builder = new Notification.Builder(context, context.getPackageName());
-                    } else {
-                        builder = new Notification.Builder(context);
-                        builder.setPriority(Notification.PRIORITY_DEFAULT);
-                    }
-
-
-                    builder.setContentTitle(notificationTitle).setSmallIcon(R.drawable.ic_stat_name)
-                            .setContentIntent(taskPendingIntent).setAutoCancel(false).setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher_round))
-                            .setContentText(stringBuilder.toString());
-
-                    notificationManager.notify(TOOL_BAR_NOTIFICATION_ID, builder.build());
-
+                    setDailyUpdate(context);
                     break;
                 }
             }
         }
+    }
+
+    private void setDailyUpdate(Context context){
+        AlarmHelper.setDailyUpdate(context, ACTION_DAILY_UPDATE, DAILY_UPDATE_REQUEST_CODE);
+
+        // Get task due today
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        long firstSecond = calendar.getTimeInMillis();
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND, 999);
+        long lastSecond = calendar.getTimeInMillis();
+
+        Cursor cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title"}, "type = 1 AND event_time BETWEEN " + firstSecond + " AND " + lastSecond
+                , null, null, null, null);
+        int taskCount = cursor.getCount();
+        StringBuilder stringBuilder = new StringBuilder();
+        if (taskCount > 0) {
+            if (cursor.moveToFirst()) {
+                do {
+                    stringBuilder.append(cursor.getString(0)).append(", ");
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+            stringBuilder.delete(stringBuilder.length() - 2, stringBuilder.length());
+            // Dont post notification if no task that day
+        } else return;
+
+        String notificationTitle = context.getResources().getQuantityString(R.plurals.notification_title, taskCount, taskCount);
+
+        Intent startTaskActivity = new Intent(context, List.class);
+        startTaskActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent taskPendingIntent = PendingIntent.getActivity(context, 0, startTaskActivity, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Notification.Builder builder;
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (notificationManager == null){
+            Toast.makeText(context,R.string.error_reminder,Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel notificationChannel = new NotificationChannel(context.getPackageName(), context.getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_DEFAULT);
+            notificationManager.createNotificationChannel(notificationChannel);
+            builder = new Notification.Builder(context, context.getPackageName());
+        } else {
+            builder = new Notification.Builder(context);
+            builder.setPriority(Notification.PRIORITY_DEFAULT);
+        }
+
+        builder.setContentTitle(notificationTitle).setSmallIcon(R.drawable.ic_stat_name)
+                .setContentIntent(taskPendingIntent).setAutoCancel(false).setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher_round))
+                .setContentText(stringBuilder.toString());
+
+        notificationManager.notify(TOOL_BAR_NOTIFICATION_ID, builder.build());
     }
 
     private boolean isTomorrow(long time) {

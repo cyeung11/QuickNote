@@ -35,18 +35,14 @@ import java.util.Calendar;
 
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 
-public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHolder> {
+public class NoteListAdapter extends ItemListAdapter {
 
     private NoteListFragment fragment;
-    Boolean isInNoteActionMode = false;
-    ActionMode actionMode;
-    private ArrayList<Integer> selectedItems = new ArrayList<>();
-    private Cursor noteCursor;
-    private int itemCount, selectedNotStarred, notStarredCount, cardViewInt;
-
+    private int selectedNotStarred, notStarredCount;
 
     NoteListAdapter(NoteListFragment fragment){
         this.fragment = fragment;
+        selectedItems = new ArrayList<>();
         // Obtain correspond value from preferences to show appropriate size for the card view
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(fragment.getContext());
         String cardViewSize = sharedPref.getString(fragment.getResources().getString(R.string.font_size_main_screen),"m");
@@ -69,7 +65,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
     }
 
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends ItemListAdapter.ViewHolder {
         CardView cardView;
         TextView noteTitle, noteTime, noteContent;
         ImageView flagIcon;
@@ -86,8 +82,9 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
         }
     }
 
+    @NonNull
     @Override
-    public NoteListAdapter.ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
+    public NoteListAdapter.ViewHolder onCreateViewHolder(@NonNull final ViewGroup parent, int viewType) {
 
         CardView v = (CardView) LayoutInflater.from(parent.getContext()).inflate(cardViewInt, parent, false);
         final ViewHolder holder = new ViewHolder(v);
@@ -98,7 +95,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
             public void onClick(View view) {
 
                 //Multi-select
-                if (isInNoteActionMode) {
+                if (isInActionMode) {
                     int clickPosition = holder.getAdapterPosition();
                     MenuItem selectAll = actionMode.getMenu().findItem(R.id.select_all);
                     MenuItem starred = actionMode.getMenu().findItem(R.id.starred);
@@ -158,7 +155,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
                             MenuInflater inflater = mode.getMenuInflater();
                             inflater.inflate(R.menu.note_action_mode, menu);
-                            isInNoteActionMode = true;
+                            isInActionMode = true;
 
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                 fragment.getActivity().getWindow().setStatusBarColor(Color.DKGRAY);
@@ -236,8 +233,8 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                                             // When all selected notes are starred, un-starred them
                                             values.put("starred", 0);
                                             for (int unstarredPosition : selectedItems) {
-                                                noteCursor.moveToPosition(unstarredPosition);
-                                                String unstarredId = noteCursor.getString(0);
+                                                itemCursor.moveToPosition(unstarredPosition);
+                                                String unstarredId = itemCursor.getString(0);
 
                                                 //Update
                                                 MyApplication.database.update(DATABASE_NAME, values, "_id='" + unstarredId + "'", null);
@@ -255,8 +252,8 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                                             values.put("starred", 1);
 
                                             for (int starredPosition : selectedItems) {
-                                                noteCursor.moveToPosition(starredPosition);
-                                                String starredId = noteCursor.getString(0);
+                                                itemCursor.moveToPosition(starredPosition);
+                                                String starredId = itemCursor.getString(0);
 
                                                 //Update
                                                 MyApplication.database.update(DATABASE_NAME, values, "_id='" + starredId + "'", null);
@@ -283,7 +280,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                         public void onDestroyActionMode(ActionMode mode) {
                             notifyDataSetChanged();
                             actionMode = null;
-                            isInNoteActionMode = false;
+                            isInActionMode = false;
                             selectedItems.clear();
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
                                 addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.pencil));
@@ -306,14 +303,13 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-        //Obtain all data from database provided from Application class and get count
-        itemCount = noteCursor.getCount();
-        return itemCount;
+        return super.getItemCount();
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ItemListAdapter.ViewHolder viewHolder, int position) {
 
+        ViewHolder holder = (ViewHolder)viewHolder;
         final Context context = holder.cardView.getContext();
 
         // Reset card background color
@@ -323,19 +319,19 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
             holder.cardView.setCardBackgroundColor(Color.WHITE);
         }
 
-        //Extract data from noteCursor
-        if (noteCursor != null) {
+        //Extract data from itemCursor
+        if (itemCursor != null) {
             try {
-                noteCursor.moveToPosition(position);
+                itemCursor.moveToPosition(position);
 
-                holder.noteId = noteCursor.getLong(0);
+                holder.noteId = itemCursor.getLong(0);
 
-                holder.noteTitle.setText(noteCursor.getString(1).trim());
+                holder.noteTitle.setText(itemCursor.getString(1).trim());
 
-                holder.noteContent.setText(noteCursor.getString(2).trim());
+                holder.noteContent.setText(itemCursor.getString(2).trim());
 
                 //Time formatting
-                long time = noteCursor.getLong(3);
+                long time = itemCursor.getLong(3);
                 String shownTime;
                 // Get current time from Calendar and check how long ago was the note edited
                 long timeSpan = Calendar.getInstance().getTimeInMillis() - time;
@@ -360,7 +356,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
                 holder.noteTime.setText(shownTime);
 
                 // Show starred note
-                if (noteCursor.getInt(4) == 1) {
+                if (itemCursor.getInt(4) == 1) {
                     holder.isStarred = true;
                     holder.noteTitle.setTypeface(Typeface.SERIF, Typeface.BOLD);
                     holder.flagIcon.setVisibility(View.VISIBLE);
@@ -381,48 +377,24 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.ViewHo
     @Override
     public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onDetachedFromRecyclerView(recyclerView);
-        noteCursor.close();
+        itemCursor.close();
     }
 
-    public static boolean isYesterday(long time) {
-        int currentDayOfYear, currentYear, setTimeDayOfYear, setTimeYear, setTimeMonth, setTimeDay;
-
-        Calendar setTime = Calendar.getInstance();
-        Calendar currentTime = Calendar.getInstance();
-        setTime.setTimeInMillis(time);
-
-        currentDayOfYear = currentTime.get(Calendar.DAY_OF_YEAR);
-        currentYear = currentTime.get(Calendar.YEAR);
-        setTimeDayOfYear = setTime.get(Calendar.DAY_OF_YEAR);
-        setTimeYear = setTime.get(Calendar.YEAR);
-        setTimeMonth = setTime.get(Calendar.MONTH);
-        setTimeDay = setTime.get(Calendar.DAY_OF_MONTH);
-
-        return (setTimeDayOfYear == currentDayOfYear - 1 && setTimeYear == currentYear) || (currentDayOfYear == 1 && setTimeYear == currentYear - 1 && setTimeMonth == 11 && setTimeDay == 31) ;
-    }
-
-
-    ArrayList<Integer> getSelected (){
-        return selectedItems;
-    }
-
+    @Override
     public void updateCursor(){
-        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"},  "type = 0", null, null
+        itemCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"},  "type = 0", null, null
                 , null, "event_time DESC");
     }
 
+    @Override
     public void updateCursorForSearch(String result){
-        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "_id in ("+result+") AND type = 0", null, null
+        itemCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "_id in ("+result+") AND type = 0", null, null
                 , null, "event_time DESC");
     }
 
     public void updateCursorForStarred(){
-        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "starred = 1 AND type = 0", null, null
+        itemCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "starred = 1 AND type = 0", null, null
                 , null, "event_time DESC");
-    }
-
-    Cursor getNoteCursor(){
-        return noteCursor;
     }
 
 

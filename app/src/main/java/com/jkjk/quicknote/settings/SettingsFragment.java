@@ -321,7 +321,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                 if (notificationManager != null) {
                     notificationManager.cancel(TOOL_BAR_NOTIFICATION_ID);
                 }
-                AlarmHelper.cancelNotificationUpdate(getContext(), ACTION_TOOL_BAR, TOOL_BAR_REQUEST_CODE);
+                AlarmHelper.cancelDailyUpdate(getContext(), ACTION_TOOL_BAR, TOOL_BAR_REQUEST_CODE);
             }
 
         } else if  (key.equals(getString(R.string.daily_update))){
@@ -335,7 +335,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                     e.printStackTrace();
                 }
             } else {
-                AlarmHelper.cancelNotificationUpdate(getContext(), ACTION_DAILY_UPDATE, DAILY_UPDATE_REQUEST_CODE);
+                AlarmHelper.cancelDailyUpdate(getContext(), ACTION_DAILY_UPDATE, DAILY_UPDATE_REQUEST_CODE);
             }
         }
     }

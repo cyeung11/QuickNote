@@ -139,7 +139,7 @@ public class ListFragment extends Fragment{
             public void onClick(View view) {
 
                 // button served as delete function
-                if (noteListFragment.getNoteListAdapter().isInNoteActionMode || taskListFragment.getTaskListAdapter().isInTaskActionMode){
+                if (noteListFragment.getNoteListAdapter().isInActionMode || taskListFragment.getTaskListAdapter().isInActionMode){
                     new AlertDialog.Builder(view.getContext()).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete_list)
                             .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
                                 @Override
@@ -150,7 +150,7 @@ public class ListFragment extends Fragment{
 
                                         // delete note from  selectedItems
                                         ArrayList<Integer> mSelect = noteListAdapter.getSelected();
-                                        Cursor noteCursor = noteListAdapter.getNoteCursor();
+                                        Cursor noteCursor = noteListAdapter.getItemCursor();
                                         for (int removedPosition : mSelect) {
                                             noteCursor.moveToPosition(removedPosition);
                                             String removedId = noteCursor.getString(0);

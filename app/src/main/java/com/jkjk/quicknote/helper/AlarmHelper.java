@@ -74,7 +74,7 @@ public class AlarmHelper {
         }
     }
 
-    public static void setNotificationUpdate(Context context, String action, int requestCode){
+    public static void setDailyUpdate(Context context, String action, int requestCode){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, NotificationHelper.class);
         intent.setAction(action);
@@ -100,7 +100,7 @@ public class AlarmHelper {
         } else Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
     }
 
-    public static void cancelNotificationUpdate(Context context, String action, int requestCode){
+    public static void cancelDailyUpdate(Context context, String action, int requestCode){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, NotificationHelper.class);
         intent.setAction(action);

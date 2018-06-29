@@ -27,7 +27,7 @@
 
 
                 <EditText
-                    android:id="@+id/task_title"
+                    android:id="@+id/item_title"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -117,7 +117,7 @@
                     android:layout_marginEnd="4dp"/>
 
                 <TextView
-                    android:id="@+id/task_date"
+                    android:id="@+id/item_date"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
