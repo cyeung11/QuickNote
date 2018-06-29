@@ -48,7 +48,7 @@ public class ListFragment extends Fragment{
 //    public static final String REWARD_VIDEO_AD_ID = "ca-app-pub-8833570917041672/9209453063";
 //    public static final String ADMOB_ID = "ca-app-pub-8833570917041672~2236425579";
     // 0 stands for note , 1 stands for task
-    private boolean defaultPage;
+    boolean defaultPageIsTask;
     private char currentPage;
     private boolean showingStarred = false, sortingBytime, byUrgencyByDefault;
 
@@ -78,11 +78,11 @@ public class ListFragment extends Fragment{
         ((AppCompatActivity) getActivity()).setSupportActionBar(listMenu);
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
-        defaultPage = sharedPref.getBoolean(getString(R.string.default_screen), false);
+        defaultPageIsTask = sharedPref.getBoolean(getString(R.string.default_screen), false);
         byUrgencyByDefault = sharedPref.getBoolean(getString(R.string.change_default_sorting), false);
         sortingBytime = !byUrgencyByDefault;
 
-        if (defaultPage) {
+        if (defaultPageIsTask) {
             currentPage = 'T';
             ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.task);
         } else {
@@ -98,64 +98,32 @@ public class ListFragment extends Fragment{
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
             }
 
             @Override
             public void onPageSelected(int position) {
-                if (noteListFragment.getNoteListAdapter().actionMode !=null) {
-                    noteListFragment.getNoteListAdapter().actionMode.finish();
+                NoteListAdapter noteListAdapter = noteListFragment.getNoteListAdapter();
+                TaskListAdapter taskListAdapter = taskListFragment.getTaskListAdapter();
+                if (noteListAdapter.actionMode !=null) {
+                    noteListAdapter.actionMode.finish();
                 }
-                if (taskListFragment.getTaskListAdapter().actionMode !=null) {
-                    taskListFragment.getTaskListAdapter().actionMode.finish();
+                if (taskListAdapter.actionMode !=null) {
+                    taskListAdapter.actionMode.finish();
                 }
 
                 // if default page is note, position 0 will be note, so current page is 0
-                if (!defaultPage) {
-                    if (position==0) {
-                        currentPage = 'N';
-                        if (showStarred!=null) {
-                            showStarred.setVisible(true);
-                            showDone.setVisible(false);
-                            sortBy.setVisible(false);
-                            switchTab.setTitle(R.string.switch_task);
-                        }
-                        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.note);
-                    } else {
-                        currentPage = 'T';
-                        if (showStarred!=null) {
-                            showStarred.setVisible(false);
-                            showDone.setVisible(true);
-                            sortBy.setVisible(true);
-                            switchTab.setTitle(R.string.switch_note);
-                        }
-                        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.task);
-                    }
-                    // if default page is task, position 0 will be task, so current page is 1
-                } else if (position==0){
-                    currentPage = 'T';
-                    if (showStarred!=null) {
-                        showStarred.setVisible(false);
-                        showDone.setVisible(true);
-                        sortBy.setVisible(true);
-                        switchTab.setTitle(R.string.switch_note);
-                    }
-                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.task);
+                // if default page is task, position 0 will be task, so current page is 1
+                if (position==0) {
+                    currentPage = defaultPageIsTask ?'T' :'N';
                 } else if (position==1){
-                    currentPage = 'N';
-                    if (showStarred!=null) {
-                        showStarred.setVisible(true);
-                        showDone.setVisible(false);
-                        sortBy.setVisible(false);
-                        switchTab.setTitle(R.string.switch_task);
-                    }
-                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.note);
+                    currentPage = defaultPageIsTask ?'N' :'T';
                 }
+                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(currentPage == 'N' ?R.string.note :R.string.task);
+                setMenuItemForPage(currentPage == 'N');
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {
-
             }
         });
 
@@ -256,15 +224,7 @@ public class ListFragment extends Fragment{
         showDone = menu.findItem(R.id.show_done);
         switchTab = menu.findItem(R.id.switch_tab);
 
-        if (currentPage=='N'){
-            sortBy.setVisible(false);
-            showDone.setVisible(false);
-            showStarred.setVisible(true);
-        } else if (currentPage=='T'){
-            sortBy.setVisible(true);
-            showDone.setVisible(true);
-            showStarred.setVisible(false);
-        }
+        setMenuItemForPage(currentPage=='N');
 
         settings.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
@@ -301,28 +261,19 @@ public class ListFragment extends Fragment{
                 if (!result.equals("")) {
                     noteListAdapter.updateCursorForSearch(result);
                     taskListAdapter.updateCursorForSearch(result);
-                    noteListFragment.recyclerView.setVisibility(View.VISIBLE);
-                    noteListFragment.notFoundTextView.setVisibility(View.INVISIBLE);
-                    taskListFragment.recyclerView.setVisibility(View.VISIBLE);
-                    taskListFragment.notFoundTextView.setVisibility(View.INVISIBLE);
+                    toggleNotResultView(false);
                     noteListAdapter.notifyDataSetChanged();
                     taskListAdapter.notifyDataSetChanged();
 
                 } else if (!newText.equals("")) {
                     //If search result is empty and the search input is not empty, show result not found
-                    noteListFragment.recyclerView.setVisibility(View.INVISIBLE);
-                    noteListFragment.notFoundTextView.setVisibility(View.VISIBLE);
-                    taskListFragment.recyclerView.setVisibility(View.INVISIBLE);
-                    taskListFragment.notFoundTextView.setVisibility(View.VISIBLE);
+                    toggleNotResultView(true);
 
                 } else {
                     //after finish searching and user empty the search input, reset the view
                     noteListAdapter.updateCursor();
                     taskListAdapter.updateCursor();
-                    noteListFragment.recyclerView.setVisibility(View.VISIBLE);
-                    noteListFragment.notFoundTextView.setVisibility(View.INVISIBLE);
-                    taskListFragment.recyclerView.setVisibility(View.VISIBLE);
-                    taskListFragment.notFoundTextView.setVisibility(View.INVISIBLE);
+                    toggleNotResultView(false);
                     noteListAdapter.notifyDataSetChanged();
                     taskListAdapter.notifyDataSetChanged();
                 }
@@ -385,7 +336,6 @@ public class ListFragment extends Fragment{
                 if (!showingStarred) {
                     // to show only starred notes
                     showingStarred = true;
-//                    showStarred.setIcon(R.drawable.baseline_star_24);
                     showStarred.setTitle(R.string.show_all_note);
 
                     noteListAdapter.updateCursorForStarred();
@@ -393,7 +343,6 @@ public class ListFragment extends Fragment{
                 } else {
                     // to show all notes
                     showingStarred = false;
-//                    showStarred.setIcon(R.drawable.sharp_star_border_24);
                     showStarred.setTitle(R.string.show_starred);
 
                     noteListAdapter.updateCursor();
@@ -463,26 +412,19 @@ public class ListFragment extends Fragment{
             }
         });
 
-        switchTab.setTitle(R.string.switch_note);
         switchTab.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
 
                 if (currentPage == 'N'){
-                    if (!defaultPage) {
-                        viewPager.setCurrentItem(1, true);
-                    } else {
-                        viewPager.setCurrentItem(0, true);
-                    }
-                    switchTab.setTitle(R.string.switch_note);
+                    viewPager.setCurrentItem(defaultPageIsTask ?0 :1, true);
 
                 } else if (currentPage == 'T'){
-                    if (!defaultPage) {
+                    if (!defaultPageIsTask) {
                         viewPager.setCurrentItem(0, true);
                     } else {
                         viewPager.setCurrentItem(1, true);
                     }
-                    switchTab.setTitle(R.string.switch_task);
                 }
                 return true;
             }
@@ -493,24 +435,13 @@ public class ListFragment extends Fragment{
     @Override
     public void onResume() {
         super.onResume();
-        if (sortBy != null) {
-            if (currentPage == 'N') {
-                sortBy.setVisible(false);
-                showDone.setVisible(false);
-                showStarred.setVisible(true);
-            } else if (currentPage == 'T') {
-                sortBy.setVisible(true);
-                showDone.setVisible(true);
-                showStarred.setVisible(false);
-            }
-        }
+        setMenuItemForPage(currentPage=='N');
     }
 
     @Override
     public void onStop() {
         // Clear all filter
         search.collapseActionView();
-//        showStarred.setIcon(R.drawable.sharp_star_border_24);
         showStarred.setTitle(R.string.show_starred);
         showingStarred = false;
         showDone.setTitle(R.string.show_done);
@@ -525,6 +456,21 @@ public class ListFragment extends Fragment{
         super.onStop();
     }
 
+    private void toggleNotResultView (boolean on){
+        noteListFragment.recyclerView.setVisibility(on ?View.INVISIBLE :View.VISIBLE);
+        noteListFragment.notFoundTextView.setVisibility(on ?View.VISIBLE :View.INVISIBLE);
+        taskListFragment.recyclerView.setVisibility(on ?View.INVISIBLE :View.VISIBLE);
+        taskListFragment.notFoundTextView.setVisibility(on ?View.VISIBLE :View.INVISIBLE);
+    }
+
+    private void setMenuItemForPage (boolean currentPageIsNote){
+        if (showStarred!=null && showDone!=null && sortBy!=null && switchTab!=null) {
+            showStarred.setVisible(currentPageIsNote);
+            showDone.setVisible(!currentPageIsNote);
+            sortBy.setVisible(!currentPageIsNote);
+            switchTab.setTitle(currentPageIsNote ?R.string.switch_task :R.string.switch_note);
+        }
+    }
 
     void updateNoteListFragment(String tag) {
         noteListFragment = (NoteListFragment)getChildFragmentManager().findFragmentByTag(tag);

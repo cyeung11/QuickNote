@@ -395,8 +395,14 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                 long time = taskCursor.getLong(3);
 
                 if (time!=DATE_NOT_SET_INDICATOR) {
+
+                    // Make the time red if the task is expired
+                    Calendar calendar = Calendar.getInstance();
+                    if (!showingDone && calendar.getTimeInMillis()>time){
+                        holder.taskTime.setTextColor(fragment.getResources().getColor(R.color.alternative));
+                    } else holder.taskTime.setTextColor(fragment.getResources().getColor(R.color.darkGrey));
+
                     if (DateUtils.isToday(time)) {
-                        Calendar calendar = Calendar.getInstance();
                         calendar.setTimeInMillis(time);
 
                         //get the time to see if the time was set by user
@@ -413,10 +419,6 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                         holder.taskTime.setText(R.string.tomorrow);
                     } else {
                         holder.taskTime.setText(DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_DATE));
-                        // Make the time red if the task is expired
-                        if (!showingDone && Calendar.getInstance().getTimeInMillis()>time){
-                            holder.taskTime.setTextColor(fragment.getResources().getColor(R.color.alternative));
-                        } else holder.taskTime.setTextColor(fragment.getResources().getColor(R.color.darkGrey));
                     }
                 } else {
                     holder.taskTime.setText("");

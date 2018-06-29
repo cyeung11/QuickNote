@@ -14,14 +14,14 @@ import com.jkjk.quicknote.R;
 public class ListPageAdapter extends FragmentPagerAdapter {
 
     private Context context;
-    private boolean defaultScreen;
+    private boolean defaultScreenIsTask;
 
     ListPageAdapter(Context context, FragmentManager fragmentManager){
         super(fragmentManager);
         this.context = context;
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        defaultScreen = sharedPref.getBoolean(context.getString(R.string.default_screen), false);
+        defaultScreenIsTask = sharedPref.getBoolean(context.getString(R.string.default_screen), false);
     }
 
     @Nullable
@@ -29,11 +29,9 @@ public class ListPageAdapter extends FragmentPagerAdapter {
     public CharSequence getPageTitle(int position) {
         switch (position) {
             case 0:
-                if (defaultScreen) return context.getString(R.string.task);
-                else return context.getString(R.string.note);
+                return context.getString(defaultScreenIsTask ?R.string.task :R.string.note);
             case 1:
-                if (defaultScreen) return context.getString(R.string.note);
-                else return context.getString(R.string.task);
+                return context.getString(defaultScreenIsTask ?R.string.note :R.string.task);
             default:
                 return null;
         }
@@ -43,11 +41,9 @@ public class ListPageAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         switch (position){
             case 0:
-                if (defaultScreen) return new TaskListFragment();
-                else return new NoteListFragment();
+                return defaultScreenIsTask ?new TaskListFragment() :new NoteListFragment();
             case 1:
-                if (defaultScreen) return new NoteListFragment();
-                else return new TaskListFragment();
+                return defaultScreenIsTask ?new NoteListFragment() :new TaskListFragment();
             default:
                 return null;
         }

@@ -351,7 +351,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         @Override
         protected Boolean doInBackground(Uri... uris) {
-            return restore(contextReference, uris[0]);
+            return restoreWithResult(contextReference, uris[0]);
         }
 
         @Override
@@ -361,10 +361,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     }
 
 
-    private static boolean restore(WeakReference<Context> contextWeakReference, Uri uri){
+    private static boolean restoreWithResult(WeakReference<Context> contextWeakReference, Uri uri){
         File dataPath = Environment.getDataDirectory();
         Context context = contextWeakReference.get();
-        if (context==null)return false;
+        if (context==null) return false;
 
         String verifyPath = "//data//"+context.getPackageName()+"//databases//verify_db";
         File verifydb = new File(dataPath, verifyPath);
@@ -374,7 +374,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             FileInputStream fileInputStream = new FileInputStream(pfd.getFileDescriptor());
 
 
-            // Verify integrity of  restore file
+            // Verify integrity of  restoreWithResult file
             FileOutputStream verifyOutputStream = new FileOutputStream(verifydb);
 
             byte[] verifyBuffer = new byte[1024];
@@ -413,7 +413,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                 fileInputStream.close();
                 fileOutputStream.close();
                 pfd.close();
-                SQLiteDatabase.deleteDatabase(verifydb);
                 verifyCursor.close();
                 helper.close();
 
@@ -431,10 +430,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                 return true;
 
             } else {
-                //verification fail. Give up restore
+                //verification fail. Give up restoreWithResult
                 fileInputStream.close();
                 pfd.close();
-                SQLiteDatabase.deleteDatabase(verifydb);
                 verifyCursor.close();
                 helper.close();
 

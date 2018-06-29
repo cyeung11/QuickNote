@@ -9,16 +9,18 @@ import java.util.ArrayList;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 
 public class SearchHelper {
-
+/* A helper that search through the database with the search text provided. Content and title are included in the search.
+After querying the database, the helper convert the 2 array lists that included the search text into a unique result in string
+*/
 
     public String searchResult(String searchText){
-        ArrayList <String> temp = new ArrayList<>();
+        ArrayList <String> result = new ArrayList<>();
 
         //Search if title column has search string
         Cursor title = searchTitle(searchText);
         if (title!=null && title.moveToFirst()){
             do{
-                temp.add(title.getString(0));
+                result.add(title.getString(0));
             }while (title.moveToNext());
         }
 
@@ -28,16 +30,16 @@ public class SearchHelper {
             do{
                 String id = content.getString(0);
                 //Exclude duplicate
-                if (!temp.contains(id)){
-                    temp.add(id);
+                if (!result.contains(id)){
+                    result.add(id);
                 }
             }while (content.moveToNext());
         }
 
-        //Convert to array
+        //Convert array list to string to SQL query
         StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < temp.size(); i++){
-            stringBuilder.append(temp.get(i)).append(",");
+        for (String resultId : result){
+            stringBuilder.append(resultId).append(",");
         }
         if (stringBuilder.length() > 0) {
             stringBuilder.delete(stringBuilder.length()-1, stringBuilder.length() + 1);
@@ -49,7 +51,7 @@ public class SearchHelper {
         Cursor cursor;
         // if no search input, avoid doing I/O
         if (inputText.length()>0) {
-            cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title"}, "title LIKE '%" + inputText + "%'", null, null
+            cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id"}, "title LIKE '%" + inputText + "%'", null, null
                     , null, null);
         }else cursor = null;
         return cursor;
@@ -58,7 +60,7 @@ public class SearchHelper {
     private Cursor searchContent(String inputText){
         Cursor cursor;
         if (inputText.length()>0) {
-            cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "content"}, "content LIKE '%"+inputText+"%'", null, null
+            cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id"}, "content LIKE '%"+inputText+"%'", null, null
                     , null, null);
         }else cursor = null;
         return cursor;

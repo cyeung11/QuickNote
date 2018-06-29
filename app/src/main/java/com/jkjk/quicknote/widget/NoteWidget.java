@@ -33,16 +33,16 @@ public class NoteWidget extends AppWidgetProvider {
 
         //Weird case: onUpdate called before configuration finish. thus generating exception.
         // Add checking to see if the widget is newly created. If so, id will not send to widget service to prevent calling onUpdate before user selected note
-        ArrayList <Integer> checking = new ArrayList<>();
+        ArrayList <Integer> checkedIds = new ArrayList<>();
         for (int appWidgetId : appWidgetIds) {
 
             if (idPref.contains(Integer.toString(appWidgetId))) {
-                checking.add(appWidgetId);
+                checkedIds.add(appWidgetId);
             }
         }
-        int [] resultId = new int [checking.size()];
+        int [] resultId = new int [checkedIds.size()];
         for (int i = 0 ; i < resultId.length; i++){
-            resultId[i] = checking.get(i);
+            resultId[i] = checkedIds.get(i);
         }
 
         Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, resultId)
