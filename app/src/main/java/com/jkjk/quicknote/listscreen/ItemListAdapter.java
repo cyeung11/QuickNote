@@ -1,6 +1,7 @@
 package com.jkjk.quicknote.listscreen;
 
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -15,20 +16,21 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 public abstract class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
-    Cursor itemCursor;
+    protected Cursor itemCursor;
     boolean isInActionMode = false;
     ActionMode actionMode;
-    int cardViewInt;
+    protected int cardViewInt;
     ArrayList<Integer> selectedItems;
     int itemCount;
+    protected SQLiteDatabase database;
 
-    abstract class ViewHolder extends RecyclerView.ViewHolder{
-        CardView cardView;
-        long itemId;
-        TextView itemTitle, itemTime;
-        ImageView flagIcon;
+    protected abstract class ViewHolder extends RecyclerView.ViewHolder{
+        public CardView cardView;
+        public long itemId;
+        public TextView itemTitle, itemTime;
+        public ImageView flagIcon;
 
-        ViewHolder(CardView card){
+        protected ViewHolder(CardView card){
             super(card);
             cardView = card;
             itemTitle = card.findViewById(R.id.item_title);

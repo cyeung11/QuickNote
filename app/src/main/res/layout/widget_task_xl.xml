@@ -50,6 +50,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/item_title"
             android:maxLines="1"
+            android:ellipsize="end"
             android:textSize="24sp"
             android:fontFamily="serif"
             android:textColor="@android:color/black"/>

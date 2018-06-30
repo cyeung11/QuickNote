@@ -52,6 +52,7 @@
             android:maxLines="1"
             android:textSize="16sp"
             android:fontFamily="serif"
+            android:ellipsize="end"
             android:textColor="@android:color/black"/>
 
     </LinearLayout>

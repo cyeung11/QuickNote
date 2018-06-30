@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
@@ -54,9 +55,8 @@ public class NoteEditFragment extends Fragment {
     private static final String NOTE_ID = "noteId";
     public final static String EXTRA_NOTE_ID = "extraNoteId";
     public final static long DEFAULT_NOTE_ID = 999999999L;
-
+    private SQLiteDatabase database;
     boolean hasNoteSave = false;
-
     private long noteId;
     private EditText titleInFragment, contentInFragment;
     private boolean newNote;
@@ -70,7 +70,11 @@ public class NoteEditFragment extends Fragment {
         // Required empty public constructor
     }
 
-
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        database = ((MyApplication)getActivity().getApplication()).database;
+    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -125,7 +129,7 @@ public class NoteEditFragment extends Fragment {
         //read data from database and attach them into the fragment
         if (!newNote) {
             try {
-                Cursor noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title", "content", "starred"}, "_id= " + noteId ,
+                Cursor noteCursor = database.query(DATABASE_NAME, new String[]{"title", "content", "starred"}, "_id= " + noteId ,
                       null, null, null, null, null);
                 noteCursor.moveToFirst();
                 titleInFragment.setText(noteCursor.getString(0));
@@ -188,20 +192,20 @@ public class NoteEditFragment extends Fragment {
                                     values.put("content", contentInFragment.getText().toString());
                                     values.put("event_time", Calendar.getInstance().getTimeInMillis());
                                     values.put("starred", isStarred);
-                                    noteId = MyApplication.database.insert(DATABASE_NAME, "",values);
+                                    noteId = database.insert(DATABASE_NAME, "",values);
                                     newNote = false;
                                     Toast.makeText(getContext(), R.string.saved_starred_toast, Toast.LENGTH_SHORT).show();
                                 } else if (isStarred == 1){
                                     // Unstarred
                                     isStarred = 0;
                                     values.put("starred", isStarred);
-                                    MyApplication.database.update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
+                                    database.update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
                                     Toast.makeText(getContext(), R.string.unstarred_toast, Toast.LENGTH_SHORT).show();
                                 } else {
                                     // Star
                                     isStarred = 1;
                                     values.put("starred", isStarred);
-                                    MyApplication.database.update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
+                                    database.update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
                                     Toast.makeText(getContext(), R.string.starred_toast, Toast.LENGTH_SHORT).show();
                                 }
                                 return true;
@@ -213,7 +217,7 @@ public class NoteEditFragment extends Fragment {
                                             @Override
                                             public void onClick(DialogInterface dialogInterface, int i) {
                                                 if (!newNote) {
-                                                    MyApplication.database.delete(DATABASE_NAME, "_id='" + noteId + "'", null);
+                                                    database.delete(DATABASE_NAME, "_id='" + noteId + "'", null);
                                                     updateNoteListWidget(getContext());
                                                 }
                                                     // No need to do saving
@@ -318,7 +322,7 @@ public class NoteEditFragment extends Fragment {
         values.put("type", 0);
 
         if (!newNote) {
-            MyApplication.database.update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
+            ((MyApplication)getActivity().getApplication()).database.update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
             // to update pinned notification if there is any, api 23 up exclusive
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if(isItemAnActiveNotification()){
@@ -326,7 +330,7 @@ public class NoteEditFragment extends Fragment {
                 }
             }
         }else {
-            noteId = MyApplication.database.insert(DATABASE_NAME, "",values);
+            noteId = database.insert(DATABASE_NAME, "",values);
         }
         values.clear();
 

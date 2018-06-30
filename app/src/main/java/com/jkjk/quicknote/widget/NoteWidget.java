@@ -7,9 +7,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 
 import java.util.ArrayList;
@@ -28,6 +30,8 @@ public class NoteWidget extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
 
+        SQLiteDatabase database = ((MyApplication)context.getApplicationContext()).database;
+
         // There may be multiple widgets active, so update all of them
         SharedPreferences idPref = context.getSharedPreferences("widget_id", MODE_PRIVATE);
 
@@ -40,12 +44,12 @@ public class NoteWidget extends AppWidgetProvider {
                 checkedIds.add(appWidgetId);
             }
         }
-        int [] resultId = new int [checkedIds.size()];
-        for (int i = 0 ; i < resultId.length; i++){
-            resultId[i] = checkedIds.get(i);
+        int [] resultIds = new int [checkedIds.size()];
+        for (int i = 0 ; i < resultIds.length; i++){
+            resultIds[i] = checkedIds.get(i);
         }
 
-        Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, resultId)
+        Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, resultIds)
                 .putExtra(EXTRA_APPWIDGET_PROVIDER, new ComponentName(context, NoteWidget.class));
         PendingIntent pendingIntent = PendingIntent.getService(context, NOTE_WIDGET_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         try {

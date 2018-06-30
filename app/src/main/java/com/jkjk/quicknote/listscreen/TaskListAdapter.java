@@ -53,6 +53,7 @@ public class TaskListAdapter extends ItemListAdapter {
 
     TaskListAdapter(TaskListFragment fragment){
         this.fragment = fragment;
+        database = ((MyApplication)fragment.getActivity().getApplication()).database;
         selectedItems = new ArrayList<>();
         // Obtain correspond value from preferences to show appropriate size for the card view
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(fragment.getContext());
@@ -175,7 +176,7 @@ public class TaskListAdapter extends ItemListAdapter {
                             addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.alternative)));
 
                             // Get item count of pending tasks
-                            Cursor checkPendingCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id"}, "done=0 AND type=1", null, null
+                            Cursor checkPendingCursor = database.query(DATABASE_NAME, new String[]{"_id"}, "done=0 AND type=1", null, null
                                     , null, null);
                             checkPendingCursor.close();
 
@@ -223,7 +224,7 @@ public class TaskListAdapter extends ItemListAdapter {
                                                 itemCursor.moveToPosition(pendingPosition);
                                                 String pendingId = itemCursor.getString(0);
                                                 //Update to pending
-                                                MyApplication.database.update(DATABASE_NAME, values, "_id='" + pendingId + "'", null);
+                                                database.update(DATABASE_NAME, values, "_id='" + pendingId + "'", null);
                                             }
 
                                             updateTaskListWidget(fragment.getContext());
@@ -242,7 +243,7 @@ public class TaskListAdapter extends ItemListAdapter {
                                                 String doneId = itemCursor.getString(0);
 
                                                 //Update to done
-                                                MyApplication.database.update(DATABASE_NAME, values, "_id='" + doneId + "'", null);
+                                                database.update(DATABASE_NAME, values, "_id='" + doneId + "'", null);
                                             }
 
                                             updateTaskListWidget(fragment.getContext());
@@ -298,14 +299,14 @@ public class TaskListAdapter extends ItemListAdapter {
                         // update the task to done
                         values.put("done", 1);
                         holder.isDone = true;
-                        MyApplication.database.update(DATABASE_NAME, values, "_id='" + holder.itemId + "'", null);
+                        database.update(DATABASE_NAME, values, "_id='" + holder.itemId + "'", null);
                         updateTaskListWidget(fragment.getContext());
                         Toast.makeText(fragment.getContext(), R.string.done_toast, Toast.LENGTH_SHORT).show();
                     } else {
                         // update the task to pending
                         values.put("done", 0);
                         holder.isDone = false;
-                        MyApplication.database.update(DATABASE_NAME, values, "_id='" + holder.itemId + "'", null);
+                        database.update(DATABASE_NAME, values, "_id='" + holder.itemId + "'", null);
                         updateTaskListWidget(fragment.getContext());
                         Toast.makeText(fragment.getContext(), R.string.pending_toast, Toast.LENGTH_SHORT).show();
                     }
@@ -434,10 +435,10 @@ public class TaskListAdapter extends ItemListAdapter {
     @Override
     public void updateCursor(){
         if (byUrgencyByDefault){
-            itemCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type = 1 AND done = 0", null, null
+            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type = 1 AND done = 0", null, null
                     , null, "urgency DESC, event_time ASC");
         } else {
-            itemCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "type = 1 AND done = 0", null, null
+            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "type = 1 AND done = 0", null, null
                     , null, "event_time ASC");
         }
     }
@@ -445,31 +446,31 @@ public class TaskListAdapter extends ItemListAdapter {
     @Override
     public void updateCursorForSearch(String result){
         if (byUrgencyByDefault) {
-            itemCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "_id in (" + result + ") AND type = 1", null, null
+            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "_id in (" + result + ") AND type = 1", null, null
                     , null, "urgency DESC, event_time ASC");
         } else {
-            itemCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "_id in (" + result + ") AND type = 1", null, null
+            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "_id in (" + result + ") AND type = 1", null, null
                     , null, "event_time ASC");
         }
     }
 
     public void updateCursorForDone(){
         if (byUrgencyByDefault){
-            itemCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type=1 AND done=1", null, null
+            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type=1 AND done=1", null, null
                     , null, "urgency DESC, event_time ASC");
         } else {
-            itemCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type=1 AND done=1", null, null
+            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type=1 AND done=1", null, null
                     , null, "event_time ASC");
         }
     }
 
     public void updateCursorByUrgency(){
-        itemCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "type = 1 AND done = 0", null, null
+        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "type = 1 AND done = 0", null, null
                 , null, "urgency DESC, event_time ASC");
     }
 
     public void updateCursorByTime(){
-        itemCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "type = 1 AND done = 0", null, null
+        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "type = 1 AND done = 0", null, null
                 , null, "event_time ASC");
     }
 }

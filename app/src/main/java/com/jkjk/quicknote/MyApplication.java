@@ -15,13 +15,12 @@ import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_TOOL_BAR;
 
 public class MyApplication extends Application {
 
-    public static SQLiteDatabase database;
-    public static final int CURRENT_DB_VER = 5;
+    public SQLiteDatabase database;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        DatabaseHelper helper = new DatabaseHelper(this, "note_db", null, CURRENT_DB_VER);
+        DatabaseHelper helper = new DatabaseHelper(this, "note_db", null, DatabaseHelper.CURRENT_DB_VER);
         database = helper.getWritableDatabase();
 
         // if pinned notification tool bar is enable, start it

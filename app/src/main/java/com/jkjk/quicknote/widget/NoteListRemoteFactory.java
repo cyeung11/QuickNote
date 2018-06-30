@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.preference.PreferenceManager;
 import android.text.format.DateUtils;
 import android.view.View;
@@ -23,6 +24,7 @@ public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFact
     private Cursor noteCursor;
     private Context context;
     private int widgetLayout;
+    private SQLiteDatabase database;
 
     NoteListRemoteFactory(Context context) {
         this.context = context;
@@ -30,11 +32,12 @@ public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFact
 
     @Override
     public void onCreate() {
+        database = ((MyApplication)context.getApplicationContext()).database;
     }
 
     @Override
     public void onDataSetChanged() {
-        noteCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"},  "type = 0", null, null
+        noteCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"},  "type = 0", null, null
                 , null, "event_time DESC");
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         String widgetSize = sharedPref.getString(context.getString(R.string.font_size_widget), "m");

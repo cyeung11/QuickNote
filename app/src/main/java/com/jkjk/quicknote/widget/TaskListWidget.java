@@ -35,14 +35,14 @@ public class TaskListWidget extends AppWidgetProvider {
     public void onEnabled(Context context) {
         super.onEnabled(context);
         // Set an alarm to update the list widget every mid night to present the correct due date
-        AlarmHelper.setWidgetUpdate(context);
+        AlarmHelper.setTaskWidgetUpdate(context);
     }
 
     @Override
     public void onDisabled(Context context) {
         super.onDisabled(context);
         // canceling the daily widget update
-        AlarmHelper.cancelWidgetUpdate(context);
+        AlarmHelper.cancelTaskWidgetUpdate(context);
     }
 
     public static void updateTaskListWidget(Context context){

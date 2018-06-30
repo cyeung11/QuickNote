@@ -46,7 +46,7 @@ import java.util.Locale;
 
 import static android.app.Activity.RESULT_OK;
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
-import static com.jkjk.quicknote.MyApplication.CURRENT_DB_VER;
+import static com.jkjk.quicknote.helper.DatabaseHelper.CURRENT_DB_VER;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.helper.DatabaseHelper.dbColumn;
 import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_DAILY_UPDATE;
@@ -67,13 +67,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     public SettingsFragment() {
         // Required empty public constructor
     }
-
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {

@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
@@ -71,6 +72,7 @@ public class TaskEditFragment extends Fragment {
     public static final int TIME_NOT_SET_HOUR_INDICATOR = 23;
     public static final long DATE_NOT_SET_INDICATOR = 9999999999999L;
 
+    private SQLiteDatabase database;
     boolean hasTaskSave = false;
     private long taskId;
     private long initEventTime;
@@ -90,6 +92,11 @@ public class TaskEditFragment extends Fragment {
         // Required empty public constructor
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        database = ((MyApplication)getActivity().getApplication()).database;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -159,7 +166,7 @@ public class TaskEditFragment extends Fragment {
             // Reading from database
         if (!newTask) {
             try {
-                taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title", "content", "event_time","urgency","done", "reminder_time"}, "_id= " + taskId ,
+                taskCursor = database.query(DATABASE_NAME, new String[]{"title", "content", "event_time","urgency","done", "reminder_time"}, "_id= " + taskId ,
                         null, null, null, null, null);
                 taskCursor.moveToFirst();
             } catch (Exception e) {
@@ -568,7 +575,7 @@ public class TaskEditFragment extends Fragment {
                                                     @Override
                                                     public void onClick(DialogInterface dialogInterface, int i) {
                                                         if (!newTask) {
-                                                            MyApplication.database.delete(DATABASE_NAME, "_id='" + taskId + "'", null);
+                                                            database.delete(DATABASE_NAME, "_id='" + taskId + "'", null);
                                                             updateTaskListWidget(getContext());
                                                         }
                                                         // No need to do saving
@@ -769,7 +776,7 @@ public class TaskEditFragment extends Fragment {
         values.put("reminder_time", reminderTime.getTimeInMillis());
 
         if (!newTask) {
-            MyApplication.database.update(DATABASE_NAME, values, "_id='" + taskId +"'", null);
+            database.update(DATABASE_NAME, values, "_id='" + taskId +"'", null);
             // to update pinned notification if there is any, api 23 up exclusive
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if(isItemAnActiveNotification()){
@@ -777,7 +784,7 @@ public class TaskEditFragment extends Fragment {
                 }
             }
         }else {
-            taskId = MyApplication.database.insert(DATABASE_NAME, "",values);
+            taskId = database.insert(DATABASE_NAME, "",values);
         }
         values.clear();
         hasTaskSave = true;

@@ -15,7 +15,7 @@
 
     <item android:id="@+id/show_starred"
         android:title="@string/show_starred"
-        android:icon="@drawable/sharp_star_border_24"
+        android:icon="@drawable/sharp_outlined_flag_24"
         app:showAsAction="never" />
 
     <item android:id="@+id/sort_by"

@@ -50,6 +50,7 @@
             android:id="@+id/item_title"
             android:maxLines="1"
             android:textSize="14sp"
+            android:ellipsize="end"
             android:fontFamily="serif"
             android:textColor="@android:color/black"/>
 

@@ -1,12 +1,13 @@
 package com.jkjk.quicknote.taskeditscreen;
 
+import android.app.ActionBar;
 import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
@@ -21,11 +22,13 @@ import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
 
 public class SnoozeDurationDialog extends AppCompatActivity {
     RadioGroup snoozeDuration;
+    private SQLiteDatabase database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_snooze_duration);
+        database = ((MyApplication)getApplication()).database;
         ActionBar actionBar = getActionBar();
         if (actionBar != null) {
             actionBar.setDisplayShowTitleEnabled(false);
@@ -63,7 +66,7 @@ public class SnoozeDurationDialog extends AppCompatActivity {
                 if (getIntent().hasExtra(EXTRA_NOTE_ID)
                         && (taskId = getIntent().getLongExtra(EXTRA_NOTE_ID, 98876146L)) != 98876146L) {
 
-                    Cursor cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title", "type", "event_time", "content"}
+                    Cursor cursor = database.query(DATABASE_NAME, new String[]{"title", "type", "event_time", "content"}
                             , "_id= " + taskId
                             , null, null, null, null);
                     if (cursor != null && cursor.moveToFirst()) {
@@ -81,7 +84,7 @@ public class SnoozeDurationDialog extends AppCompatActivity {
                                 , cursor.getString(3), cursor.getLong(2), Calendar.getInstance().getTimeInMillis() + snoozeDuration);
                         ContentValues values = new ContentValues();
                         values.put("reminder_time", Calendar.getInstance().getTimeInMillis() + snoozeDuration);
-                        MyApplication.database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
+                        database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
                         cursor.close();
 
                         NotificationManager notificationManager = (NotificationManager) SnoozeDurationDialog.this.getSystemService(Context.NOTIFICATION_SERVICE);

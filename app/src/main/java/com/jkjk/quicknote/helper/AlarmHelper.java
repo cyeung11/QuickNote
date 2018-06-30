@@ -40,7 +40,7 @@ public class AlarmHelper {
         } else Toast.makeText(context, R.string.error_reminder, Toast.LENGTH_SHORT).show();
     }
 
-    public static void setWidgetUpdate(Context context){
+    public static void setTaskWidgetUpdate(Context context){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, WidgetUpdateHelper.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -65,7 +65,7 @@ public class AlarmHelper {
         } else Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
     }
 
-    public static void cancelWidgetUpdate(Context context){
+    public static void cancelTaskWidgetUpdate(Context context){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, WidgetUpdateHelper.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);

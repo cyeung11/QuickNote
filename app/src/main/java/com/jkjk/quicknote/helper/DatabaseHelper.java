@@ -10,6 +10,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public final static String[] dbColumn = new String[]{"_id", "title", "content", "event_time", "starred", "type", "urgency", "done", "reminder_time"};
     public final static String DATABASE_NAME = "note";
+    public final static int CURRENT_DB_VER = 5;
     private final static String CREATE_STRING = "CREATE TABLE IF NOT EXISTS " + DATABASE_NAME +
             " (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, content TEXT NOT NULL" +
             ", event_time INTEGER NOT NULL, starred INTEGER NOT NULL DEFAULT '0', type INTEGER NOT NULL" +

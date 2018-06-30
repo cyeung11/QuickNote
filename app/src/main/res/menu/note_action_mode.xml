@@ -4,7 +4,7 @@
 
     <item android:id="@+id/starred"
         android:title="@string/starred"
-        android:icon="@drawable/sharp_star_border_24"
+        android:icon="@drawable/sharp_outlined_flag_24"
         app:showAsAction="ifRoom" />
 
     <item

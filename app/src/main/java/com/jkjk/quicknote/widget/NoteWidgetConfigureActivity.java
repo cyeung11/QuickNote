@@ -4,18 +4,19 @@ import android.app.SearchManager;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.SearchHelper;
 
@@ -28,6 +29,7 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity {
     private MenuItem showStarred, search;
     private TextView notFoundTextView;
     private boolean showingStarred;
+    private SQLiteDatabase database;
 
     public NoteWidgetConfigureActivity() {
         super();
@@ -36,6 +38,8 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+
+        database = ((MyApplication)getApplication()).database;
 
         // Find the widget id from the intent.
         Intent intent = getIntent();
@@ -52,37 +56,21 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity {
         setContentView(R.layout.note_widget_configure);
 
         android.support.v7.widget.Toolbar widgetMenu = findViewById(R.id.widget_config_menu);
-        (NoteWidgetConfigureActivity.this).setSupportActionBar(widgetMenu);
+        setSupportActionBar(widgetMenu);
 
         recyclerViewForWidget = findViewById(R.id.recycler_view_widget);
         recyclerViewForWidget.setHasFixedSize(true);
         recyclerViewForWidget.setLayoutManager(new LinearLayoutManager(this));
         noteWidgetAdapter = new NoteWidgetAdapter(this, mAppWidgetId);
-        noteWidgetAdapter.updateCursorForWidget();
+        noteWidgetAdapter.updateCursor();
         recyclerViewForWidget.setAdapter(noteWidgetAdapter);
 
         notFoundTextView =  findViewById(R.id.widget_config_result_not_found);
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.widget_config_menu, menu);
+        getMenuInflater().inflate(R.menu.widget_config_menu, menu);
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         SearchView searchView = (SearchView) menu.findItem(R.id.widget_config_search).getActionView();
         if (searchManager != null) {
@@ -101,13 +89,13 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(String newText) {
 
-                String result = searchHelper.searchResult(newText);
+                String result = searchHelper.searchResult(database, newText);
 
                 //If search result is not empty, update the cursor to show result
                 if (!result.equals("")) {
                     recyclerViewForWidget.setVisibility(View.VISIBLE);
                     notFoundTextView.setVisibility(View.INVISIBLE);
-                    noteWidgetAdapter.updateCursorForSearchForWidget(result);
+                    noteWidgetAdapter.updateCursorForSearch(result);
                     noteWidgetAdapter.notifyDataSetChanged();
                 } else if (!newText.equals("")) {
                     //If search result is empty and the search input is not empty, show result not found
@@ -117,7 +105,7 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity {
                     //after finish searching and user empty the search input, reset the view
                     recyclerViewForWidget.setVisibility(View.VISIBLE);
                     notFoundTextView.setVisibility(View.INVISIBLE);
-                    noteWidgetAdapter.updateCursorForWidget();
+                    noteWidgetAdapter.updateCursor();
                     noteWidgetAdapter.notifyDataSetChanged();
                 }
                 return true;
@@ -130,8 +118,8 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity {
             public boolean onMenuItemActionExpand(MenuItem menuItem) {
                 showStarred.setVisible(false);
                 showingStarred = false;
-                showStarred.setIcon(R.drawable.sharp_star_border_24);
-                noteWidgetAdapter.updateCursorForWidget();
+                showStarred.setIcon(R.drawable.sharp_outlined_flag_24);
+                noteWidgetAdapter.updateCursor();
                 noteWidgetAdapter.notifyDataSetChanged();
                 return true;
             }
@@ -146,27 +134,25 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity {
         });
 
         showStarred = menu.findItem(R.id.widget_show_starred);
-        showStarred.setIcon(R.drawable.sharp_star_border_24);
+        showStarred.setIcon(R.drawable.sharp_outlined_flag_24);
         showStarred.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
-                if (!showingStarred){
-                    // to show only starred notes
-                    showingStarred = true;
-                    showStarred.setIcon(R.drawable.baseline_star_24);
-                    noteWidgetAdapter.updateCursorForStarred();
-                    noteWidgetAdapter.notifyDataSetChanged();
-                } else {
-                    // to show all notes
+                if (showingStarred){
+                    // to toggle and show all notes
                     showingStarred = false;
-                    showStarred.setIcon(R.drawable.sharp_star_border_24);
-                    noteWidgetAdapter.updateCursorForWidget();
-                    noteWidgetAdapter.notifyDataSetChanged();
+                    showStarred.setIcon(R.drawable.sharp_outlined_flag_24);
+                    noteWidgetAdapter.updateCursor();
+                } else {
+                    // to toggle and show only starred notes
+                    showingStarred = true;
+                    showStarred.setIcon(R.drawable.sharp_flag_24);
+                    noteWidgetAdapter.updateCursorForStarred();
                 }
+                noteWidgetAdapter.notifyDataSetChanged();
                 return true;
             }
         });
-
         return true;
     }
 

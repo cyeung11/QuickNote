@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.preference.PreferenceManager;
 import android.text.format.DateUtils;
 import android.widget.RemoteViews;
@@ -26,6 +27,7 @@ public class TaskListRemoteFactory implements RemoteViewsService.RemoteViewsFact
     private Cursor taskCursor;
     private Context context;
     private int widgetLayout, noUrgencyLayout;
+    private SQLiteDatabase database;
 
     TaskListRemoteFactory(Context context) {
         this.context = context;
@@ -33,6 +35,7 @@ public class TaskListRemoteFactory implements RemoteViewsService.RemoteViewsFact
 
     @Override
     public void onCreate() {
+        database = ((MyApplication)context.getApplicationContext()).database;
     }
 
     @Override
@@ -41,10 +44,10 @@ public class TaskListRemoteFactory implements RemoteViewsService.RemoteViewsFact
         boolean byUrgencyByDefault = sharedPref.getBoolean(context.getString(R.string.change_default_sorting), false);
 
         if (byUrgencyByDefault){
-            taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time"}, "type=1 AND done=0", null, null
+            taskCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time"}, "type=1 AND done=0", null, null
                     , null, "urgency DESC, event_time ASC");
         } else {
-            taskCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time"}, "type=1 AND done=0", null, null
+            taskCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time"}, "type=1 AND done=0", null, null
                     , null, "event_time ASC");
         }
 

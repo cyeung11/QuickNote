@@ -41,6 +41,7 @@ public class NoteListAdapter extends ItemListAdapter {
 
     NoteListAdapter(NoteListFragment fragment){
         this.fragment = fragment;
+        database = ((MyApplication)fragment.getActivity().getApplication()).database;
         selectedItems = new ArrayList<>();
         // Obtain correspond value from preferences to show appropriate size for the card view
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(fragment.getContext());
@@ -177,7 +178,7 @@ public class NoteListAdapter extends ItemListAdapter {
                             addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.alternative)));
 
                             // Get item count of not starred note
-                            Cursor checkStarredCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id"}, "starred=0 AND type=0", null, null
+                            Cursor checkStarredCursor = database.query(DATABASE_NAME, new String[]{"_id"}, "starred=0 AND type=0", null, null
                                     , null, null);
                             notStarredCount = checkStarredCursor.getCount();
                             checkStarredCursor.close();
@@ -229,7 +230,7 @@ public class NoteListAdapter extends ItemListAdapter {
                                                 String unstarredId = itemCursor.getString(0);
 
                                                 //Update
-                                                MyApplication.database.update(DATABASE_NAME, values, "_id='" + unstarredId + "'", null);
+                                                database.update(DATABASE_NAME, values, "_id='" + unstarredId + "'", null);
                                             }
 
                                             updateCursor();
@@ -248,7 +249,7 @@ public class NoteListAdapter extends ItemListAdapter {
                                                 String starredId = itemCursor.getString(0);
 
                                                 //Update
-                                                MyApplication.database.update(DATABASE_NAME, values, "_id='" + starredId + "'", null);
+                                                database.update(DATABASE_NAME, values, "_id='" + starredId + "'", null);
                                             }
 
                                             updateCursor();
@@ -293,10 +294,6 @@ public class NoteListAdapter extends ItemListAdapter {
         return holder;
     }
 
-    @Override
-    public int getItemCount() {
-        return super.getItemCount();
-    }
 
     @Override
     public void onBindViewHolder(@NonNull ItemListAdapter.ViewHolder viewHolder, int position) {
@@ -369,23 +366,22 @@ public class NoteListAdapter extends ItemListAdapter {
     @Override
     public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onDetachedFromRecyclerView(recyclerView);
-        itemCursor.close();
     }
 
     @Override
     public void updateCursor(){
-        itemCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"},  "type = 0", null, null
+        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"},  "type = 0", null, null
                 , null, "event_time DESC");
     }
 
     @Override
     public void updateCursorForSearch(String result){
-        itemCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "_id in ("+result+") AND type = 0", null, null
+        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "_id in ("+result+") AND type = 0", null, null
                 , null, "event_time DESC");
     }
 
     public void updateCursorForStarred(){
-        itemCursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "starred = 1 AND type = 0", null, null
+        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "starred = 1 AND type = 0", null, null
                 , null, "event_time DESC");
     }
 

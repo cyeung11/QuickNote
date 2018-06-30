@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.support.v7.preference.PreferenceManager;
 import android.util.TypedValue;
@@ -32,16 +33,15 @@ import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
  */
 public class AppWidgetService extends IntentService {
 
-////    static final String EXTRA_WIDGET_CODE = "widgetCode";
     public static final int NOTE_WIDGET_REQUEST_CODE = 0;
     public static final int TASK_LIST_WIDGET_REQUEST_CODE = 1;
     public static final int NOTE_LIST_WIDGET_REQUEST_CODE = 2;
 
+    private SQLiteDatabase database;
+
     public AppWidgetService(){
         super("AppWidgetService");
     }
-
-
 
     @Override
     protected void onHandleIntent(Intent intent){
@@ -54,7 +54,9 @@ public class AppWidgetService extends IntentService {
             appWidgetIds = intent.getIntArrayExtra(EXTRA_APPWIDGET_ID);
             views = new RemoteViews[appWidgetIds.length];
 
-            if (intent.getParcelableExtra(EXTRA_APPWIDGET_PROVIDER).equals(new ComponentName(getBaseContext(), NoteWidget.class))) {
+            ComponentName name = intent.getParcelableExtra(EXTRA_APPWIDGET_PROVIDER);
+
+            if (name.equals(new ComponentName(getBaseContext(), NoteWidget.class))) {
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
                 String widgetSize = sharedPref.getString(getString(R.string.font_size_widget), "m");
 
@@ -75,7 +77,7 @@ public class AppWidgetService extends IntentService {
 
                     views[i] = new RemoteViews("com.jkjk.quicknote", R.layout.note_preview_widget);
 
-                    Cursor cursorForWidget = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content"}, "_id='" + noteId[i] + "'", null, null
+                    Cursor cursorForWidget = ((MyApplication)getApplicationContext()).database.query(DATABASE_NAME, new String[]{"_id", "title", "content"}, "_id='" + noteId[i] + "'", null, null
                             , null, null);
                     try {
                         if (cursorForWidget != null) {
@@ -127,56 +129,39 @@ public class AppWidgetService extends IntentService {
 
                     appWidgetManager.updateAppWidget(appWidgetIds[i], views[i]);
                 }
-            } else if (intent.getParcelableExtra(EXTRA_APPWIDGET_PROVIDER).equals(new ComponentName(getBaseContext(), TaskListWidget.class))) {
-                Intent startAppIntent = new Intent(this, List.class);
-                PendingIntent startAppPendingIntent = PendingIntent.getActivity(this, 0, startAppIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            } else if (name.equals(new ComponentName(getBaseContext(), TaskListWidget.class))) {
+                updateListWidget(false, appWidgetIds, views, appWidgetManager);
 
-                Intent newToDoIntent = new Intent(this, TaskEdit.class);
-                newToDoIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                PendingIntent newToDoPendingIntent = PendingIntent.getActivity(this, 0, newToDoIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                Intent taskListWidgetAdapterIntent = new Intent(this, TaskListWidgetRemoteService.class);
-                Intent taskIntentTemplate = new Intent(this, TaskEdit.class);
-                taskIntentTemplate.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                PendingIntent taskPendingIntentTemplate = PendingIntent.getActivity(this, TASK_LIST_WIDGET_REQUEST_CODE, taskIntentTemplate, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                for (int i = 0; i < appWidgetIds.length; i++) {
-                    views[i] = new RemoteViews("com.jkjk.quicknote", R.layout.task_list_widget);
-                    views[i].setOnClickPendingIntent(R.id.app_bar, startAppPendingIntent);
-                    views[i].setOnClickPendingIntent(R.id.add_button, newToDoPendingIntent);
-
-                    views[i].setRemoteAdapter(R.id.container, taskListWidgetAdapterIntent);
-                    views[i].setPendingIntentTemplate(R.id.container, taskPendingIntentTemplate);
-
-                    appWidgetManager.updateAppWidget(appWidgetIds[i], views[i]);
-                }
-            } else if (intent.getParcelableExtra(EXTRA_APPWIDGET_PROVIDER).equals( new ComponentName(getBaseContext(), NoteListWidget.class))) {
-                Intent startAppIntent = new Intent(this, List.class);
-                PendingIntent startAppPendingIntent = PendingIntent.getActivity(this, 0, startAppIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                Intent newNoteIntent = new Intent(this, NoteEdit.class);
-                newNoteIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                PendingIntent newNotePendingIntent = PendingIntent.getActivity(this, 0, newNoteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                Intent noteListWidgetAdapterIntent = new Intent(this, NoteListWidgetRemoteService.class);
-                Intent noteIntentTemplate = new Intent(this, NoteEdit.class);
-                noteIntentTemplate.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                PendingIntent notePendingIntentTemplate = PendingIntent.getActivity(this, NOTE_LIST_WIDGET_REQUEST_CODE, noteIntentTemplate, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                for (int i = 0; i < appWidgetIds.length; i++) {
-                    views[i] = new RemoteViews("com.jkjk.quicknote", R.layout.note_list_widget);
-                    views[i].setOnClickPendingIntent(R.id.app_bar, startAppPendingIntent);
-                    views[i].setOnClickPendingIntent(R.id.add_button, newNotePendingIntent);
-
-                    views[i].setRemoteAdapter(R.id.container, noteListWidgetAdapterIntent);
-                    views[i].setPendingIntentTemplate(R.id.container, notePendingIntentTemplate);
-
-                    appWidgetManager.updateAppWidget(appWidgetIds[i], views[i]);
-                }
+            } else if (name.equals( new ComponentName(getBaseContext(), NoteListWidget.class))) {
+                updateListWidget(true, appWidgetIds, views, appWidgetManager);
 
             }
         }
     }
 
+    private void updateListWidget(boolean itemIsNote, int[] appWidgetIds, RemoteViews[] views, AppWidgetManager appWidgetManager){
+        Intent startAppIntent = new Intent(this, List.class);
+        PendingIntent startAppPendingIntent = PendingIntent.getActivity(this, 0, startAppIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent newItemIntent = new Intent(this, itemIsNote ?NoteEdit.class :TaskEdit.class);
+        newItemIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent newItemPendingIntent = PendingIntent.getActivity(this, 0, newItemIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent listWidgetAdapterIntent = new Intent(this, itemIsNote ?NoteListWidgetRemoteService.class :TaskListWidgetRemoteService.class);
+        Intent itemIntentTemplate = new Intent(this, itemIsNote ?NoteEdit.class :TaskEdit.class);
+        itemIntentTemplate.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntentTemplate = PendingIntent.getActivity(this, 0, itemIntentTemplate, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        for (int i = 0; i < appWidgetIds.length; i++) {
+            views[i] = new RemoteViews("com.jkjk.quicknote", itemIsNote ?R.layout.note_list_widget :R.layout.task_list_widget);
+            views[i].setOnClickPendingIntent(R.id.app_bar, startAppPendingIntent);
+            views[i].setOnClickPendingIntent(R.id.add_button, newItemPendingIntent);
+
+            views[i].setRemoteAdapter(R.id.container, listWidgetAdapterIntent);
+            views[i].setPendingIntentTemplate(R.id.container, pendingIntentTemplate);
+
+            appWidgetManager.updateAppWidget(appWidgetIds[i], views[i]);
+        }
+    }
 }
 

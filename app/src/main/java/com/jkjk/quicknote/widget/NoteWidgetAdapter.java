@@ -5,7 +5,6 @@ import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
@@ -24,6 +23,7 @@ import android.widget.Toast;
 
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.listscreen.ItemListAdapter;
 import com.jkjk.quicknote.noteeditscreen.NoteEdit;
 
 import java.util.Calendar;
@@ -33,57 +33,51 @@ import static android.content.Context.MODE_PRIVATE;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
 import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
-import static com.jkjk.quicknote.listscreen.NoteListAdapter.isYesterday;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
 
-public class NoteWidgetAdapter extends RecyclerView.Adapter<NoteWidgetAdapter.ViewHolder> {
+public class NoteWidgetAdapter extends ItemListAdapter {
 
     private Activity activity;
-    private int mAppWidgetId;
-    private int color = Color.parseColor("#FFFFFF");
-    private Cursor cursorForWidget;
-
+    private int mAppWidgetId, color;
+    private String widgetSize;
 
     NoteWidgetAdapter(Activity activity, int mAppWidgetId){
         this.activity = activity;
+        database = ((MyApplication)activity.getApplication()).database;
+
+        // Set the result to CANCELED.  This will cause the widget host to cancel out of the widget placement if the user presses the back button.
+        activity.setResult(RESULT_CANCELED);
+
         this.mAppWidgetId = mAppWidgetId;
-        //There can only be one widget to be create for each adapter , so create an array with only one widget Id to send back to widget for update
+
+        // Obtain correspond value from preferences to show appropriate size for the card view
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
+        String cardViewSize = sharedPref.getString(activity.getString(R.string.font_size_main_screen),"m");
+        widgetSize = sharedPref.getString(activity.getString(R.string.font_size_widget),"m");
+        switch (cardViewSize) {
+            case ("s"):
+                cardViewInt = R.layout.card_note_s;
+                break;
+            case ("m"):
+                cardViewInt = R.layout.card_note_m;
+                break;
+            case ("l"):
+                cardViewInt = R.layout.card_note_l;
+                break;
+            case ("xl"):
+                cardViewInt = R.layout.card_note_xl;
+                break;
+            default:
+                cardViewInt = R.layout.card_note_m;
+        }
+        color = Color.parseColor("#FFFFFF");
     }
 
-    public void onColorSelected(View view) {
-        switch(view.getId()) {
-            case R.id.color_red:
-                color = Color.parseColor("#ffb1b1");
-                break;
-            case R.id.color_yellow:
-                color = Color.parseColor("#fdd782");
-                break;
-            case R.id.color_green:
-                color = Color.parseColor("#a9ddc7");
-                break;
-            case R.id.color_blue:
-                color = Color.parseColor("#95d3ec");
-                break;
-            case R.id.color_grey:
-                color = Color.parseColor("#bbbbbb");
-                break;
-            case R.id.color_white:
-                color = Color.parseColor("#FFFFFF");
-                break;
-        }
-        }
-
-
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        CardView cardView;
-        TextView noteTitle, noteTime, noteContent;
-        long noteId;
+    class ViewHolder extends ItemListAdapter.ViewHolder {
+        TextView noteContent;
 
         private ViewHolder(CardView card) {
             super(card);
-            cardView = card;
-            noteTitle = card.findViewById(R.id.item_title);
-            noteTime = card.findViewById(R.id.item_date);
             noteContent = card.findViewById(R.id.note_content);
         }
     }
@@ -91,29 +85,20 @@ public class NoteWidgetAdapter extends RecyclerView.Adapter<NoteWidgetAdapter.Vi
     @NonNull
     @Override
     public NoteWidgetAdapter.ViewHolder onCreateViewHolder(@NonNull final ViewGroup parent, int viewType) {
-        CardView v = (CardView) LayoutInflater.from(parent.getContext()).inflate(R.layout.card_note_m, parent, false);
+        CardView v = (CardView) LayoutInflater.from(parent.getContext()).inflate(cardViewInt, parent, false);
         final ViewHolder holder = new ViewHolder(v);
-
-
-        // Set the result to CANCELED.  This will cause the widget host to cancel out of the widget placement if the user presses the back button.
-        activity.setResult(RESULT_CANCELED);
-
-        v.setCardBackgroundColor(Color.WHITE);
 
         v.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View view) {
 
-                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(view.getContext());
-                String widgetSize = sharedPref.getString(view.getResources().getString(R.string.font_size_widget),"m");
-
                 RemoteViews remoteViews = new RemoteViews("com.jkjk.quicknote", R.layout.note_preview_widget);
 
                 //Obtain correspond data according to the position the user click. As both the recyclerview and cursor are sorted chronically, position equals to cursor index
-                cursorForWidget.moveToPosition(holder.getAdapterPosition());
-                remoteViews.setTextViewText(R.id.widget_title, cursorForWidget.getString(1));
-                remoteViews.setTextViewText(R.id.widget_content, cursorForWidget.getString(2));
+                itemCursor.moveToPosition(holder.getAdapterPosition());
+                remoteViews.setTextViewText(R.id.widget_title, itemCursor.getString(1));
+                remoteViews.setTextViewText(R.id.widget_content, itemCursor.getString(2));
                 remoteViews.setInt(R.id.widget, "setBackgroundColor", color);
 
                 switch (widgetSize){
@@ -139,9 +124,9 @@ public class NoteWidgetAdapter extends RecyclerView.Adapter<NoteWidgetAdapter.Vi
                 }
 
                 Intent startAppIntent = new Intent(activity, NoteEdit.class);
-                startAppIntent.putExtra(EXTRA_NOTE_ID, cursorForWidget.getLong(0))
+                startAppIntent.putExtra(EXTRA_NOTE_ID, itemCursor.getLong(0))
                         .setFlags(FLAG_ACTIVITY_CLEAR_TOP | FLAG_ACTIVITY_SINGLE_TOP);
-                PendingIntent pendingIntent = PendingIntent.getActivity(activity,(int)cursorForWidget.getLong(0),startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent pendingIntent = PendingIntent.getActivity(activity,(int) itemCursor.getLong(0),startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
                 remoteViews.setOnClickPendingIntent(R.id.widget, pendingIntent);
 
 
@@ -154,7 +139,7 @@ public class NoteWidgetAdapter extends RecyclerView.Adapter<NoteWidgetAdapter.Vi
 
                 SharedPreferences idPref = activity.getSharedPreferences("widget_id", MODE_PRIVATE);
                 SharedPreferences colorPref = activity.getSharedPreferences("widget_color", MODE_PRIVATE);
-                idPref.edit().putLong(Integer.toString(mAppWidgetId), cursorForWidget.getLong(0)).apply();
+                idPref.edit().putLong(Integer.toString(mAppWidgetId), itemCursor.getLong(0)).apply();
                 colorPref.edit().putInt(Integer.toString(mAppWidgetId), color).apply();
                 activity.finish();
             }
@@ -162,34 +147,29 @@ public class NoteWidgetAdapter extends RecyclerView.Adapter<NoteWidgetAdapter.Vi
         return holder;
     }
 
-
-
     @Override
     public int getItemCount() {
-        //Obtain all data from database provided from Application class and get count
-        return cursorForWidget.getCount();
+        return super.getItemCount();
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ItemListAdapter.ViewHolder viewHolder, int position) {
 
-        holder.noteTitle.setTypeface(Typeface.SERIF);
-        holder.noteTitle.setTextColor(Color.BLACK);
-        holder.noteContent.setTextColor(Color.GRAY);
+        ViewHolder holder = (ViewHolder)viewHolder;
 
         //Extract data from cursor
-        if (cursorForWidget != null) {
+        if (itemCursor != null) {
             try {
-                cursorForWidget.moveToPosition(position);
+                itemCursor.moveToPosition(position);
 
-                holder.noteId = cursorForWidget.getLong(0);
+                holder.itemId = itemCursor.getLong(0);
 
-                holder.noteTitle.setText(cursorForWidget.getString(1).trim());
+                holder.itemTitle.setText(itemCursor.getString(1).trim());
 
-                holder.noteContent.setText(cursorForWidget.getString(2).trim());
+                holder.noteContent.setText(itemCursor.getString(2).trim());
 
                 //Time formatting
-                long time = (cursorForWidget.getLong(3));
+                long time = (itemCursor.getLong(3));
                 String shownTime;
                 // Get current time from Calendar and check how long aga was the note edited
                 long timeSpan = Calendar.getInstance().getTimeInMillis() - time;
@@ -211,11 +191,15 @@ public class NoteWidgetAdapter extends RecyclerView.Adapter<NoteWidgetAdapter.Vi
                 } else {
                     shownTime = DateUtils.formatDateTime(activity, time, DateUtils.FORMAT_SHOW_DATE);
                 }
-                holder.noteTime.setText(shownTime);
+                holder.itemTime.setText(shownTime);
 
                 // Show starred note
-                if (cursorForWidget.getInt(4) == 1) {
-                    holder.noteTitle.setTypeface(Typeface.SERIF, Typeface.BOLD);
+                if (itemCursor.getInt(4) == 1) {
+                    holder.itemTitle.setTypeface(Typeface.SERIF, Typeface.BOLD);
+                    holder.flagIcon.setVisibility(View.VISIBLE);
+                }else {
+                    holder.itemTitle.setTypeface(Typeface.SERIF);
+                    holder.flagIcon.setVisibility(View.GONE);
                 }
 
             } catch (Exception e) {
@@ -228,24 +212,46 @@ public class NoteWidgetAdapter extends RecyclerView.Adapter<NoteWidgetAdapter.Vi
 
     @Override
     public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
-        cursorForWidget.close();
         super.onDetachedFromRecyclerView(recyclerView);
     }
 
-
-    public void updateCursorForWidget(){
-        cursorForWidget = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "type=0", null, null
+    @Override
+    public void updateCursor(){
+        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "type=0", null, null
                 , null, "event_time DESC");
     }
 
-    public void updateCursorForSearchForWidget(String result){
-        cursorForWidget = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "_id in ("+result+") AND type=0", null, null
+    @Override
+    public void updateCursorForSearch(String result){
+        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "_id in ("+result+") AND type=0", null, null
                 , null, "event_time DESC");
     }
 
     public void updateCursorForStarred(){
-        cursorForWidget = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "starred = 1 AND type=0", null, null
+        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "starred = 1 AND type=0", null, null
                 , null, "event_time DESC");
     }
 
+    public void onColorSelected(View view) {
+        switch(view.getId()) {
+            case R.id.color_red:
+                color = Color.parseColor("#ffb1b1");
+                break;
+            case R.id.color_yellow:
+                color = Color.parseColor("#fdd782");
+                break;
+            case R.id.color_green:
+                color = Color.parseColor("#a9ddc7");
+                break;
+            case R.id.color_blue:
+                color = Color.parseColor("#95d3ec");
+                break;
+            case R.id.color_grey:
+                color = Color.parseColor("#bbbbbb");
+                break;
+            case R.id.color_white:
+                color = Color.parseColor("#FFFFFF");
+                break;
+        }
+    }
 }

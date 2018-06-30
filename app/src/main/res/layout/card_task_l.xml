@@ -71,6 +71,7 @@
                     android:maxLines="1"
                     android:textSize="19sp"
                     android:fontFamily="serif"
+                    android:ellipsize="end"
                     android:textColor="@android:color/black"/>
 
             </LinearLayout>

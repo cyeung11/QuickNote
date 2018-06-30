@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -56,6 +57,9 @@ public class ListFragment extends Fragment{
     private NoteListFragment noteListFragment;
     private TaskListFragment taskListFragment;
     private ViewPager viewPager;
+    private NoteListAdapter noteListAdapter;
+    private TaskListAdapter taskListAdapter;
+    private SQLiteDatabase database;
 
 
     public ListFragment() {
@@ -66,6 +70,7 @@ public class ListFragment extends Fragment{
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        database = ((MyApplication)getActivity().getApplication()).database;
     }
 
 
@@ -102,8 +107,8 @@ public class ListFragment extends Fragment{
 
             @Override
             public void onPageSelected(int position) {
-                NoteListAdapter noteListAdapter = noteListFragment.getNoteListAdapter();
-                TaskListAdapter taskListAdapter = taskListFragment.getTaskListAdapter();
+                noteListAdapter = noteListFragment.getNoteListAdapter();
+                taskListAdapter = taskListFragment.getTaskListAdapter();
                 if (noteListAdapter.actionMode !=null) {
                     noteListAdapter.actionMode.finish();
                 }
@@ -113,9 +118,9 @@ public class ListFragment extends Fragment{
 
                 // if default page is note, position 0 will be note, so current page is 0
                 // if default page is task, position 0 will be task, so current page is 1
-                if (position==0) {
+                if (position == 0) {
                     currentPage = defaultPageIsTask ?'T' :'N';
-                } else if (position==1){
+                } else if (position == 1){
                     currentPage = defaultPageIsTask ?'N' :'T';
                 }
                 ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(currentPage == 'N' ?R.string.note :R.string.task);
@@ -138,6 +143,7 @@ public class ListFragment extends Fragment{
             @Override
             public void onClick(View view) {
 
+                final boolean currentPageIsNote = currentPage == 'N';
                 // button served as delete function
                 if (noteListFragment.getNoteListAdapter().isInActionMode || taskListFragment.getTaskListAdapter().isInActionMode){
                     new AlertDialog.Builder(view.getContext()).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete_list)
@@ -145,58 +151,43 @@ public class ListFragment extends Fragment{
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
 
-                                    if (currentPage == 'N') {
-                                        NoteListAdapter noteListAdapter = noteListFragment.getNoteListAdapter();
-
-                                        // delete note from  selectedItems
-                                        ArrayList<Integer> mSelect = noteListAdapter.getSelected();
-                                        Cursor noteCursor = noteListAdapter.getItemCursor();
-                                        for (int removedPosition : mSelect) {
-                                            noteCursor.moveToPosition(removedPosition);
-                                            String removedId = noteCursor.getString(0);
-                                            MyApplication.database.delete(DATABASE_NAME, "_id='" + removedId + "'", null);
-                                        }
-
-                                        noteListAdapter.updateCursor();
-                                        for (int removedPosition : mSelect) {
-                                            noteListAdapter.notifyItemRemoved(removedPosition);
-                                        }
-
-                                        Toast.makeText(getContext(), R.string.note_deleted_toast, Toast.LENGTH_SHORT).show();
-                                        noteListAdapter.actionMode.finish();
-                                        updateNoteListWidget(getContext());
-                                        noteCursor.close();
-
-                                    } else if (currentPage == 'T'){
-                                        TaskListAdapter taskListAdapter = taskListFragment.getTaskListAdapter();
-
-                                        // delete task from  selectedItems
-                                        ArrayList<Integer> mSelect = taskListAdapter.getSelected();
-                                        Cursor taskCursor = taskListAdapter.getItemCursor();
-                                        for (int removedPosition : mSelect) {
-                                            taskCursor.moveToPosition(removedPosition);
-                                            String removedId = taskCursor.getString(0);
-                                            MyApplication.database.delete(DATABASE_NAME, "_id='" + removedId + "'", null);
-                                        }
-
-                                        taskListAdapter.updateCursor();
-                                        for (int removedPosition : mSelect) {
-                                            taskListAdapter.notifyItemRemoved(removedPosition);
-                                        }
-
-                                        Toast.makeText(getContext(), R.string.task_deleted_toast, Toast.LENGTH_SHORT).show();
-                                        taskListAdapter.actionMode.finish();
-                                        updateTaskListWidget(getContext());
-                                        taskCursor.close();
+                                    ItemListAdapter itemListAdapter;
+                                    if (currentPageIsNote) {
+                                        itemListAdapter = noteListFragment.getNoteListAdapter();
+                                    } else {
+                                        itemListAdapter = taskListFragment.getTaskListAdapter();
                                     }
+
+                                    // delete note from  selectedItems
+                                    ArrayList<Integer> mSelect = itemListAdapter.getSelected();
+                                    Cursor itemCursor = itemListAdapter.getItemCursor();
+                                    for (int removedPosition : mSelect) {
+                                        itemCursor.moveToPosition(removedPosition);
+                                        String removedId = itemCursor.getString(0);
+                                        database.delete(DATABASE_NAME, "_id='" + removedId + "'", null);
+                                    }
+
+                                    itemListAdapter.updateCursor();
+                                    for (int removedPosition : mSelect) {
+                                        itemListAdapter.notifyItemRemoved(removedPosition);
+                                    }
+
+                                    Toast.makeText(getContext(), currentPageIsNote ?R.string.note_deleted_toast :R.string.task_deleted_toast, Toast.LENGTH_SHORT).show();
+                                    itemListAdapter.actionMode.finish();
+                                    if (currentPageIsNote) {
+                                        updateNoteListWidget(getContext());
+                                    } else {
+                                        updateTaskListWidget(getContext());
+                                    }
+                                    itemCursor.close();
                                 }
                             })
                             .setNegativeButton(R.string.cancel, null)
                             .show();
 
-                }else if (currentPage=='N') {
+                }else if (currentPageIsNote) {
                     noteListFragment.onNoteEdit();
-                }else if (currentPage=='T'){
+                }else {
                     taskListFragment.onTaskEdit();
                 }
             }
@@ -239,7 +230,7 @@ public class ListFragment extends Fragment{
         final SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
         SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
-        searchView.setQueryHint(getResources().getString(R.string.search_hint));
+        searchView.setQueryHint(getResources().getString(R.string.search));
         searchView.setSubmitButtonEnabled(false);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
@@ -253,17 +244,17 @@ public class ListFragment extends Fragment{
             @Override
             public boolean onQueryTextChange(String newText) {
 
-                String result = searchHelper.searchResult(newText);
-                NoteListAdapter noteListAdapter = noteListFragment.getNoteListAdapter();
-                TaskListAdapter taskListAdapter = taskListFragment.getTaskListAdapter();
+                String result = searchHelper.searchResult(database, newText);
+                noteListAdapter = noteListFragment.getNoteListAdapter();
+                taskListAdapter = taskListFragment.getTaskListAdapter();
 
                 //If search result is not empty, update the cursor to show result
                 if (!result.equals("")) {
                     noteListAdapter.updateCursorForSearch(result);
                     taskListAdapter.updateCursorForSearch(result);
-                    toggleNotResultView(false);
                     noteListAdapter.notifyDataSetChanged();
                     taskListAdapter.notifyDataSetChanged();
+                    toggleNotResultView(false);
 
                 } else if (!newText.equals("")) {
                     //If search result is empty and the search input is not empty, show result not found
@@ -273,9 +264,9 @@ public class ListFragment extends Fragment{
                     //after finish searching and user empty the search input, reset the view
                     noteListAdapter.updateCursor();
                     taskListAdapter.updateCursor();
-                    toggleNotResultView(false);
                     noteListAdapter.notifyDataSetChanged();
                     taskListAdapter.notifyDataSetChanged();
+                    toggleNotResultView(false);
                 }
                 return true;
             }
@@ -285,8 +276,8 @@ public class ListFragment extends Fragment{
 
             @Override
             public boolean onMenuItemActionExpand(MenuItem menuItem) {
-                NoteListAdapter noteListAdapter = noteListFragment.getNoteListAdapter();
-                TaskListAdapter taskListAdapter = taskListFragment.getTaskListAdapter();
+                noteListAdapter = noteListFragment.getNoteListAdapter();
+                taskListAdapter = taskListFragment.getTaskListAdapter();
 
                 showStarred.setVisible(false);
                 settings.setVisible(false);
@@ -313,14 +304,7 @@ public class ListFragment extends Fragment{
             public boolean onMenuItemActionCollapse(MenuItem menuItem) {
                 settings.setVisible(true);
                 switchTab.setVisible(true);
-
-                if (currentPage == 'N') {
-                    showStarred.setVisible(true);
-                } else if (currentPage == 'T'){
-                    sortBy.setVisible(true);
-                    showDone.setVisible(true);
-                }
-
+                setMenuItemForPage(currentPage == 'N');
                 return true;
             }
         });
@@ -331,23 +315,21 @@ public class ListFragment extends Fragment{
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
 
-                NoteListAdapter noteListAdapter = noteListFragment.getNoteListAdapter();
+                noteListAdapter = noteListFragment.getNoteListAdapter();
 
                 if (!showingStarred) {
                     // to show only starred notes
                     showingStarred = true;
                     showStarred.setTitle(R.string.show_all_note);
-
                     noteListAdapter.updateCursorForStarred();
-                    noteListAdapter.notifyDataSetChanged();
+
                 } else {
                     // to show all notes
                     showingStarred = false;
                     showStarred.setTitle(R.string.show_starred);
-
                     noteListAdapter.updateCursor();
-                    noteListAdapter.notifyDataSetChanged();
                 }
+                noteListAdapter.notifyDataSetChanged();
                 return true;
             }
         });
@@ -360,26 +342,25 @@ public class ListFragment extends Fragment{
                 if (byUrgencyByDefault) {
                     sortBy.setTitle(R.string.sort_by_time);
                     sortingBytime = false;
+
                 } else {
                     sortBy.setTitle(R.string.sort_by_urgency);
                     sortingBytime = true;
                 }
 
-                TaskListAdapter taskListAdapter = taskListFragment.getTaskListAdapter();
+                taskListAdapter = taskListFragment.getTaskListAdapter();
 
                 if(!taskListAdapter.showingDone){
                     taskListAdapter.showingDone = true;
                     showDone.setTitle(R.string.show_all_task);
-
                     taskListAdapter.updateCursorForDone();
-                    taskListAdapter.notifyDataSetChanged();
+
                 } else {
                     taskListAdapter.showingDone = false;
                     showDone.setTitle(R.string.show_done);
-
                     taskListAdapter.updateCursor();
-                    taskListAdapter.notifyDataSetChanged();
                 }
+                taskListAdapter.notifyDataSetChanged();
                 return true;
             }
         });
@@ -394,7 +375,7 @@ public class ListFragment extends Fragment{
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
 
-                TaskListAdapter taskListAdapter = taskListFragment.getTaskListAdapter();
+                taskListAdapter = taskListFragment.getTaskListAdapter();
                 taskListAdapter.showingDone = false;
                 showDone.setTitle(R.string.show_done);
 
@@ -420,11 +401,7 @@ public class ListFragment extends Fragment{
                     viewPager.setCurrentItem(defaultPageIsTask ?0 :1, true);
 
                 } else if (currentPage == 'T'){
-                    if (!defaultPageIsTask) {
-                        viewPager.setCurrentItem(0, true);
-                    } else {
-                        viewPager.setCurrentItem(1, true);
-                    }
+                    viewPager.setCurrentItem(defaultPageIsTask ?1 :0, true);
                 }
                 return true;
             }
@@ -446,13 +423,9 @@ public class ListFragment extends Fragment{
         showingStarred = false;
         showDone.setTitle(R.string.show_done);
         taskListFragment.getTaskListAdapter().showingDone = false;
-        if (byUrgencyByDefault) {
-            sortBy.setTitle(R.string.sort_by_time);
-            sortingBytime = false;
-        } else {
-            sortBy.setTitle(R.string.sort_by_urgency);
-            sortingBytime = true;
-        }
+        sortBy.setTitle(byUrgencyByDefault ?R.string.sort_by_time :R.string.sort_by_urgency);
+        sortingBytime = !byUrgencyByDefault;
+
         super.onStop();
     }
 

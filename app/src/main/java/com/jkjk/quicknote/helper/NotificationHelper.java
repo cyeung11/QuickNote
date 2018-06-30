@@ -9,6 +9,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.support.v7.preference.PreferenceManager;
@@ -48,9 +49,11 @@ public class NotificationHelper extends BroadcastReceiver {
     public static final int PIN_ITEM_NOTIFICATION_ID = 887;
     public static final int TOOL_BAR_REQUEST_CODE = 2417;
     public static final int DAILY_UPDATE_REQUEST_CODE = 2207;
+    private SQLiteDatabase database;
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        database = ((MyApplication)context.getApplicationContext()).database;;
         final String GROUP_KEY = context.getPackageName();
 
         if (intent != null && intent.getAction() != null) {
@@ -160,13 +163,13 @@ public class NotificationHelper extends BroadcastReceiver {
                         // Reset reminder option to "No reminder" after presenting the notification
                         ContentValues values = new ContentValues();
                         values.put("reminder_time", 0L);
-                        MyApplication.database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
+                        database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
                     }
                     break;
 
 
                 case Intent.ACTION_BOOT_COMPLETED:
-                    cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"_id", "title", "type", "event_time", "reminder_time", "content"}, "reminder_time > 0", null, null
+                    cursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "type", "event_time", "reminder_time", "content"}, "reminder_time > 0", null, null
                             , null, null);
                     if (cursor != null && cursor.moveToFirst()) {
                         do {
@@ -200,7 +203,7 @@ public class NotificationHelper extends BroadcastReceiver {
                     if (intent.hasExtra(EXTRA_NOTE_ID) && (taskId = intent.getLongExtra(EXTRA_NOTE_ID, 98876146L)) != 98876146L) {
                         ContentValues values = new ContentValues();
                         values.put("done", 1);
-                        MyApplication.database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
+                        database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
                         updateTaskListWidget(context);
 
                         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -234,7 +237,7 @@ public class NotificationHelper extends BroadcastReceiver {
                     calendar.set(Calendar.MILLISECOND, 999);
                     long lastSecond = calendar.getTimeInMillis();
 
-                    cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title"}, "type = 1 AND event_time BETWEEN " + firstSecond + " AND " + lastSecond
+                    cursor = database.query(DATABASE_NAME, new String[]{"title"}, "type = 1 AND event_time BETWEEN " + firstSecond + " AND " + lastSecond
                             , null, null, null, null);
                     int taskCount = 0;
                     StringBuilder stringBuilder = new StringBuilder();
@@ -386,7 +389,7 @@ public class NotificationHelper extends BroadcastReceiver {
         calendar.set(Calendar.MILLISECOND, 999);
         long lastSecond = calendar.getTimeInMillis();
 
-        Cursor cursor = MyApplication.database.query(DATABASE_NAME, new String[]{"title"}, "type = 1 AND event_time BETWEEN " + firstSecond + " AND " + lastSecond
+        Cursor cursor = database.query(DATABASE_NAME, new String[]{"title"}, "type = 1 AND event_time BETWEEN " + firstSecond + " AND " + lastSecond
                 , null, null, null, null);
         int taskCount = cursor.getCount();
         StringBuilder stringBuilder = new StringBuilder();

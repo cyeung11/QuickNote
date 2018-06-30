@@ -39,6 +39,7 @@
             android:layout_weight="1"
             android:textSize="14sp"
             android:fontFamily="serif"
+            android:ellipsize="end"
             android:textColor="@android:color/black"
             android:layout_marginEnd="6dp" />
 
@@ -58,6 +59,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/note_content"
         android:maxLines="3"
+        android:ellipsize="end"
         android:textSize="12sp"
         android:textColor="@android:color/darker_gray" />
 
