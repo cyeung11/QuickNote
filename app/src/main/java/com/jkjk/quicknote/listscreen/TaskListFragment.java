@@ -70,14 +70,6 @@ public class TaskListFragment extends Fragment {
         taskListAdapter.notifyDataSetChanged();
     }
 
-    @Override
-    public void onStop() {
-        if (taskListAdapter.actionMode !=null) {
-            taskListAdapter.actionMode.finish();
-        }
-        showingStarred = false;
-        super.onStop();
-    }
 
     public void onTaskEdit(long taskId) {
         Intent startTaskActivity = new Intent(getContext(), TaskEdit.class);

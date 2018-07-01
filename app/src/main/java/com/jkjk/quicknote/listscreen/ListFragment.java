@@ -20,6 +20,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -77,9 +78,8 @@ public class ListFragment extends Fragment{
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-//        MobileAds.initialize(getActivity(),ADMOB_ID);
 
-        android.support.v7.widget.Toolbar listMenu = getActivity().findViewById(R.id.list_menu);
+        Toolbar listMenu = getActivity().findViewById(R.id.list_menu);
         ((AppCompatActivity) getActivity()).setSupportActionBar(listMenu);
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -143,7 +143,7 @@ public class ListFragment extends Fragment{
             @Override
             public void onClick(View view) {
 
-                final boolean currentPageIsNote = currentPage == 'N';
+                final boolean currentPageIsNote = (currentPage == 'N');
                 // button served as delete function
                 if (noteListFragment.getNoteListAdapter().isInActionMode || taskListFragment.getTaskListAdapter().isInActionMode){
                     new AlertDialog.Builder(view.getContext()).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete_list)
@@ -200,8 +200,6 @@ public class ListFragment extends Fragment{
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_list, container, false);
     }
-
-
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -309,7 +307,6 @@ public class ListFragment extends Fragment{
             }
         });
 
-//        showStarred.setIcon(R.drawable.sharp_star_border_24);
         showStarred.setTitle(R.string.show_starred);
         showStarred.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
@@ -339,10 +336,10 @@ public class ListFragment extends Fragment{
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
 
+                // Done items are sorted by time as urgency is not available for done item. Sorting and filtering done item cannot be toggled on at the same time. So here we reset the sort by button
                 if (byUrgencyByDefault) {
                     sortBy.setTitle(R.string.sort_by_time);
                     sortingBytime = false;
-
                 } else {
                     sortBy.setTitle(R.string.sort_by_urgency);
                     sortingBytime = true;
@@ -364,8 +361,6 @@ public class ListFragment extends Fragment{
                 return true;
             }
         });
-
-
 
         if (byUrgencyByDefault) {
             sortBy.setTitle(R.string.sort_by_time);
@@ -408,7 +403,6 @@ public class ListFragment extends Fragment{
         });
     }
 
-
     @Override
     public void onResume() {
         super.onResume();
@@ -418,14 +412,22 @@ public class ListFragment extends Fragment{
     @Override
     public void onStop() {
         // Clear all filter
+        taskListAdapter = taskListFragment.getTaskListAdapter();
+        noteListAdapter = noteListFragment.getNoteListAdapter();
+
         search.collapseActionView();
         showStarred.setTitle(R.string.show_starred);
         showingStarred = false;
         showDone.setTitle(R.string.show_done);
-        taskListFragment.getTaskListAdapter().showingDone = false;
+        taskListAdapter.showingDone = false;
         sortBy.setTitle(byUrgencyByDefault ?R.string.sort_by_time :R.string.sort_by_urgency);
         sortingBytime = !byUrgencyByDefault;
-
+        if (taskListAdapter.actionMode !=null) {
+            taskListAdapter.actionMode.finish();
+        }
+        if (noteListAdapter.actionMode !=null) {
+            noteListAdapter.actionMode.finish();
+        }
         super.onStop();
     }
 

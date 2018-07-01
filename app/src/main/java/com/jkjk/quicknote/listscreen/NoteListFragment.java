@@ -70,13 +70,6 @@ public class NoteListFragment extends Fragment {
         noteListAdapter.notifyDataSetChanged();
     }
 
-    @Override
-    public void onStop() {
-        if (noteListAdapter.actionMode !=null) {
-            noteListAdapter.actionMode.finish();
-        }
-        super.onStop();
-    }
 
     public void onNoteEdit(long noteId) {
         Intent startNoteActivity = new Intent(getContext(), NoteEdit.class);

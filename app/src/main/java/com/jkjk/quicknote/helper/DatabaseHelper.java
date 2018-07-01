@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
+    // Update restore logic if new column is insert
     public final static String[] dbColumn = new String[]{"_id", "title", "content", "event_time", "starred", "type", "urgency", "done", "reminder_time"};
     public final static String DATABASE_NAME = "note";
     public final static int CURRENT_DB_VER = 5;

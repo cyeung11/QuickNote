@@ -1,11 +1,9 @@
 package com.jkjk.quicknote.settings;
 
-
 import android.Manifest;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.appwidget.AppWidgetManager;
-import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -25,15 +23,16 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceManager;
-import android.util.Log;
 import android.widget.Toast;
 
+import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
 import com.jkjk.quicknote.helper.DatabaseHelper;
 import com.jkjk.quicknote.helper.NotificationHelper;
-import com.jkjk.quicknote.widget.AppWidgetService;
+import com.jkjk.quicknote.widget.NoteListWidget;
 import com.jkjk.quicknote.widget.NoteWidget;
+import com.jkjk.quicknote.widget.TaskListWidget;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,7 +44,6 @@ import java.util.Date;
 import java.util.Locale;
 
 import static android.app.Activity.RESULT_OK;
-import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
 import static com.jkjk.quicknote.helper.DatabaseHelper.CURRENT_DB_VER;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.helper.DatabaseHelper.dbColumn;
@@ -125,42 +123,36 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         restore.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                new AlertDialog.Builder(getActivity()).setTitle(R.string.restore).setMessage(R.string.restore_confirm)
-                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
 
-                                //Check permission
-                                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
-                                        != PackageManager.PERMISSION_GRANTED) {
+                //Check permission
+                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
 
-                                    // Permission is not granted
-                                    if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                                        new AlertDialog.Builder(getActivity()).setTitle(R.string.permission_required).setMessage(R.string.permission)
-                                                .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
-                                                    @Override
-                                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                                        Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
-                                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                                        intent.setData(uri);
-                                                        startActivity(intent);
-                                                    }
-                                                })
-                                                .setNegativeButton(R.string.cancel, null)
-                                                .show();
-                                    } else {
-                                        // request the permission
-                                        ActivityCompat.requestPermissions(getActivity(),
-                                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                                                RESTORE_REQUEST_CODE);
+                    // Permission is not granted
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                        new AlertDialog.Builder(getActivity()).setTitle(R.string.permission_required).setMessage(R.string.permission)
+                                .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                        Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                        intent.setData(uri);
+                                        startActivity(intent);
                                     }
-                                } else {
-                                    // Permission has already been granted
-                                    selectRestoreLocation();
-                                }
-                            }
-                        }).setNegativeButton(R.string.cancel, null).show();
+                                })
+                                .setNegativeButton(R.string.cancel, null)
+                                .show();
+                    } else {
+                        // request the permission
+                        ActivityCompat.requestPermissions(getActivity(),
+                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                RESTORE_REQUEST_CODE);
+                    }
+                } else {
+                    // Permission has already been granted
+                    selectRestoreLocation();
+                }
                 return true;
             }
         });
@@ -366,7 +358,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "r");
             FileInputStream fileInputStream = new FileInputStream(pfd.getFileDescriptor());
 
-
             // Verify integrity of  restoreWithResult file
             FileOutputStream verifyOutputStream = new FileOutputStream(verifydb);
 
@@ -379,59 +370,56 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
             verifyOutputStream.flush();
             verifyOutputStream.close();
+            fileInputStream.close();
+            pfd.close();
 
             DatabaseHelper helper  = new DatabaseHelper(context.getApplicationContext(), "verify_db", null, CURRENT_DB_VER);
-            SQLiteDatabase database = helper.getWritableDatabase();
+            SQLiteDatabase databaseToBeRestore = helper.getWritableDatabase();
 
-            Cursor verifyCursor = database.query(DATABASE_NAME, null, null, null, null
-                    , null, null);
+            Cursor verifyCursor = databaseToBeRestore.rawQuery("SELECT * FROM '" + DATABASE_NAME + "' LIMIT 1", null);
 
-            if (database.isDatabaseIntegrityOk() && verifyCursor.moveToFirst() && Arrays.equals(verifyCursor.getColumnNames(), dbColumn)){
-
+            if (databaseToBeRestore.isDatabaseIntegrityOk() && verifyCursor.moveToFirst()
+                    && Arrays.equals(verifyCursor.getColumnNames(), dbColumn) && verifyCursor.getType(0) == Cursor.FIELD_TYPE_INTEGER
+                    && verifyCursor.getType(1) == Cursor.FIELD_TYPE_STRING && verifyCursor.getType(2) == Cursor.FIELD_TYPE_STRING
+                    && verifyCursor.getType(3) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(4) == Cursor.FIELD_TYPE_INTEGER
+                    && verifyCursor.getType(5) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(6) == Cursor.FIELD_TYPE_INTEGER
+                    && verifyCursor.getType(7) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(8) == Cursor.FIELD_TYPE_INTEGER){
                 // Restore file verified. Begin restoring
-                String dbPath = "//data//"+context.getPackageName()+"//databases//note_db";
-                File db = new File(dataPath, dbPath);
-                FileOutputStream fileOutputStream = new FileOutputStream(db);
 
-                fileInputStream = new FileInputStream(verifydb);
+                ContentValues values = new ContentValues();
+                SQLiteDatabase currentDatabase = ((MyApplication)context.getApplicationContext()).database;
 
-                byte[] buffer = new byte[1024];
-                int length;
+                // Create a copy of database column without the id
+                String[] columnToBeCopied = new String[dbColumn.length-1];
+                System.arraycopy(dbColumn, 1, columnToBeCopied, 0, columnToBeCopied.length);
 
-                while ((length = fileInputStream.read(buffer))>0){
-                    fileOutputStream.write(buffer, 0, length);
+                verifyCursor = databaseToBeRestore.query(DATABASE_NAME, columnToBeCopied, null, null, null
+                        , null, null);
+                if (verifyCursor!=null && verifyCursor.moveToFirst()) {
+                    do {
+                        values.put(columnToBeCopied[0], verifyCursor.getString(0));
+                        values.put(columnToBeCopied[1], verifyCursor.getString(1));
+                        values.put(columnToBeCopied[2], verifyCursor.getLong(2));
+                        values.put(columnToBeCopied[3], verifyCursor.getInt(3));
+                        values.put(columnToBeCopied[4], verifyCursor.getInt(4));
+                        values.put(columnToBeCopied[5], verifyCursor.getInt(5));
+                        values.put(columnToBeCopied[6], verifyCursor.getInt(6));
+                        values.put(columnToBeCopied[7], verifyCursor.getLong(7));
+                        currentDatabase.insert(DATABASE_NAME, "", values);
+                    } while (verifyCursor.moveToNext());
                 }
 
-                fileOutputStream.flush();
-                fileInputStream.close();
-                fileOutputStream.close();
-                pfd.close();
-                verifyCursor.close();
+                if (verifyCursor != null) {
+                    verifyCursor.close();
+                }
                 helper.close();
-
-                AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-                ComponentName name = new ComponentName(context.getPackageName(), NoteWidget.class.getName());
-                int [] appWidgetIds = appWidgetManager.getAppWidgetIds(name);
-                Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, appWidgetIds);
-                PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                try {
-                    pendingIntent.send();
-                } catch (Exception e) {
-                    Log.e(context.getClass().getName(), "updating widget",e);
-                }
-
                 return true;
-
             } else {
                 //verification fail. Give up restoreWithResult
-                fileInputStream.close();
-                pfd.close();
                 verifyCursor.close();
                 helper.close();
-
                 return false;
             }
-
         }catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -445,6 +433,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         if (context!=null) {
             if (result) {
                 Toast.makeText(context, context.getString(R.string.restore_success), Toast.LENGTH_SHORT).show();
+                NoteWidget.updateNoteWidget(context);
+                TaskListWidget.updateTaskListWidget(context);
+                NoteListWidget.updateNoteListWidget(context);
             } else {
                 Toast.makeText(context, context.getString(R.string.error_restore), Toast.LENGTH_SHORT).show();
             }

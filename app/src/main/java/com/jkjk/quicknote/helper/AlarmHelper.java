@@ -27,12 +27,9 @@ public class AlarmHelper {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(context, NotificationHelper.class);
-        intent.setAction(ACTION_POST_REMINDER);
-        intent.putExtra(EXTRA_NOTE_ID, id);
-        intent.putExtra(ITEM_TYPE, itemType);
-        intent.putExtra(ITEM_TITLE, title);
-        intent.putExtra(ITEM_CONTENT, content);
-        intent.putExtra(EVENT_TIME, eventTime);
+        intent.setAction(ACTION_POST_REMINDER).putExtra(EXTRA_NOTE_ID, id)
+                .putExtra(ITEM_TYPE, itemType).putExtra(ITEM_TITLE, title)
+                .putExtra(ITEM_CONTENT, content).putExtra(EVENT_TIME, eventTime);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, (int)id, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         if (alarmManager != null) {
