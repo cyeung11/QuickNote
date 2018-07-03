@@ -6,7 +6,7 @@ android {
         applicationId "com.jkjk.quicknote"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 13
+        versionCode 14
 //        TODO
         versionName "1.180701"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

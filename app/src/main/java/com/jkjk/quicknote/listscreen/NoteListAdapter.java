@@ -108,6 +108,7 @@ public class NoteListAdapter extends ItemListAdapter {
                         // if all selected item are starred, set title of menu item to unstar
                         if (selectedNotStarred == 0){
                             starred.setTitle(fragment.getResources().getString(R.string.unstarred));
+                            starred.setIcon(R.drawable.sharp_outlined_flag_24);
                         }
 
                     } else {
@@ -118,6 +119,7 @@ public class NoteListAdapter extends ItemListAdapter {
                         if (!holder.isStarred){
                             selectedNotStarred += 1;
                             starred.setTitle(fragment.getResources().getString(R.string.starred));
+                            starred.setIcon(R.drawable.sharp_flag_24);
                         }
 
                         // if all have been select, change title to deselect all
@@ -160,9 +162,11 @@ public class NoteListAdapter extends ItemListAdapter {
                             if (holder.isStarred){
                                 selectedNotStarred = 0;
                                 starred.setTitle(fragment.getResources().getString(R.string.unstarred));
+                                starred.setIcon(R.drawable.sharp_outlined_flag_24);
                             }else {
                                 selectedNotStarred = 1;
                                 starred.setTitle(fragment.getResources().getString(R.string.starred));
+                                starred.setIcon(R.drawable.sharp_flag_24);
                             }
 
                             if (itemCount == 1){

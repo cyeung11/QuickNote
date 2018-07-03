@@ -22,6 +22,7 @@ import com.jkjk.quicknote.taskeditscreen.TaskEdit;
 
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_PROVIDER;
+import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TYPE;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
 
@@ -36,6 +37,8 @@ public class AppWidgetService extends IntentService {
     public static final int NOTE_WIDGET_REQUEST_CODE = 0;
     public static final int TASK_LIST_WIDGET_REQUEST_CODE = 1;
     public static final int NOTE_LIST_WIDGET_REQUEST_CODE = 2;
+    public static final int NOTE_LIST_WIDGET_START_APP_REQUEST_CODE = 1399;
+    public static final int TASK_LIST_WIDGET_START_APP_REQUEST_CODE = 2333;
 
     private SQLiteDatabase database;
 
@@ -141,7 +144,10 @@ public class AppWidgetService extends IntentService {
 
     private void updateListWidget(boolean itemIsNote, int[] appWidgetIds, RemoteViews[] views, AppWidgetManager appWidgetManager){
         Intent startAppIntent = new Intent(this, List.class);
-        PendingIntent startAppPendingIntent = PendingIntent.getActivity(this, 0, startAppIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        startAppIntent.putExtra(ITEM_TYPE, itemIsNote ?'N' :'T');
+        PendingIntent startAppPendingIntent = PendingIntent.getActivity(this
+                , itemIsNote ?NOTE_LIST_WIDGET_START_APP_REQUEST_CODE :TASK_LIST_WIDGET_START_APP_REQUEST_CODE
+                , startAppIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent newItemIntent = new Intent(this, itemIsNote ?NoteEdit.class :TaskEdit.class);
         newItemIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);

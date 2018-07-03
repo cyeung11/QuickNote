@@ -378,8 +378,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
             Cursor verifyCursor = databaseToBeRestore.rawQuery("SELECT * FROM '" + DATABASE_NAME + "' LIMIT 1", null);
 
-            if (databaseToBeRestore.isDatabaseIntegrityOk() && verifyCursor.moveToFirst()
-                    && Arrays.equals(verifyCursor.getColumnNames(), dbColumn) && verifyCursor.getType(0) == Cursor.FIELD_TYPE_INTEGER
+            if (databaseToBeRestore.isDatabaseIntegrityOk() && Arrays.equals(verifyCursor.getColumnNames(), dbColumn)
+                    && verifyCursor.moveToFirst() && verifyCursor.getType(0) == Cursor.FIELD_TYPE_INTEGER
                     && verifyCursor.getType(1) == Cursor.FIELD_TYPE_STRING && verifyCursor.getType(2) == Cursor.FIELD_TYPE_STRING
                     && verifyCursor.getType(3) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(4) == Cursor.FIELD_TYPE_INTEGER
                     && verifyCursor.getType(5) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(6) == Cursor.FIELD_TYPE_INTEGER

@@ -36,6 +36,7 @@ import com.jkjk.quicknote.settings.Settings;
 
 import java.util.ArrayList;
 
+import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TYPE;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.widget.NoteListWidget.updateNoteListWidget;
 import static com.jkjk.quicknote.widget.TaskListWidget.updateTaskListWidget;
@@ -99,7 +100,6 @@ public class ListFragment extends Fragment{
         viewPager = getActivity().findViewById(R.id.pager);
         viewPager.setAdapter(listPageAdapter);
 
-
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -107,13 +107,17 @@ public class ListFragment extends Fragment{
 
             @Override
             public void onPageSelected(int position) {
-                noteListAdapter = noteListFragment.getNoteListAdapter();
-                taskListAdapter = taskListFragment.getTaskListAdapter();
-                if (noteListAdapter.actionMode !=null) {
-                    noteListAdapter.actionMode.finish();
+                if (noteListFragment != null) {
+                    noteListAdapter = noteListFragment.getNoteListAdapter();
+                    if (noteListAdapter.actionMode != null) {
+                        noteListAdapter.actionMode.finish();
+                    }
                 }
-                if (taskListAdapter.actionMode !=null) {
-                    taskListAdapter.actionMode.finish();
+                if (taskListFragment != null) {
+                    taskListAdapter = taskListFragment.getTaskListAdapter();
+                    if (taskListAdapter.actionMode != null) {
+                        taskListAdapter.actionMode.finish();
+                    }
                 }
 
                 // if default page is note, position 0 will be note, so current page is 0
@@ -131,6 +135,16 @@ public class ListFragment extends Fragment{
             public void onPageScrollStateChanged(int state) {
             }
         });
+
+        Intent intent = getActivity().getIntent();
+        if (intent != null && intent.hasExtra(ITEM_TYPE)){
+            char itemPageToBeOpened = intent.getCharExtra(ITEM_TYPE, 'N');
+            if (itemPageToBeOpened == 'N') {
+                viewPager.setCurrentItem(defaultPageIsTask ?1 :0, true);
+            } else {
+                viewPager.setCurrentItem(defaultPageIsTask ?0 :1, true);
+            }
+        }
 
         FloatingActionButton addNote =  getActivity().findViewById(R.id.add_note);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
