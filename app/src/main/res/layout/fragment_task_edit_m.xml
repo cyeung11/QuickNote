@@ -152,10 +152,9 @@
                 android:id="@+id/task_repeat_column"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:layout_marginBottom="20dp">
+                android:layout_marginBottom="16dp">
 
                 <ImageView
                     android:layout_width="22sp"

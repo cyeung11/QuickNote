@@ -36,6 +36,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
 import android.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.Switch;
@@ -79,11 +80,11 @@ public class TaskEditFragment extends Fragment {
     private EditText titleInFragment, remarkInFragment;
     private TextView dateInFragment, timeInFragment;
     private Switch markAsDoneInFragment;
-    private boolean newTask, isDone,  hasModified = false, urgencySelectByUser = false
+    private boolean newTask, isDone,  hasModified = false, urgencySelectByUser = false, repeatSelectByUser = false
             , reminderSelectByUser = false, hasShowRemoveDateHint = false, hasShowRemoveTimeHint = false, notificationToolEnable;
     private Calendar taskDate, reminderTime;
     private String title, remark;
-    private Spinner urgencyInFragment, reminderInFragment;
+    private Spinner urgencyInFragment, reminderInFragment, repeatInFragment;
     private int spinnerPresetSize;
     private ImageView timeIcon;
     private ArrayList<String> reminderArray;
@@ -148,6 +149,8 @@ public class TaskEditFragment extends Fragment {
         timeInFragment = view.findViewById(R.id.task_time);
         urgencyInFragment = view.findViewById(R.id.task_urgency);
         timeIcon = view.findViewById(R.id.task_time_icon);
+        reminderInFragment = view.findViewById(R.id.task_reminder);
+        repeatInFragment = view.findViewById(R.id.task_repeat);
 
         if (savedInstanceState !=null) {
             // case when restoring from saved instance
@@ -220,6 +223,7 @@ public class TaskEditFragment extends Fragment {
         urgencyInFragment.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                //To prevent initialization trigger the method when the fragment first startup. After that, allow all interaction
                 if (urgencySelectByUser){
                     hasModified = true;
                 }
@@ -235,6 +239,37 @@ public class TaskEditFragment extends Fragment {
             urgencyInFragment.setSelection(taskCursor.getInt(3));
         }
 
+        // Repeat
+        final ArrayAdapter<CharSequence> repeatAdapter = ArrayAdapter.createFromResource(getContext(),R.array.repeat_list, spinnerItemInt);
+        repeatAdapter.setDropDownViewResource(spinnerDropDownInt);
+        repeatInFragment.setAdapter(repeatAdapter);
+        repeatInFragment.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                //To prevent initialization trigger the method when the fragment first startup. After that, allow all interaction
+                if (repeatSelectByUser){
+                    hasModified = true;
+
+                    if (i == repeatAdapter.getPosition(getString(R.string.other_spinner))){
+                        new NumberPickerDialog(getContext(), new NumberPicker.OnValueChangeListener() {
+                            @Override
+                            public void onValueChange(NumberPicker numberPicker, int oldValue, int newValue) {
+                                Toast.makeText(getContext(), "You selected "+ Integer.toString(newValue)+ " days", Toast.LENGTH_SHORT).show();
+                            }
+                        }, 1, 99).show();
+                    }
+                }
+                repeatSelectByUser = true;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+        if (taskCursor != null) {
+            repeatSelectByUser = false;
+            repeatInFragment.setSelection(0);
+        }
 
          // Reminder
         reminderArray = new ArrayList<>();
@@ -254,7 +289,6 @@ public class TaskEditFragment extends Fragment {
 
         spinnerPresetSize = reminderArray.size();
 
-        reminderInFragment = view.findViewById(R.id.task_reminder);
         final ArrayAdapter<String> reminderAdapter = new ArrayAdapter<>(getContext(), spinnerItemInt, reminderArray);
         reminderAdapter.setDropDownViewResource(spinnerDropDownInt);
         reminderInFragment.setAdapter(reminderAdapter);

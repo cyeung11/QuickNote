@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.listscreen.ItemListAdapter;
 import com.jkjk.quicknote.listscreen.List;
 import com.jkjk.quicknote.noteeditscreen.NoteEdit;
 import com.jkjk.quicknote.taskeditscreen.SnoozeDurationDialog;
@@ -53,7 +54,7 @@ public class NotificationHelper extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        database = ((MyApplication)context.getApplicationContext()).database;;
+        database = ((MyApplication)context.getApplicationContext()).database;
         final String GROUP_KEY = context.getPackageName();
 
         if (intent != null && intent.getAction() != null) {
@@ -135,27 +136,7 @@ public class NotificationHelper extends BroadcastReceiver {
                         long eventTime = intent.getLongExtra(EVENT_TIME, DATE_NOT_SET_INDICATOR);
 
                         if (eventTime != DATE_NOT_SET_INDICATOR) {
-                            if (DateUtils.isToday(eventTime)) {
-                                Calendar calendar = Calendar.getInstance();
-                                calendar.setTimeInMillis(eventTime);
-
-                                //get the time to see if the time was set by user
-                                if (calendar.get(Calendar.MILLISECOND) == TIME_NOT_SET_MILLISECOND_INDICATOR
-                                        && calendar.get(Calendar.SECOND) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
-                                        && calendar.get(Calendar.MINUTE) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
-                                        && calendar.get(Calendar.HOUR_OF_DAY) == TIME_NOT_SET_HOUR_INDICATOR) {
-
-                                    builder.setContentText(context.getString(R.string.due_today));
-
-                                } else {
-                                    builder.setContentText(context.getString(R.string.due_today_with_time, DateUtils.formatDateTime(context, eventTime, DateUtils.FORMAT_SHOW_TIME)));
-                                }
-
-                            } else if (isTomorrow(eventTime)) {
-                                builder.setContentText(context.getString(R.string.due_tomorrow));
-                            } else {
-                                builder.setContentText(context.getString(R.string.due_someday, DateUtils.formatDateTime(context, eventTime, DateUtils.FORMAT_SHOW_DATE)));
-                            }
+                            builder.setContentText(formatDueString(context, eventTime));
                         }
 
                         notificationManager.notify((int) taskId, builder.build());
@@ -224,26 +205,20 @@ public class NotificationHelper extends BroadcastReceiver {
                     startMainActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     PendingIntent mainPendingIntent = PendingIntent.getActivity(context, 0, startMainActivity, PendingIntent.FLAG_UPDATE_CURRENT);
 
-                    // Get task due today
+                    // Get task due today and expired
                     Calendar calendar = Calendar.getInstance();
-                    calendar.set(Calendar.HOUR_OF_DAY, 0);
-                    calendar.set(Calendar.MINUTE, 0);
-                    calendar.set(Calendar.SECOND, 0);
-                    calendar.set(Calendar.MILLISECOND, 0);
-                    long firstSecond = calendar.getTimeInMillis();
                     calendar.set(Calendar.HOUR_OF_DAY, 23);
                     calendar.set(Calendar.MINUTE, 59);
                     calendar.set(Calendar.SECOND, 59);
                     calendar.set(Calendar.MILLISECOND, 999);
                     long lastSecond = calendar.getTimeInMillis();
 
-                    cursor = database.query(DATABASE_NAME, new String[]{"title"}, "type = 1 AND event_time BETWEEN " + firstSecond + " AND " + lastSecond
+                    cursor = database.query(DATABASE_NAME, new String[]{"title"}, "type = 1 AND event_time BETWEEN 0 AND " + lastSecond
                             , null, null, null, null);
-                    int taskCount = 0;
+                    int taskCount = cursor.getCount();
                     StringBuilder stringBuilder = new StringBuilder();
                     if (cursor.moveToFirst()) {
                         do {
-                            taskCount += 1;
                             stringBuilder.append(cursor.getString(0)).append(", ");
                         } while (cursor.moveToNext());
                     }
@@ -333,26 +308,7 @@ public class NotificationHelper extends BroadcastReceiver {
                             long eventTime = intent.getLongExtra(EVENT_TIME, DATE_NOT_SET_INDICATOR);
 
                             if (eventTime != DATE_NOT_SET_INDICATOR) {
-                                if (DateUtils.isToday(eventTime)) {
-                                    Calendar calendar = Calendar.getInstance();
-                                    calendar.setTimeInMillis(eventTime);
-
-                                    //get the time to see if the time was set by user
-                                    if (calendar.get(Calendar.MILLISECOND) == TIME_NOT_SET_MILLISECOND_INDICATOR
-                                            && calendar.get(Calendar.SECOND) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
-                                            && calendar.get(Calendar.MINUTE) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
-                                            && calendar.get(Calendar.HOUR_OF_DAY) == TIME_NOT_SET_HOUR_INDICATOR) {
-
-                                        builder.setContentText(context.getString(R.string.due_today));
-
-                                    } else {
-                                        builder.setContentText(context.getString(R.string.due_today_with_time, DateUtils.formatDateTime(context, eventTime, DateUtils.FORMAT_SHOW_TIME)));
-                                    }
-                                } else if (isTomorrow(eventTime)) {
-                                    builder.setContentText(context.getString(R.string.due_tomorrow));
-                                } else {
-                                    builder.setContentText(context.getString(R.string.due_someday, DateUtils.formatDateTime(context, eventTime, DateUtils.FORMAT_SHOW_DATE)));
-                                }
+                                builder.setContentText(formatDueString(context, eventTime));
                             }
                         } else if (intent.getCharExtra(ITEM_TYPE, 'A') == 'N') {
                             builder.setContentText(intent.getStringExtra(ITEM_CONTENT)).setStyle(new Notification.BigTextStyle().bigText(intent.getStringExtra(ITEM_CONTENT)));
@@ -376,20 +332,15 @@ public class NotificationHelper extends BroadcastReceiver {
     private void setDailyUpdate(Context context){
         AlarmHelper.setDailyUpdate(context, ACTION_DAILY_UPDATE, DAILY_UPDATE_REQUEST_CODE);
 
-        // Get task due today
+        // Get task due today and expired
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        long firstSecond = calendar.getTimeInMillis();
         calendar.set(Calendar.HOUR_OF_DAY, 23);
         calendar.set(Calendar.MINUTE, 59);
         calendar.set(Calendar.SECOND, 59);
         calendar.set(Calendar.MILLISECOND, 999);
         long lastSecond = calendar.getTimeInMillis();
 
-        Cursor cursor = database.query(DATABASE_NAME, new String[]{"title"}, "type = 1 AND event_time BETWEEN " + firstSecond + " AND " + lastSecond
+        Cursor cursor = database.query(DATABASE_NAME, new String[]{"title"}, "type = 1 AND event_time BETWEEN 0 AND " + lastSecond
                 , null, null, null, null);
         int taskCount = cursor.getCount();
         StringBuilder stringBuilder = new StringBuilder();
@@ -433,21 +384,28 @@ public class NotificationHelper extends BroadcastReceiver {
         notificationManager.notify(TOOL_BAR_NOTIFICATION_ID, builder.build());
     }
 
-    private boolean isTomorrow(long time) {
-        int currentDayOfYear, currentDay, currentYear, currentMonth, setTimeDayOfYear, setTimeYear;
+    private String formatDueString(Context context, long eventTime){
+        if (DateUtils.isToday(eventTime)) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(eventTime);
 
-        Calendar setTime = Calendar.getInstance();
-        setTime.setTimeInMillis(time);
+            //get the time to see if the time was set by user
+            if (calendar.get(Calendar.MILLISECOND) == TIME_NOT_SET_MILLISECOND_INDICATOR
+                    && calendar.get(Calendar.SECOND) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                    && calendar.get(Calendar.MINUTE) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                    && calendar.get(Calendar.HOUR_OF_DAY) == TIME_NOT_SET_HOUR_INDICATOR) {
 
-        Calendar currentTime = Calendar.getInstance();
+                return context.getString(R.string.due_today);
 
-        currentDay = currentTime.get(Calendar.DAY_OF_MONTH);
-        currentDayOfYear = currentTime.get(Calendar.DAY_OF_YEAR);
-        currentMonth = currentTime.get(Calendar.MONTH);
-        currentYear = currentTime.get(Calendar.YEAR);
-        setTimeDayOfYear = setTime.get(Calendar.DAY_OF_YEAR);
-        setTimeYear = setTime.get(Calendar.YEAR);
-
-        return (setTimeDayOfYear == currentDayOfYear + 1 && setTimeYear == currentYear) || (setTimeDayOfYear == 1 && setTimeYear == currentYear + 1 && currentMonth == 11 && currentDay == 31);
+            } else {
+                return context.getString(R.string.due_today_with_time
+                        , DateUtils.formatDateTime(context, eventTime, DateUtils.FORMAT_SHOW_TIME));
+            }
+        } else if (ItemListAdapter.isTomorrow(eventTime)) {
+            return context.getString(R.string.due_tomorrow);
+        } else {
+            return context.getString(R.string.due_someday, DateUtils.formatDateTime(context, eventTime, DateUtils.FORMAT_SHOW_DATE));
+        }
     }
+
 }
