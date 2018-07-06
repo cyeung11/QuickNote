@@ -234,16 +234,17 @@
     </string-array>
     <string-array name="repeat_list">
         <item>Not repeating</item>
-        <item>Daliy</item>
+        <item>Daily</item>
         <item>Weekly</item>
         <item>Monthly</item>
+        <item>Yearly</item>
         <item>Other…</item>
     </string-array>
     <string-array name="reminder_list_without_time">
         <item>No reminder</item>
         <item>Due</item>
         <item>24 hrs before</item>
-        <item>Other…</item>
+        <item>Custom…</item>
     </string-array>
     <string-array name="reminder_list_with_time">
         <item>10 min before</item>

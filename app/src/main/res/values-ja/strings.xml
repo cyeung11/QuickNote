@@ -126,7 +126,7 @@
     <string name="ten_min_before">締め切り10分前</string>
     <string name="thirty_min_before">締め切り30分前</string>
     <string name="a_day_beofre">締め切り24時間前</string>
-    <string name="custom">カスタム</string>
+    <string name="custom">カスタム…</string>
     <string name="repeat">繰り返される</string>
     <string name="notification_channel_name">アラート</string>
     <string name="snooze">遅れた</string>

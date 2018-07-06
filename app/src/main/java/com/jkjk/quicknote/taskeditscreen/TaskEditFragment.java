@@ -51,6 +51,7 @@ import com.jkjk.quicknote.helper.NotificationHelper;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -75,8 +76,7 @@ public class TaskEditFragment extends Fragment {
 
     private SQLiteDatabase database;
     boolean hasTaskSave = false;
-    private long taskId;
-    private long initEventTime;
+    private long taskId, initEventTime, repeatTime = 0;
     private EditText titleInFragment, remarkInFragment;
     private TextView dateInFragment, timeInFragment;
     private Switch markAsDoneInFragment;
@@ -85,9 +85,9 @@ public class TaskEditFragment extends Fragment {
     private Calendar taskDate, reminderTime;
     private String title, remark;
     private Spinner urgencyInFragment, reminderInFragment, repeatInFragment;
-    private int spinnerPresetSize;
+    private int reminderPresetSize, repeatPresetSize;
     private ImageView timeIcon;
-    private ArrayList<String> reminderArray;
+    private ArrayList<String> reminderArray, repeatArray;
 
     public TaskEditFragment() {
         // Required empty public constructor
@@ -169,7 +169,7 @@ public class TaskEditFragment extends Fragment {
             // Reading from database
         if (!newTask) {
             try {
-                taskCursor = database.query(DATABASE_NAME, new String[]{"title", "content", "event_time","urgency","done", "reminder_time"}, "_id= " + taskId ,
+                taskCursor = database.query(DATABASE_NAME, new String[]{"title", "content", "event_time","urgency","done", "reminder_time", "repeat_interval"}, "_id= " + taskId ,
                         null, null, null, null, null);
                 taskCursor.moveToFirst();
             } catch (Exception e) {
@@ -213,6 +213,7 @@ public class TaskEditFragment extends Fragment {
 
             reminderTime.setTimeInMillis(taskCursor.getLong(5));
 
+            repeatTime = taskCursor.getLong(6);
         }
 
 
@@ -240,7 +241,9 @@ public class TaskEditFragment extends Fragment {
         }
 
         // Repeat
-        final ArrayAdapter<CharSequence> repeatAdapter = ArrayAdapter.createFromResource(getContext(),R.array.repeat_list, spinnerItemInt);
+        repeatArray = new ArrayList<>(Arrays.asList(getContext().getResources().getStringArray(R.array.repeat_list)));
+        reminderPresetSize = repeatArray.size();
+        final ArrayAdapter<String> repeatAdapter = new ArrayAdapter<>(getContext(), spinnerItemInt, repeatArray);
         repeatAdapter.setDropDownViewResource(spinnerDropDownInt);
         repeatInFragment.setAdapter(repeatAdapter);
         repeatInFragment.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -250,24 +253,84 @@ public class TaskEditFragment extends Fragment {
                 if (repeatSelectByUser){
                     hasModified = true;
 
-                    if (i == repeatAdapter.getPosition(getString(R.string.other_spinner))){
+//                    if select the last item, i.e. other, show the number picker
+                    if (i == repeatArray.size()-1){
                         new NumberPickerDialog(getContext(), new NumberPicker.OnValueChangeListener() {
                             @Override
                             public void onValueChange(NumberPicker numberPicker, int oldValue, int newValue) {
-                                Toast.makeText(getContext(), "You selected "+ Integer.toString(newValue)+ " days", Toast.LENGTH_SHORT).show();
+                                repeatTime = newValue * 86400000L;
+                                if (repeatArray.size() > reminderPresetSize){
+                                     repeatArray.remove(0);
+                                }
+                                repeatArray.add(0, Integer.toString(newValue)+" "+getString(R.string.day));
+                                repeatAdapter.notifyDataSetChanged();
+                                repeatSelectByUser = false;
+                                repeatInFragment.setSelection(0);
                             }
                         }, 1, 99).show();
+                    } else if (repeatArray.size() > reminderPresetSize) {
+                        repeatArray.remove(0);
+                        switch (i){
+                            case 1:
+                                repeatTime = 0L;
+                                break;
+                            case 2:
+                                repeatTime = 86400000L;
+                                break;
+                            case 3:
+                                repeatTime = 604800000L;
+                                break;
+                            case 4:
+                                repeatTime = 2592000000L;
+                                break;
+                            case 5:
+                                repeatTime = 31104000000L;
+                                break;
+                        }
+                        // As we remove item and mess with the position before spinner show what is selected, we need to set the selection to correct position
+                        repeatSelectByUser = false;
+                        repeatInFragment.setSelection(i-1);
+                    } else {
+                        switch (i){
+                            case 0:
+                                repeatTime = 0L;
+                                break;
+                            case 1:
+                                repeatTime = 86400000L;
+                                break;
+                            case 2:
+                                repeatTime = 604800000L;
+                                break;
+                            case 3:
+                                repeatTime = 2592000000L;
+                                break;
+                            case 4:
+                                repeatTime = 31104000000L;
+                                break;
+                        }
                     }
                 }
                 repeatSelectByUser = true;
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
             }
         });
-        if (taskCursor != null) {
-            repeatSelectByUser = false;
+
+        repeatSelectByUser = false;
+        if (repeatTime == 0){
+            repeatInFragment.setSelection(0);
+        } else if (repeatTime == 86400000){
+            repeatInFragment.setSelection(1);
+        } else if (repeatTime == 604800000){
+            repeatInFragment.setSelection(2);
+        }else if (repeatTime == 2592000000L){
+            repeatInFragment.setSelection(3);
+        }else if (repeatTime == 31104000000L){
+            repeatInFragment.setSelection(4);
+        } else {
+            repeatArray.add(0, Long.toString(repeatTime/86400000L)+" "+getString(R.string.day));
+            repeatAdapter.notifyDataSetChanged();
             repeatInFragment.setSelection(0);
         }
 
@@ -287,7 +350,7 @@ public class TaskEditFragment extends Fragment {
         }
         reminderArray.add(getString(R.string.custom));
 
-        spinnerPresetSize = reminderArray.size();
+        reminderPresetSize = reminderArray.size();
 
         final ArrayAdapter<String> reminderAdapter = new ArrayAdapter<>(getContext(), spinnerItemInt, reminderArray);
         reminderAdapter.setDropDownViewResource(spinnerDropDownInt);
@@ -298,8 +361,8 @@ public class TaskEditFragment extends Fragment {
                 // only invoked by user interaction
                 if (reminderSelectByUser){
                     hasModified = true;
-                    // if select other, show date & time picker
-                    if (reminderInFragment.getItemAtPosition(i).equals(getString(R.string.custom))){
+                    // if select other, i.e the last item, show date & time picker
+                    if (i == reminderArray.size()-1){
                         int yr, mn, dy;
                         if (reminderTime.getTimeInMillis()==0){
                             yr = Calendar.getInstance().get(Calendar.YEAR);
@@ -333,7 +396,7 @@ public class TaskEditFragment extends Fragment {
                                         reminderTime.set(Calendar.MINUTE, minute);
 
                                         // If user is changing custom time, remove the previous custom time, which must be the first one
-                                        if (reminderArray.size()> spinnerPresetSize) {
+                                        if (reminderArray.size()> reminderPresetSize) {
                                             reminderArray.remove(0);
                                         }
 
@@ -367,7 +430,7 @@ public class TaskEditFragment extends Fragment {
                         });
                         datePickerDialog.show();
 
-                    } else if (reminderArray.size()> spinnerPresetSize){
+                    } else if (reminderArray.size()> reminderPresetSize){
                         reminderArray.remove(0);
                         reminderAdapter.notifyDataSetChanged();
 
@@ -474,7 +537,7 @@ public class TaskEditFragment extends Fragment {
                             int duePosition = reminderArray.indexOf(getString(R.string.no_reminder_set));
                             reminderArray.add(duePosition + 1, getString(R.string.zero_min_before));
                             reminderArray.add(duePosition + 2, getString(R.string.a_day_beofre));
-                            spinnerPresetSize += 2;
+                            reminderPresetSize += 2;
                             reminderAdapter.notifyDataSetChanged();
                         }
 
@@ -545,7 +608,7 @@ public class TaskEditFragment extends Fragment {
                             int duePosition = reminderArray.indexOf(getString(R.string.zero_min_before));
                             reminderArray.add(duePosition + 1, getString(R.string.ten_min_before));
                             reminderArray.add(duePosition + 2, getString(R.string.thirty_min_before));
-                            spinnerPresetSize += 2;
+                            reminderPresetSize += 2;
                             reminderAdapter.notifyDataSetChanged();
                         }
                     }
@@ -756,6 +819,7 @@ public class TaskEditFragment extends Fragment {
 
         values.put("type", 1);
         values.put("urgency", urgencyInFragment.getSelectedItemPosition());
+        values.put("repeat_interval", repeatTime>0 ?repeatTime :0);
 
         if (markAsDoneInFragment.isChecked()) {
             values.put("done", 1);

@@ -9,13 +9,14 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     // Update restore logic if new column is insert
-    public final static String[] dbColumn = new String[]{"_id", "title", "content", "event_time", "starred", "type", "urgency", "done", "reminder_time"};
+    public final static String[] dbColumn = new String[]{"_id", "title", "content", "event_time", "starred", "type", "urgency", "done", "reminder_time", "repeat_interval"};
     public final static String DATABASE_NAME = "note";
-    public final static int CURRENT_DB_VER = 5;
+    public final static int CURRENT_DB_VER = 6;
     private final static String CREATE_STRING = "CREATE TABLE IF NOT EXISTS " + DATABASE_NAME +
             " (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, content TEXT NOT NULL" +
             ", event_time INTEGER NOT NULL, starred INTEGER NOT NULL DEFAULT '0', type INTEGER NOT NULL" +
-            ", urgency INTEGER NOT NULL DEFAULT '0', done INTEGER NOT NULL DEFAULT '0', reminder_time INTEGER NOT NULL DEFAULT '0')";
+            ", urgency INTEGER NOT NULL DEFAULT '0', done INTEGER NOT NULL DEFAULT '0', reminder_time INTEGER NOT NULL DEFAULT '0'" +
+            ", repeat_interval INTEGER NOT NULL DEFAULT '0')";
 
     private static final String DATABASE_ALTER_V2 = "ALTER TABLE "
             + DATABASE_NAME + " ADD COLUMN starred INTEGER;";
@@ -46,6 +47,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_ALTER_V5 =  "ALTER TABLE "
             + DATABASE_NAME + " ADD COLUMN reminder_time INTEGER NOT NULL DEFAULT '0';";
+
+    private static final String DATABASE_ALTER_V6 =  "ALTER TABLE "
+            + DATABASE_NAME + " ADD COLUMN repeat_interval INTEGER NOT NULL DEFAULT '0';";
 
     public DatabaseHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version){
         super(context,name,factory,version);
@@ -95,6 +99,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Insert reminder related column for corresponding function
         if (oldVersion < 5) {
             sqLiteDatabase.execSQL(DATABASE_ALTER_V5);
+        }
+
+        // Insert repeat related column for corresponding function
+        if (oldVersion < 6) {
+            sqLiteDatabase.execSQL(DATABASE_ALTER_V6);
         }
     }
 

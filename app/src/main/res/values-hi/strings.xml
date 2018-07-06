@@ -130,7 +130,7 @@
     <string name="ten_min_before">10 मिनट पहले</string>
     <string name="thirty_min_before">30 मिनट पहले</string>
     <string name="a_day_beofre">24 घंटे पहले</string>
-    <string name="custom">"कस्टम "</string>
+    <string name="custom">कस्टम</string>
     <string name="notification_channel_name">अनुस्मारक</string>
     <string name="snooze">दिन में झपकी लेना</string>
     <string name="snooze_duration">दिन में झपकी अवधि</string>
