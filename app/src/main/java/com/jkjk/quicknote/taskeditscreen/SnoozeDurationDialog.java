@@ -18,7 +18,7 @@ import com.jkjk.quicknote.helper.AlarmHelper;
 import java.util.Calendar;
 
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
-import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
+import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 
 public class SnoozeDurationDialog extends AppCompatActivity {
     RadioGroup snoozeDuration;
@@ -63,8 +63,8 @@ public class SnoozeDurationDialog extends AppCompatActivity {
 
                 long taskId;
 
-                if (getIntent().hasExtra(EXTRA_NOTE_ID)
-                        && (taskId = getIntent().getLongExtra(EXTRA_NOTE_ID, 98876146L)) != 98876146L) {
+                if (getIntent().hasExtra(EXTRA_ITEM_ID)
+                        && (taskId = getIntent().getLongExtra(EXTRA_ITEM_ID, 98876146L)) != 98876146L) {
 
                     Cursor cursor = database.query(DATABASE_NAME, new String[]{"title", "type", "event_time", "content"}
                             , "_id= " + taskId

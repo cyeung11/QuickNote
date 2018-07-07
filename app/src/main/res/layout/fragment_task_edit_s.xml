@@ -110,44 +110,56 @@
                 android:layout_marginBottom="10dp"
                 android:layout_marginEnd="20dp"
                 android:layout_marginStart="20dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:baselineAligned="false">
 
-                <ImageView
-                    android:layout_width="20sp"
-                    android:layout_height="20sp"
-                    app:srcCompat="@drawable/sharp_calendar_24"
-                    android:contentDescription="@string/date"
-                    android:layout_marginEnd="4dp"/>
-
-                <TextView
-                    android:id="@+id/item_date"
-                    android:layout_width="0dp"
+                <LinearLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="16dp"
-                    android:hint="@string/date_hint"
-                    android:textSize="14sp"
-                    android:textColor="@android:color/black"/>
+                    android:layout_weight="1">
 
-                <ImageView
-                    android:id="@+id/task_time_icon"
-                    android:layout_width="20sp"
-                    android:layout_height="20sp"
-                    app:srcCompat="@drawable/sharp_time_24"
-                    android:contentDescription="@string/time"
-                    android:visibility="invisible"
-                    android:layout_marginEnd="4dp"/>
+                    <ImageView
+                        android:layout_width="20sp"
+                        android:layout_height="20sp"
+                        app:srcCompat="@drawable/sharp_calendar_24"
+                        android:contentDescription="@string/date"
+                        android:layout_marginEnd="4dp"/>
 
-                <TextView
-                    android:id="@+id/task_time"
-                    android:layout_width="0dp"
+                    <TextView
+                        android:id="@+id/item_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp"
+                        android:hint="@string/date_hint"
+                        android:textSize="14sp"
+                        android:textColor="@android:color/black"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:minWidth="160dp"
-                    android:hint="@string/time_hint"
-                    android:visibility="invisible"
-                    android:textSize="14sp"
-                    android:textColor="@android:color/black"/>
+                    android:id="@+id/task_time_grid"
+                    android:visibility="gone"
+                    android:layout_weight="1">
+
+                    <ImageView
+                        android:layout_width="20sp"
+                        android:layout_height="20sp"
+                        app:srcCompat="@drawable/sharp_time_24"
+                        android:contentDescription="@string/time"
+                        android:layout_marginEnd="4dp"/>
+
+                    <TextView
+                        android:id="@+id/task_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="160dp"
+                        android:hint="@string/time_hint"
+                        android:textSize="14sp"
+                        android:textColor="@android:color/black"/>
+
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -155,6 +167,7 @@
                 android:id="@+id/task_repeat_column"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 android:layout_marginEnd="20dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginBottom="10dp">

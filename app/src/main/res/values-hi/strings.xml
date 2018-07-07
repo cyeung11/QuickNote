@@ -196,4 +196,8 @@
         <item>10 मिनट पहले</item>
         <item>30 मिनट पहले</item>
     </string-array>
+    <string name="other_spinner">कस्टम</string>
+    <string name="day">दिन</string>
+    <string name="repeat_interval">दोहराना</string>
+    <string name="not_repeating">कोई दोहराव नहीं</string>
 </resources>

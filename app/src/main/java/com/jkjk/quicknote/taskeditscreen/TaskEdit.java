@@ -7,7 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.jkjk.quicknote.R;
 
-import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
+import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 
 public class TaskEdit extends AppCompatActivity {
 
@@ -23,9 +23,9 @@ public class TaskEdit extends AppCompatActivity {
         if (savedInstanceState == null) {
             //Case when the activity is newly created
 
-            if (getIntent().hasExtra(EXTRA_NOTE_ID)) {
+            if (getIntent().hasExtra(EXTRA_ITEM_ID)) {
                 //Case when activity is called by note list activity after user selected existing note
-                taskId = getIntent().getLongExtra(EXTRA_NOTE_ID, 0L);
+                taskId = getIntent().getLongExtra(EXTRA_ITEM_ID, 0L);
                 taskEditFragment = TaskEditFragment.newEditFragmentInstance(taskId);
 
             } else {

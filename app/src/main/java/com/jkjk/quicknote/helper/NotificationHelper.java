@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
@@ -26,13 +27,15 @@ import com.jkjk.quicknote.taskeditscreen.TaskEdit;
 
 import java.util.Calendar;
 
+import static android.content.Context.MODE_PRIVATE;
+import static com.jkjk.quicknote.MyApplication.PINNED_NOTIFICATION_IDS;
 import static com.jkjk.quicknote.helper.AlarmHelper.EVENT_TIME;
 import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_CONTENT;
 import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TITLE;
 import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TYPE;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.DEFAULT_NOTE_ID;
-import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
+import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.DATE_NOT_SET_INDICATOR;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_HOUR_INDICATOR;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_MILLISECOND_INDICATOR;
@@ -64,8 +67,8 @@ public class NotificationHelper extends BroadcastReceiver {
             switch (intent.getAction()) {
                 case ACTION_POST_REMINDER:
 
-                    if (intent.hasExtra(EXTRA_NOTE_ID)
-                            && (taskId = intent.getLongExtra(EXTRA_NOTE_ID, DEFAULT_NOTE_ID)) != DEFAULT_NOTE_ID
+                    if (intent.hasExtra(EXTRA_ITEM_ID)
+                            && (taskId = intent.getLongExtra(EXTRA_ITEM_ID, DEFAULT_NOTE_ID)) != DEFAULT_NOTE_ID
                             && intent.hasExtra(ITEM_TYPE)
                             && intent.hasExtra(ITEM_TITLE)
                             && intent.hasExtra(ITEM_CONTENT)) {
@@ -97,17 +100,17 @@ public class NotificationHelper extends BroadcastReceiver {
                         } else if (intent.getCharExtra(ITEM_TYPE, 'A') == 'N') {
                             openItemIntent.setClass(context, NoteEdit.class);
                         }
-                        openItemIntent.putExtra(EXTRA_NOTE_ID, taskId);
+                        openItemIntent.putExtra(EXTRA_ITEM_ID, taskId);
                         PendingIntent startPendingIntent = PendingIntent.getActivity(context, (int)taskId, openItemIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                         // Intent for snoozing
                         Intent snoozeIntent = new Intent(context, SnoozeDurationDialog.class);
-                        snoozeIntent.putExtra(EXTRA_NOTE_ID, taskId);
+                        snoozeIntent.putExtra(EXTRA_ITEM_ID, taskId);
                         // Distinguish snooze & open item
                         PendingIntent snoozePendingIntent = PendingIntent.getActivity(context, (int)taskId, snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                         Intent markAsDoneIntent = new Intent(context, NotificationHelper.class);
-                        markAsDoneIntent.setAction(ACTION_MARK_AS_DONE).putExtra(EXTRA_NOTE_ID, taskId);
+                        markAsDoneIntent.setAction(ACTION_MARK_AS_DONE).putExtra(EXTRA_ITEM_ID, taskId);
                         PendingIntent markAsDonePendingIntent = PendingIntent.getBroadcast(context, (int)taskId, markAsDoneIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                         builder.setContentTitle(intent.getStringExtra(ITEM_TITLE)).setSmallIcon(R.drawable.ic_stat_name)
@@ -181,11 +184,39 @@ public class NotificationHelper extends BroadcastReceiver {
 
                 case ACTION_MARK_AS_DONE:
 
-                    if (intent.hasExtra(EXTRA_NOTE_ID) && (taskId = intent.getLongExtra(EXTRA_NOTE_ID, 98876146L)) != 98876146L) {
+                    if (intent.hasExtra(EXTRA_ITEM_ID) && (taskId = intent.getLongExtra(EXTRA_ITEM_ID, 98876146L)) != 98876146L) {
+
+                        cursor = database.query(DATABASE_NAME, new String[]{"event_time", "repeat_interval"}, "_id='" +taskId + "'" ,
+                                null, null, null, null, null);
                         ContentValues values = new ContentValues();
-                        values.put("done", 1);
+
+                        long repeatInterval = 0;
+                        if (cursor != null && cursor.moveToFirst()) {
+                            if ((repeatInterval = cursor.getLong(1)) == 0L) {
+                                // update the task to done
+                                values.put("done", 1);
+                            } else {
+                                values.put("event_time", cursor.getLong(0) + cursor.getLong(1));
+                            }
+                        }
+
                         database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
                         updateTaskListWidget(context);
+
+                        if (repeatInterval != 0){
+                            SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+                            if (idPref.getLong(Long.toString(taskId), 999999L) != 999999L) {
+                                intent = new Intent(context, NotificationHelper.class);
+                                intent.setAction(ACTION_PIN_ITEM);
+                                intent.putExtra(EXTRA_ITEM_ID, taskId);
+                                PendingIntent pinNotificationPI = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                try {
+                                    pinNotificationPI.send();
+                                } catch (PendingIntent.CanceledException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
 
                         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                         if (notificationManager != null) {
@@ -213,7 +244,7 @@ public class NotificationHelper extends BroadcastReceiver {
                     calendar.set(Calendar.MILLISECOND, 999);
                     long lastSecond = calendar.getTimeInMillis();
 
-                    cursor = database.query(DATABASE_NAME, new String[]{"title"}, "type = 1 AND event_time BETWEEN 0 AND " + lastSecond
+                    cursor = database.query(DATABASE_NAME, new String[]{"title"}, "done = 0 AND type = 1 AND event_time BETWEEN 0 AND " + lastSecond
                             , null, null, null, null);
                     int taskCount = cursor.getCount();
                     StringBuilder stringBuilder = new StringBuilder();
@@ -272,11 +303,18 @@ public class NotificationHelper extends BroadcastReceiver {
                 case ACTION_PIN_ITEM: {
                     long itemId;
 
-                    if (intent.hasExtra(EXTRA_NOTE_ID) && (itemId = intent.getLongExtra(EXTRA_NOTE_ID, 98876146L)) != 98876146L) {
+                    if (intent.hasExtra(EXTRA_ITEM_ID) && (itemId = intent.getLongExtra(EXTRA_ITEM_ID, 98876146L)) != 98876146L) {
 
                         Notification.Builder builder;
                         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                         if (notificationManager == null){
+                            Toast.makeText(context,R.string.error_reminder,Toast.LENGTH_SHORT).show();
+                            break;
+                        }
+
+                        cursor = database.query(DATABASE_NAME, new String[]{"title", "content", "event_time", "type"}, "_id= " + itemId
+                                , null, null, null, null);
+                        if (cursor == null || !cursor.moveToFirst()){
                             Toast.makeText(context,R.string.error_reminder,Toast.LENGTH_SHORT).show();
                             break;
                         }
@@ -292,32 +330,35 @@ public class NotificationHelper extends BroadcastReceiver {
                             builder.setPriority(Notification.PRIORITY_MIN).setSound(null).setVibrate(null);
                         }
 
+                        int itemType = cursor.getInt(3);
                         Intent openItemIntent = new Intent();
-                        if (intent.getCharExtra(ITEM_TYPE, 'A') == 'T') {
+                        if (itemType == 1) {
                             openItemIntent.setClass(context, TaskEdit.class);
-                        } else if (intent.getCharExtra(ITEM_TYPE, 'A') == 'N') {
+                        } else if (itemType == 0) {
                             openItemIntent.setClass(context, NoteEdit.class);
                         }
-                        openItemIntent.putExtra(EXTRA_NOTE_ID, itemId);
+                        openItemIntent.putExtra(EXTRA_ITEM_ID, itemId);
                         PendingIntent startPendingIntent = PendingIntent.getActivity(context, (int)itemId, openItemIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-                        builder.setContentTitle(intent.getStringExtra(ITEM_TITLE)).setSmallIcon(R.drawable.ic_stat_name).setAutoCancel(false).setContentIntent(startPendingIntent)
+                        builder.setContentTitle(cursor.getString(0)).setSmallIcon(R.drawable.ic_stat_name).setAutoCancel(false).setContentIntent(startPendingIntent)
                                 .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher_round));
 
-                        if (intent.getCharExtra(ITEM_TYPE, 'A') == 'T') {
-                            long eventTime = intent.getLongExtra(EVENT_TIME, DATE_NOT_SET_INDICATOR);
+                        if (itemType== 1 ) {
+                            long eventTime = cursor.getLong(2);
 
                             if (eventTime != DATE_NOT_SET_INDICATOR) {
                                 builder.setContentText(formatDueString(context, eventTime));
                             }
-                        } else if (intent.getCharExtra(ITEM_TYPE, 'A') == 'N') {
-                            builder.setContentText(intent.getStringExtra(ITEM_CONTENT)).setStyle(new Notification.BigTextStyle().bigText(intent.getStringExtra(ITEM_CONTENT)));
+                        } else if (itemType == 0) {
+                            builder.setContentText(cursor.getString(1)).setStyle(new Notification.BigTextStyle().bigText(cursor.getString(1)));
                         }
 
                         Notification notification = builder.build();
                         notification.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
                         // to distinguish reminder and pin item, id of pin item is the item id * PIN_ITEM_NOTIFICATION_ID
                         notificationManager.notify(((int)itemId*PIN_ITEM_NOTIFICATION_ID), notification);
+                        SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+                        idPref.edit().putLong(Long.toString(itemId), itemId).apply();
                     }
                     break;
                 }
@@ -340,7 +381,7 @@ public class NotificationHelper extends BroadcastReceiver {
         calendar.set(Calendar.MILLISECOND, 999);
         long lastSecond = calendar.getTimeInMillis();
 
-        Cursor cursor = database.query(DATABASE_NAME, new String[]{"title"}, "type = 1 AND event_time BETWEEN 0 AND " + lastSecond
+        Cursor cursor = database.query(DATABASE_NAME, new String[]{"title"}, "type = 1 AND done = 0  AND event_time BETWEEN 0 AND " + lastSecond
                 , null, null, null, null);
         int taskCount = cursor.getCount();
         StringBuilder stringBuilder = new StringBuilder();

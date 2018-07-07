@@ -17,7 +17,7 @@ import java.util.Calendar;
 
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.listscreen.TaskListAdapter.isTomorrow;
-import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
+import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.DATE_NOT_SET_INDICATOR;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_HOUR_INDICATOR;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_MILLISECOND_INDICATOR;
@@ -149,7 +149,7 @@ public class TaskListRemoteFactory implements RemoteViewsService.RemoteViewsFact
         remoteViews.setTextViewText(R.id.item_title, taskCursor.getString(1));
 
         Intent openTaskIntent = new Intent();
-        openTaskIntent.putExtra(EXTRA_NOTE_ID, taskCursor.getLong(0));
+        openTaskIntent.putExtra(EXTRA_ITEM_ID, taskCursor.getLong(0));
         remoteViews.setOnClickFillInIntent(R.id.container, openTaskIntent);
         return remoteViews;
     }

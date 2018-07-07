@@ -13,10 +13,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
-import android.service.notification.StatusBarNotification;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -37,12 +35,10 @@ import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.NotificationHelper;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 
-import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_CONTENT;
-import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TITLE;
-import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TYPE;
+import static android.content.Context.MODE_PRIVATE;
+import static com.jkjk.quicknote.MyApplication.PINNED_NOTIFICATION_IDS;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_PIN_ITEM;
 import static com.jkjk.quicknote.helper.NotificationHelper.PIN_ITEM_NOTIFICATION_ID;
@@ -52,8 +48,8 @@ import static com.jkjk.quicknote.widget.NoteWidget.updateNoteWidget;
 
 public class NoteEditFragment extends Fragment {
 
+    public final static String EXTRA_ITEM_ID = "extraItemId";
     private static final String NOTE_ID = "noteId";
-    public final static String EXTRA_NOTE_ID = "extraNoteId";
     public final static long DEFAULT_NOTE_ID = 999999999L;
     private SQLiteDatabase database;
     boolean hasNoteSave = false;
@@ -114,7 +110,7 @@ public class NoteEditFragment extends Fragment {
         }else if (getArguments() != null) {
 
             // case when argument has data, either note ID from the note list activity or text from external intent
-            noteId = getArguments().getLong(EXTRA_NOTE_ID, DEFAULT_NOTE_ID);
+            noteId = getArguments().getLong(EXTRA_ITEM_ID, DEFAULT_NOTE_ID);
             newNote = (noteId == DEFAULT_NOTE_ID);
 
             // Read data from external intent
@@ -150,14 +146,14 @@ public class NoteEditFragment extends Fragment {
                 PopupMenu editDropMenu = new PopupMenu(view.getContext(), showDropMenu);
                 editDropMenu.inflate(R.menu.note_edit_drop_menu);
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    MenuItem pinToNotification = editDropMenu.getMenu().findItem(R.id.edit_drop_menu_pin);
-                    if (!newNote && isItemAnActiveNotification()){
-                        pinToNotification.setTitle(R.string.notification_unpin);
-                    } else pinToNotification.setTitle(R.string.notification_pin);
+                SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+                MenuItem pinToNotification = editDropMenu.getMenu().findItem(R.id.edit_drop_menu_pin);
+                if (!newNote && idPref.getLong(Long.toString(noteId), 999999L)!=999999L){
+                    pinToNotification.setTitle(R.string.notification_unpin);
+                } else pinToNotification.setTitle(R.string.notification_pin);
 
-                    pinToNotification.setVisible(true);
-                }
+                pinToNotification.setVisible(true);
+
 
                 MenuItem starredButton = editDropMenu.getMenu().findItem(R.id.edit_drop_menu_starred);
                 if (isStarred == 0){
@@ -219,6 +215,15 @@ public class NoteEditFragment extends Fragment {
                                                 if (!newNote) {
                                                     database.delete(DATABASE_NAME, "_id='" + noteId + "'", null);
                                                     updateNoteListWidget(getContext());
+
+                                                    SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+                                                    if (idPref.getLong(Long.toString(noteId), 999999L)!=999999L) {
+                                                        idPref.edit().remove(Long.toString(noteId)).apply();
+                                                        NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                                                        if (notificationManager != null) {
+                                                            notificationManager.cancel((int)noteId*PIN_ITEM_NOTIFICATION_ID);
+                                                        }
+                                                    }
                                                 }
                                                     // No need to do saving
                                                     hasNoteSave = true;
@@ -240,13 +245,16 @@ public class NoteEditFragment extends Fragment {
                                     hasNoteSave = false;
                                 }
 
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isItemAnActiveNotification()) {
+                                SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+
+                                if (idPref.getLong(Long.toString(noteId), 999999L)==999999L) {
                                     pinNoteToNotification();
                                 } else {
                                     NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
                                     if (notificationManager!=null){
                                         // to distinguish reminder and pin item, id of pin item is the item id * PIN_ITEM_NOTIFICATION_ID
                                         notificationManager.cancel((int)noteId*PIN_ITEM_NOTIFICATION_ID);
+                                        idPref.edit().remove(Long.toString(noteId)).apply();
                                     }
                                 }
                                 return true;
@@ -323,12 +331,18 @@ public class NoteEditFragment extends Fragment {
 
         if (!newNote) {
             ((MyApplication)getActivity().getApplication()).database.update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
-            // to update pinned notification if there is any, api 23 up exclusive
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if(isItemAnActiveNotification()){
-                    pinNoteToNotification();
-                }
+
+            SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+            if (idPref.getLong(Long.toString(noteId), 999999L)!=999999L){
+                pinNoteToNotification();
             }
+
+//            // to update pinned notification if there is any, api 23 up exclusive
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                if(isItemAnActiveNotification()){
+//                    pinNoteToNotification();
+//                }
+//            }
         }else {
             noteId = database.insert(DATABASE_NAME, "",values);
         }
@@ -341,32 +355,26 @@ public class NoteEditFragment extends Fragment {
         Toast.makeText(getActivity(), R.string.saved_note, Toast.LENGTH_SHORT).show();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    private boolean isItemAnActiveNotification(){
-        boolean result = false;
-        NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-
-        if (notificationManager != null) {
-            StatusBarNotification[] activeNotifications = notificationManager.getActiveNotifications();
-            ArrayList<Integer> notificationId = new ArrayList<>();
-            for (StatusBarNotification activeNotification : activeNotifications) {
-                notificationId.add(activeNotification.getId());
-            }
-            // to distinguish reminder and pin item, id of pin item is the item id * PIN_ITEM_NOTIFICATION_ID
-            if (notificationId.contains((int)noteId*PIN_ITEM_NOTIFICATION_ID)){
-                result = true;
-            }
-        } else Toast.makeText(getContext(), R.string.error_text, Toast.LENGTH_SHORT).show();
-        return result;
-    }
+//    @RequiresApi(api = Build.VERSION_CODES.M)
+//    private boolean isItemAnActiveNotification(){
+//        NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+//
+//        if (notificationManager != null) {
+//            StatusBarNotification[] activeNotifications = notificationManager.getActiveNotifications();
+//            ArrayList<Integer> notificationId = new ArrayList<>();
+//            for (StatusBarNotification activeNotification : activeNotifications) {
+//                notificationId.add(activeNotification.getId());
+//            }
+//            // to distinguish reminder and pin item, id of pin item is the item id * PIN_ITEM_NOTIFICATION_ID
+//            return notificationId.contains((int) noteId * PIN_ITEM_NOTIFICATION_ID);
+//        } else Toast.makeText(getContext(), R.string.error_text, Toast.LENGTH_SHORT).show();
+//        return false;
+//    }
 
     private void pinNoteToNotification(){
         Intent intent = new Intent(getContext(), NotificationHelper.class);
         intent.setAction(ACTION_PIN_ITEM);
-        intent.putExtra(EXTRA_NOTE_ID, noteId);
-        intent.putExtra(ITEM_TYPE, 'N');
-        intent.putExtra(ITEM_TITLE, title);
-        intent.putExtra(ITEM_CONTENT, content);
+        intent.putExtra(EXTRA_ITEM_ID, noteId);
         PendingIntent pinNotificationPI = PendingIntent.getBroadcast(getContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         try {
             pinNotificationPI.send();
@@ -390,7 +398,7 @@ public class NoteEditFragment extends Fragment {
     public static NoteEditFragment newEditFragmentInstance(long noteId){
         NoteEditFragment fragment = new NoteEditFragment();
         Bundle bundle = new Bundle();
-        bundle.putLong(EXTRA_NOTE_ID, noteId);
+        bundle.putLong(EXTRA_ITEM_ID, noteId);
         fragment.setArguments(bundle);
         return fragment;
     }

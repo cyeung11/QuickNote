@@ -24,7 +24,7 @@ import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_PROVIDER;
 import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TYPE;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
-import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
+import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 
 
 /**
@@ -111,7 +111,7 @@ public class AppWidgetService extends IntentService {
                                     views[i].setTextViewTextSize(R.id.widget_content, TypedValue.COMPLEX_UNIT_SP, 16);
                             }
 
-                            openNoteIntent.putExtra(EXTRA_NOTE_ID, cursorForWidget.getLong(0))
+                            openNoteIntent.putExtra(EXTRA_ITEM_ID, cursorForWidget.getLong(0))
                                     .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
                             PendingIntent openNotePI = PendingIntent.getActivity(this, (int) cursorForWidget.getLong(0), openNoteIntent, PendingIntent.FLAG_UPDATE_CURRENT);

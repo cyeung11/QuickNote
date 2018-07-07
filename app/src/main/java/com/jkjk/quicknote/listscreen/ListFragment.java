@@ -1,6 +1,8 @@
 package com.jkjk.quicknote.listscreen;
 
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -21,6 +23,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,13 +34,18 @@ import android.widget.Toast;
 
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.helper.NotificationHelper;
 import com.jkjk.quicknote.helper.SearchHelper;
 import com.jkjk.quicknote.settings.Settings;
 
 import java.util.ArrayList;
 
+import static android.content.Context.MODE_PRIVATE;
+import static com.jkjk.quicknote.MyApplication.PINNED_NOTIFICATION_IDS;
 import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TYPE;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
+import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_TOOL_BAR;
+import static com.jkjk.quicknote.helper.NotificationHelper.PIN_ITEM_NOTIFICATION_ID;
 import static com.jkjk.quicknote.widget.NoteListWidget.updateNoteListWidget;
 import static com.jkjk.quicknote.widget.TaskListWidget.updateTaskListWidget;
 
@@ -53,7 +61,7 @@ public class ListFragment extends Fragment{
     // 0 stands for note , 1 stands for task
     boolean defaultPageIsTask;
     private char currentPage;
-    private boolean showingStarred = false, sortingBytime, byUrgencyByDefault;
+    private boolean showingStarred = false, sortingBytime, byUrgencyByDefault, isNotificationToolbarEnable;
 
     private MenuItem showStarred, search, settings, sortBy, showDone, switchTab;
     private NoteListFragment noteListFragment;
@@ -84,6 +92,7 @@ public class ListFragment extends Fragment{
         ((AppCompatActivity) getActivity()).setSupportActionBar(listMenu);
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        isNotificationToolbarEnable = sharedPref.getBoolean(getString(R.string.notification_pin), false);
         defaultPageIsTask = sharedPref.getBoolean(getString(R.string.default_screen), false);
         byUrgencyByDefault = sharedPref.getBoolean(getString(R.string.change_default_sorting), false);
         sortingBytime = !byUrgencyByDefault;
@@ -175,15 +184,42 @@ public class ListFragment extends Fragment{
                                     // delete note from  selectedItems
                                     ArrayList<Integer> mSelect = itemListAdapter.getSelected();
                                     Cursor itemCursor = itemListAdapter.getItemCursor();
+                                    SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+                                    boolean isItemToday = false;
+
                                     for (int removedPosition : mSelect) {
                                         itemCursor.moveToPosition(removedPosition);
                                         String removedId = itemCursor.getString(0);
                                         database.delete(DATABASE_NAME, "_id='" + removedId + "'", null);
+
+                                        // To check if the deleted item is due today. If so (which will only check if other deleted items are not today) and if notification toolbar is on, update the notification below
+                                        if (!currentPageIsNote && isNotificationToolbarEnable && !isItemToday && DateUtils.isToday(itemCursor.getLong(3))){
+                                            isItemToday = true;
+                                        }
+
+                                        if (idPref.getLong(removedId, 999999L)!=999999L) {
+                                            idPref.edit().remove(removedId).apply();
+                                            NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                                            if (notificationManager != null) {
+                                                notificationManager.cancel(Integer.valueOf(removedId)*PIN_ITEM_NOTIFICATION_ID);
+                                            }
+                                        }
                                     }
 
                                     itemListAdapter.updateCursor();
                                     for (int removedPosition : mSelect) {
                                         itemListAdapter.notifyItemRemoved(removedPosition);
+                                    }
+
+                                    if (isItemToday){
+                                        Intent toolBarIntent = new Intent(getContext(), NotificationHelper.class);
+                                        toolBarIntent.setAction(ACTION_TOOL_BAR);
+                                        PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(getContext(), 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                        try {
+                                            toolbarPendingIntent.send();
+                                        } catch (PendingIntent.CanceledException e) {
+                                            e.printStackTrace();
+                                        }
                                     }
 
                                     Toast.makeText(getContext(), currentPageIsNote ?R.string.note_deleted_toast :R.string.task_deleted_toast, Toast.LENGTH_SHORT).show();

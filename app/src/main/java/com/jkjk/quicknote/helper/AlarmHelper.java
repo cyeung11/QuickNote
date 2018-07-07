@@ -11,7 +11,7 @@ import com.jkjk.quicknote.R;
 import java.util.Calendar;
 
 import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_POST_REMINDER;
-import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
+import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 
 public class AlarmHelper {
 
@@ -27,7 +27,7 @@ public class AlarmHelper {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(context, NotificationHelper.class);
-        intent.setAction(ACTION_POST_REMINDER).putExtra(EXTRA_NOTE_ID, id)
+        intent.setAction(ACTION_POST_REMINDER).putExtra(EXTRA_ITEM_ID, id)
                 .putExtra(ITEM_TYPE, itemType).putExtra(ITEM_TITLE, title)
                 .putExtra(ITEM_CONTENT, content).putExtra(EVENT_TIME, eventTime);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, (int)id, intent, PendingIntent.FLAG_UPDATE_CURRENT);

@@ -1,7 +1,9 @@
 package com.jkjk.quicknote.listscreen;
 
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
@@ -32,12 +34,18 @@ import android.widget.Toast;
 
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.helper.NotificationHelper;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import static android.content.Context.MODE_PRIVATE;
 import static android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
+import static com.jkjk.quicknote.MyApplication.PINNED_NOTIFICATION_IDS;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
+import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_PIN_ITEM;
+import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_TOOL_BAR;
+import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.DATE_NOT_SET_INDICATOR;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_HOUR_INDICATOR;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_MILLISECOND_INDICATOR;
@@ -49,7 +57,7 @@ public class TaskListAdapter extends ItemListAdapter {
     boolean showingDone = false;
     private TaskListFragment fragment;
     private MenuItem markAsDone;
-    private boolean byUrgencyByDefault;
+    private boolean byUrgencyByDefault, isNotificationToolbarEnable;
 
     TaskListAdapter(TaskListFragment fragment){
         this.fragment = fragment;
@@ -59,6 +67,7 @@ public class TaskListAdapter extends ItemListAdapter {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(fragment.getContext());
         String cardViewSize = sharedPref.getString(fragment.getString(R.string.font_size_main_screen),"m");
         byUrgencyByDefault = sharedPref.getBoolean(fragment.getString(R.string.change_default_sorting), false);
+        isNotificationToolbarEnable = sharedPref.getBoolean(fragment.getString(R.string.notification_pin), false);
 
         switch (cardViewSize){
             case ("s"):
@@ -212,6 +221,7 @@ public class TaskListAdapter extends ItemListAdapter {
                                     return true;
 
                                 case R.id.mark_as_done:
+                                    Context context = fragment.getContext();
                                     if (selectedItems.size() > 0) {
 
                                         ContentValues values = new ContentValues();
@@ -227,32 +237,74 @@ public class TaskListAdapter extends ItemListAdapter {
                                                 database.update(DATABASE_NAME, values, "_id='" + pendingId + "'", null);
                                             }
 
-                                            updateTaskListWidget(fragment.getContext());
+                                            updateTaskListWidget(context);
                                             updateCursorForDone();
                                             for (int pendingPosition : selectedItems) {
                                                 notifyItemRemoved(pendingPosition);
                                             }
 
-                                            Toast.makeText(fragment.getContext(), R.string.pending_toast, Toast.LENGTH_SHORT).show();
+                                            if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.notification_pin), false)){
+                                                Intent toolBarIntent = new Intent(context, NotificationHelper.class);
+                                                toolBarIntent.setAction(ACTION_TOOL_BAR);
+                                                PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(context, 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                                try {
+                                                    toolbarPendingIntent.send();
+                                                } catch (PendingIntent.CanceledException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+
+                                            Toast.makeText(context, R.string.pending_toast, Toast.LENGTH_SHORT).show();
 
                                         } else {
                                             // When selected tasks are pending, mark all of them done
-                                            values.put("done", 1);
+                                            long repeatInterval;
+                                            SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
                                             for (int pendingPosition : selectedItems) {
                                                 itemCursor.moveToPosition(pendingPosition);
+                                                if ((repeatInterval = itemCursor.getLong(5)) == 0L) {
+                                                    // update the task to done
+                                                    values.put("done", 1);
+                                                } else {
+                                                    values.put("event_time", itemCursor.getLong(3) + repeatInterval);
+                                                }
+
                                                 String doneId = itemCursor.getString(0);
 
                                                 //Update to done
                                                 database.update(DATABASE_NAME, values, "_id='" + doneId + "'", null);
+
+                                                if (repeatInterval != 0) {
+                                                    if (idPref.getLong(doneId, 999999L) != 999999L) {
+                                                        Intent intent = new Intent(context, NotificationHelper.class);
+                                                        intent.setAction(ACTION_PIN_ITEM);
+                                                        intent.putExtra(EXTRA_ITEM_ID, Long.valueOf(doneId));
+                                                        PendingIntent pinNotificationPI = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                                        try {
+                                                            pinNotificationPI.send();
+                                                        } catch (PendingIntent.CanceledException e) {
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+                                                }
                                             }
 
-                                            updateTaskListWidget(fragment.getContext());
+                                            updateTaskListWidget(context);
                                             updateCursor();
-                                            for (int pendingPosition : selectedItems) {
-                                                notifyItemRemoved(pendingPosition);
+                                            notifyDataSetChanged();
+
+                                            if (isNotificationToolbarEnable){
+                                                Intent toolBarIntent = new Intent(context, NotificationHelper.class);
+                                                toolBarIntent.setAction(ACTION_TOOL_BAR);
+                                                PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(context, 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                                try {
+                                                    toolbarPendingIntent.send();
+                                                } catch (PendingIntent.CanceledException e) {
+                                                    e.printStackTrace();
+                                                }
                                             }
 
-                                            Toast.makeText(fragment.getContext(), R.string.done_toast, Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(context, R.string.done_toast, Toast.LENGTH_SHORT).show();
                                         }
                                         actionMode.finish();
                                         return true;
@@ -294,29 +346,73 @@ public class TaskListAdapter extends ItemListAdapter {
 
                 if (compoundButton.isPressed()) {
                     ContentValues values = new ContentValues();
+                    long repeatInterval = 0L;
+                    Context context = fragment.getContext();
+                    itemCursor.moveToPosition(holder.getAdapterPosition());
 
-                    if (checked) {
-                        // update the task to done
-                        values.put("done", 1);
-                        holder.isDone = true;
-                        database.update(DATABASE_NAME, values, "_id='" + holder.itemId + "'", null);
-                        updateTaskListWidget(fragment.getContext());
-                        Toast.makeText(fragment.getContext(), R.string.done_toast, Toast.LENGTH_SHORT).show();
-                    } else {
-                        // update the task to pending
-                        values.put("done", 0);
-                        holder.isDone = false;
-                        database.update(DATABASE_NAME, values, "_id='" + holder.itemId + "'", null);
-                        updateTaskListWidget(fragment.getContext());
-                        Toast.makeText(fragment.getContext(), R.string.pending_toast, Toast.LENGTH_SHORT).show();
+                    if (context!=null) {
+                        if (checked) {
+                            // Check if the item has repeat property, if yes, delay the event time instead
+
+                            if (itemCursor != null) {
+                                if ((repeatInterval = itemCursor.getLong(5)) == 0L) {
+                                    // update the task to done
+                                    values.put("done", 1);
+                                    holder.isDone = true;
+                                } else {
+                                    values.put("event_time", itemCursor.getLong(3) + repeatInterval);
+                                }
+                                database.update(DATABASE_NAME, values, "_id='" + holder.itemId + "'", null);
+                                if (repeatInterval != 0) {
+                                    SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+                                    if (idPref.getLong(Long.toString(holder.itemId), 999999L) != 999999L) {
+                                        Intent intent = new Intent(context, NotificationHelper.class);
+                                        intent.setAction(ACTION_PIN_ITEM);
+                                        intent.putExtra(EXTRA_ITEM_ID, holder.itemId);
+                                        PendingIntent pinNotificationPI = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                        try {
+                                            pinNotificationPI.send();
+                                        } catch (PendingIntent.CanceledException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                                Toast.makeText(context, R.string.done_toast, Toast.LENGTH_SHORT).show();
+                                updateTaskListWidget(context);
+                            } else {
+                                Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
+                            }
+
+                        } else {
+                            // update the task to pending
+                            values.put("done", 0);
+                            holder.isDone = false;
+                            database.update(DATABASE_NAME, values, "_id='" + holder.itemId + "'", null);
+                            updateTaskListWidget(context);
+                            Toast.makeText(context, R.string.pending_toast, Toast.LENGTH_SHORT).show();
+                        }
+
+                        if (isNotificationToolbarEnable){
+                            Intent toolBarIntent = new Intent(context, NotificationHelper.class);
+                            toolBarIntent.setAction(ACTION_TOOL_BAR);
+                            PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(context, 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                            try {
+                                toolbarPendingIntent.send();
+                            } catch (PendingIntent.CanceledException e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
-
                     if (showingDone) {
                         updateCursorForDone();
                     } else {
                         updateCursor();
                     }
-                    notifyItemRemoved(holder.getAdapterPosition());
+                    if (repeatInterval == 0L) {
+                        notifyItemRemoved(holder.getAdapterPosition());
+                    } else {
+                        notifyDataSetChanged();
+                    }
                 }
             }
         });
@@ -435,10 +531,10 @@ public class TaskListAdapter extends ItemListAdapter {
     @Override
     public void updateCursor(){
         if (byUrgencyByDefault){
-            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type = 1 AND done = 0", null, null
+            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done", "repeat_interval"}, "type = 1 AND done = 0", null, null
                     , null, "urgency DESC, event_time ASC");
         } else {
-            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "type = 1 AND done = 0", null, null
+            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done", "repeat_interval"}, "type = 1 AND done = 0", null, null
                     , null, "event_time ASC");
         }
     }
@@ -446,31 +542,31 @@ public class TaskListAdapter extends ItemListAdapter {
     @Override
     public void updateCursorForSearch(String result){
         if (byUrgencyByDefault) {
-            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "_id in (" + result + ") AND type = 1", null, null
+            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done", "repeat_interval"}, "_id in (" + result + ") AND type = 1", null, null
                     , null, "urgency DESC, event_time ASC");
         } else {
-            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "_id in (" + result + ") AND type = 1", null, null
+            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done", "repeat_interval"}, "_id in (" + result + ") AND type = 1", null, null
                     , null, "event_time ASC");
         }
     }
 
     public void updateCursorForDone(){
         if (byUrgencyByDefault){
-            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type=1 AND done=1", null, null
+            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done", "repeat_interval"}, "type=1 AND done=1", null, null
                     , null, "urgency DESC, event_time ASC");
         } else {
-            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done"}, "type=1 AND done=1", null, null
+            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done", "repeat_interval"}, "type=1 AND done=1", null, null
                     , null, "event_time ASC");
         }
     }
 
     public void updateCursorByUrgency(){
-        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "type = 1 AND done = 0", null, null
+        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done", "repeat_interval"}, "type = 1 AND done = 0", null, null
                 , null, "urgency DESC, event_time ASC");
     }
 
     public void updateCursorByTime(){
-        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done"}, "type = 1 AND done = 0", null, null
+        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done", "repeat_interval"}, "type = 1 AND done = 0", null, null
                 , null, "event_time ASC");
     }
 }

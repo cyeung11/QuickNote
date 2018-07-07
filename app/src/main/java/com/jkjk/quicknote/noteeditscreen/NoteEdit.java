@@ -9,7 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.google.android.gms.actions.NoteIntents;
 import com.jkjk.quicknote.R;
 
-import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
+import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 import static com.jkjk.quicknote.widget.NoteListWidget.updateNoteListWidget;
 import static com.jkjk.quicknote.widget.NoteWidget.updateNoteWidget;
 
@@ -32,9 +32,9 @@ public class NoteEdit extends AppCompatActivity {
                 //Case when activity is called by external intent
                 noteEditFragment = NoteEditFragment.newEditFragmentInstance(getIntent());
 
-            } else if (getIntent().hasExtra(EXTRA_NOTE_ID)) {
+            } else if (getIntent().hasExtra(EXTRA_ITEM_ID)) {
                 //Case when activity is called by note list activity after user selected existing note
-                noteId = getIntent().getLongExtra(EXTRA_NOTE_ID, 0L);
+                noteId = getIntent().getLongExtra(EXTRA_ITEM_ID, 0L);
                 noteEditFragment = NoteEditFragment.newEditFragmentInstance(noteId);
 
             } else {

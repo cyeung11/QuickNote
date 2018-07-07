@@ -33,7 +33,7 @@ import static android.content.Context.MODE_PRIVATE;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
 import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
-import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
+import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 
 public class NoteWidgetAdapter extends ItemListAdapter {
 
@@ -124,7 +124,7 @@ public class NoteWidgetAdapter extends ItemListAdapter {
                 }
 
                 Intent startAppIntent = new Intent(activity, NoteEdit.class);
-                startAppIntent.putExtra(EXTRA_NOTE_ID, itemCursor.getLong(0))
+                startAppIntent.putExtra(EXTRA_ITEM_ID, itemCursor.getLong(0))
                         .setFlags(FLAG_ACTIVITY_CLEAR_TOP | FLAG_ACTIVITY_SINGLE_TOP);
                 PendingIntent pendingIntent = PendingIntent.getActivity(activity,(int) itemCursor.getLong(0),startAppIntent,PendingIntent.FLAG_UPDATE_CURRENT);
                 remoteViews.setOnClickPendingIntent(R.id.widget, pendingIntent);

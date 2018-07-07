@@ -73,7 +73,7 @@ public class NoteListFragment extends Fragment {
 
     public void onNoteEdit(long noteId) {
         Intent startNoteActivity = new Intent(getContext(), NoteEdit.class);
-        startNoteActivity.putExtra(NoteEditFragment.EXTRA_NOTE_ID, noteId);
+        startNoteActivity.putExtra(NoteEditFragment.EXTRA_ITEM_ID, noteId);
         startActivity(startNoteActivity);
     }
 

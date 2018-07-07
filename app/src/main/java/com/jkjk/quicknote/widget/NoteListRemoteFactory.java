@@ -18,7 +18,7 @@ import java.util.Calendar;
 
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.listscreen.NoteListAdapter.isYesterday;
-import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
+import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 
 public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFactory {
     private Cursor noteCursor;
@@ -116,7 +116,7 @@ public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFact
         }
 
         Intent openNoteIntent = new Intent();
-        openNoteIntent.putExtra(EXTRA_NOTE_ID, noteCursor.getLong(0));
+        openNoteIntent.putExtra(EXTRA_ITEM_ID, noteCursor.getLong(0));
         remoteViews.setOnClickFillInIntent(R.id.container, openNoteIntent);
         return remoteViews;
     }

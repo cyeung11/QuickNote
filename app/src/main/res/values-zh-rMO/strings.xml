@@ -200,4 +200,8 @@
         <item>10分鐘前</item>
         <item>30分鐘前</item>
     </string-array>
+    <string name="other_spinner">自訂</string>
+    <string name="day">天</string>
+    <string name="repeat_interval">重覆間隔</string>
+    <string name="not_repeating">不重覆</string>
 </resources>

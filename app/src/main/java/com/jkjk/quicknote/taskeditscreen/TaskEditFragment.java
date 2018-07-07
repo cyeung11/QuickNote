@@ -15,10 +15,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
-import android.service.notification.StatusBarNotification;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -35,7 +33,7 @@ import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.PopupMenu;
 import android.widget.Spinner;
@@ -55,15 +53,14 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
-import static com.jkjk.quicknote.helper.AlarmHelper.EVENT_TIME;
-import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TITLE;
-import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TYPE;
+import static android.content.Context.MODE_PRIVATE;
+import static com.jkjk.quicknote.MyApplication.PINNED_NOTIFICATION_IDS;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_PIN_ITEM;
 import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_TOOL_BAR;
 import static com.jkjk.quicknote.helper.NotificationHelper.PIN_ITEM_NOTIFICATION_ID;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.DEFAULT_NOTE_ID;
-import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_NOTE_ID;
+import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 import static com.jkjk.quicknote.widget.TaskListWidget.updateTaskListWidget;
 
 public class TaskEditFragment extends Fragment {
@@ -86,7 +83,8 @@ public class TaskEditFragment extends Fragment {
     private String title, remark;
     private Spinner urgencyInFragment, reminderInFragment, repeatInFragment;
     private int reminderPresetSize, repeatPresetSize;
-    private ImageView timeIcon;
+    private LinearLayout timeRow, repeatRow;
+
     private ArrayList<String> reminderArray, repeatArray;
 
     public TaskEditFragment() {
@@ -148,7 +146,8 @@ public class TaskEditFragment extends Fragment {
         dateInFragment = view.findViewById(R.id.item_date);
         timeInFragment = view.findViewById(R.id.task_time);
         urgencyInFragment = view.findViewById(R.id.task_urgency);
-        timeIcon = view.findViewById(R.id.task_time_icon);
+        timeRow = view.findViewById(R.id.task_time_grid);
+        repeatRow = view.findViewById(R.id.task_repeat_column);
         reminderInFragment = view.findViewById(R.id.task_reminder);
         repeatInFragment = view.findViewById(R.id.task_repeat);
 
@@ -159,7 +158,7 @@ public class TaskEditFragment extends Fragment {
 
         }else if (getArguments() != null) {
             // case when argument has data, either note ID from the note list activity or text from external intent
-            taskId = getArguments().getLong(EXTRA_NOTE_ID, DEFAULT_NOTE_ID);
+            taskId = getArguments().getLong(EXTRA_ITEM_ID, DEFAULT_NOTE_ID);
             newTask = (taskId == DEFAULT_NOTE_ID);
 
         } else {
@@ -183,7 +182,7 @@ public class TaskEditFragment extends Fragment {
         reminderTime = Calendar.getInstance();
         reminderTime.setTimeInMillis(0);
 
-        if (taskCursor != null) {
+        if (taskCursor != null && taskCursor.getColumnCount() > 0) {
             titleInFragment.setText(taskCursor.getString(0));
             remarkInFragment.setText(taskCursor.getString(1));
 
@@ -192,8 +191,8 @@ public class TaskEditFragment extends Fragment {
             if (taskDate.getTimeInMillis() != DATE_NOT_SET_INDICATOR) {
                 DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
                 dateInFragment.setText(dateFormat.format(taskDate.getTime()));
-                timeInFragment.setVisibility(View.VISIBLE);
-                timeIcon.setVisibility(View.VISIBLE);
+                timeRow.setVisibility(View.VISIBLE);
+                repeatRow.setVisibility(View.VISIBLE);
 
                 // to see if the save time is default or not. If so, time will be shown as not set
                 if (!(taskDate.get(Calendar.MILLISECOND) == TIME_NOT_SET_MILLISECOND_INDICATOR
@@ -235,14 +234,14 @@ public class TaskEditFragment extends Fragment {
             public void onNothingSelected(AdapterView<?> adapterView) {
             }
         });
-        if (taskCursor != null) {
+        if (taskCursor != null && taskCursor.getColumnCount() > 0) {
             urgencySelectByUser = false;
             urgencyInFragment.setSelection(taskCursor.getInt(3));
         }
 
         // Repeat
         repeatArray = new ArrayList<>(Arrays.asList(getContext().getResources().getStringArray(R.array.repeat_list)));
-        reminderPresetSize = repeatArray.size();
+        repeatPresetSize = repeatArray.size();
         final ArrayAdapter<String> repeatAdapter = new ArrayAdapter<>(getContext(), spinnerItemInt, repeatArray);
         repeatAdapter.setDropDownViewResource(spinnerDropDownInt);
         repeatInFragment.setAdapter(repeatAdapter);
@@ -259,7 +258,7 @@ public class TaskEditFragment extends Fragment {
                             @Override
                             public void onValueChange(NumberPicker numberPicker, int oldValue, int newValue) {
                                 repeatTime = newValue * 86400000L;
-                                if (repeatArray.size() > reminderPresetSize){
+                                if (repeatArray.size() > repeatPresetSize){
                                      repeatArray.remove(0);
                                 }
                                 repeatArray.add(0, Integer.toString(newValue)+" "+getString(R.string.day));
@@ -268,7 +267,7 @@ public class TaskEditFragment extends Fragment {
                                 repeatInFragment.setSelection(0);
                             }
                         }, 1, 99).show();
-                    } else if (repeatArray.size() > reminderPresetSize) {
+                    } else if (repeatArray.size() > repeatPresetSize) {
                         repeatArray.remove(0);
                         switch (i){
                             case 1:
@@ -529,8 +528,8 @@ public class TaskEditFragment extends Fragment {
 
                         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
                         dateInFragment.setText(dateFormat.format(taskDate.getTime()));
-                        timeInFragment.setVisibility(View.VISIBLE);
-                        timeIcon.setVisibility(View.VISIBLE);
+                        timeRow.setVisibility(View.VISIBLE);
+                        repeatRow.setVisibility(View.VISIBLE);
                         hasModified = true;
                         if (!reminderArray.contains(getString(R.string.zero_min_before))) {
                             // add two option after "No reminder" for reminder if user has specify event date;
@@ -553,8 +552,9 @@ public class TaskEditFragment extends Fragment {
                 if (taskDate.getTimeInMillis() != DATE_NOT_SET_INDICATOR) {
                     taskDate.setTimeInMillis(DATE_NOT_SET_INDICATOR);
                     dateInFragment.setText("");
-                    timeInFragment.setVisibility(View.INVISIBLE);
-                    timeIcon.setVisibility(View.INVISIBLE);
+                    timeRow.setVisibility(View.GONE);
+                    repeatTime = 0L;
+                    repeatRow.setVisibility(View.GONE);
                     hasModified = true;
 
                     reminderArray.clear();
@@ -652,14 +652,14 @@ public class TaskEditFragment extends Fragment {
                 PopupMenu editDropMenu = new PopupMenu(view.getContext(),showDropMenu);
                 editDropMenu.inflate(R.menu.task_edit_drop_menu);
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    MenuItem pinToNotification = editDropMenu.getMenu().findItem(R.id.edit_drop_menu_pin);
-                    if (!newTask && isItemAnActiveNotification()){
-                        pinToNotification.setTitle(R.string.notification_unpin);
-                    } else pinToNotification.setTitle(R.string.notification_pin);
+                SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
 
-                    pinToNotification.setVisible(true);
-                }
+                MenuItem pinToNotification = editDropMenu.getMenu().findItem(R.id.edit_drop_menu_pin);
+                if (!newTask && idPref.getLong(Long.toString(taskId), 999999L)!=999999L){
+                    pinToNotification.setTitle(R.string.notification_unpin);
+                } else pinToNotification.setTitle(R.string.notification_pin);
+
+                pinToNotification.setVisible(true);
 
                 editDropMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
@@ -674,6 +674,16 @@ public class TaskEditFragment extends Fragment {
                                                         if (!newTask) {
                                                             database.delete(DATABASE_NAME, "_id='" + taskId + "'", null);
                                                             updateTaskListWidget(getContext());
+
+                                                            SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+                                                            if (idPref.getLong(Long.toString(taskId), 999999L)!=999999L) {
+                                                                idPref.edit().remove(Long.toString(taskId)).apply();
+                                                                NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                                                                if (notificationManager != null) {
+                                                                    notificationManager.cancel((int)taskId*PIN_ITEM_NOTIFICATION_ID);
+                                                                }
+                                                            }
+                                                           updateToolbar();
                                                         }
                                                         // No need to do saving
                                                         hasTaskSave = true;
@@ -720,13 +730,17 @@ public class TaskEditFragment extends Fragment {
                                     saveTask();
                                     hasTaskSave = false;
                                 }
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isItemAnActiveNotification()) {
+
+                                SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+
+                                if (idPref.getLong(Long.toString(taskId), 999999L)==999999L) {
                                     pinTaskToNotification();
                                 } else {
                                     NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
                                     if (notificationManager!=null){
                                         // to distinguish reminder and pin item, id of pin item is the item id * PIN_ITEM_NOTIFICATION_ID
                                         notificationManager.cancel((int)taskId*PIN_ITEM_NOTIFICATION_ID);
+                                        idPref.edit().remove(Long.toString(taskId)).apply();
                                     }
                                 }
                                 return true;
@@ -805,28 +819,22 @@ public class TaskEditFragment extends Fragment {
         values.put("event_time", taskDate.getTimeInMillis());
         initEventTime = taskDate.getTimeInMillis();
 
-        if (notificationToolEnable && DateUtils.isToday(taskDate.getTimeInMillis())){
-
-            Intent toolBarIntent = new Intent(getContext(), NotificationHelper.class);
-            toolBarIntent.setAction(ACTION_TOOL_BAR);
-            PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(getContext(), 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            try {
-                toolbarPendingIntent.send();
-            } catch (PendingIntent.CanceledException e) {
-                e.printStackTrace();
-            }
-        }
+//        Repeat can only work if date is set
+        values.put("repeat_interval", (repeatTime > 0)&&(initEventTime!=DATE_NOT_SET_INDICATOR) ? repeatTime : 0);
 
         values.put("type", 1);
         values.put("urgency", urgencyInFragment.getSelectedItemPosition());
-        values.put("repeat_interval", repeatTime>0 ?repeatTime :0);
 
-        if (markAsDoneInFragment.isChecked()) {
+        if (markAsDoneInFragment.isChecked() && repeatTime == 0) {
             values.put("done", 1);
             isDone = true;
         } else {
             values.put("done", 0);
             isDone = false;
+        }
+
+        if (markAsDoneInFragment.isChecked() && repeatTime > 0){
+            values.put("event_time", values.getAsLong("event_time") + repeatTime);
         }
 
 //        long saveReminderTime;
@@ -875,12 +883,17 @@ public class TaskEditFragment extends Fragment {
 
         if (!newTask) {
             database.update(DATABASE_NAME, values, "_id='" + taskId +"'", null);
-            // to update pinned notification if there is any, api 23 up exclusive
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if(isItemAnActiveNotification()){
-                    pinTaskToNotification();
-                }
+
+            SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+            if (idPref.getLong(Long.toString(taskId), 999999L)!=999999L){
+                pinTaskToNotification();
             }
+////            to update pinned notification if there is any, api 23 up exclusive
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                if(isItemAnActiveNotification()){
+//                    pinTaskToNotification();
+//                }
+//            }
         }else {
             taskId = database.insert(DATABASE_NAME, "",values);
         }
@@ -888,35 +901,30 @@ public class TaskEditFragment extends Fragment {
         hasTaskSave = true;
         newTask = false;
         updateTaskListWidget(getContext());
+        updateToolbar();
         Toast.makeText(getActivity(),R.string.saved_task, Toast.LENGTH_SHORT).show();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    private boolean isItemAnActiveNotification(){
-        boolean result = false;
-        NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-
-        if (notificationManager != null) {
-            StatusBarNotification[] activeNotifications = notificationManager.getActiveNotifications();
-            ArrayList<Integer> notificationId = new ArrayList<>();
-            for (StatusBarNotification activeNotification : activeNotifications) {
-                notificationId.add(activeNotification.getId());
-            }
-            // to distinguish reminder and pin item, id of pin item is the item id * PIN_ITEM_NOTIFICATION_ID
-            if (notificationId.contains((int) taskId*PIN_ITEM_NOTIFICATION_ID)){
-                result = true;
-            }
-        } else Toast.makeText(getContext(), R.string.error_text, Toast.LENGTH_SHORT).show();
-        return result;
-    }
+//    @RequiresApi(api = Build.VERSION_CODES.M)
+//    private boolean isItemAnActiveNotification(){
+//        NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+//
+//        if (notificationManager != null) {
+//            StatusBarNotification[] activeNotifications = notificationManager.getActiveNotifications();
+//            ArrayList<Integer> notificationId = new ArrayList<>();
+//            for (StatusBarNotification activeNotification : activeNotifications) {
+//                notificationId.add(activeNotification.getId());
+//            }
+//            // to distinguish reminder and pin item, id of pin item is the item id * PIN_ITEM_NOTIFICATION_ID
+//            return notificationId.contains((int) taskId * PIN_ITEM_NOTIFICATION_ID);
+//        } else Toast.makeText(getContext(), R.string.error_text, Toast.LENGTH_SHORT).show();
+//        return false;
+//    }
 
     private void pinTaskToNotification(){
         Intent intent = new Intent(getContext(), NotificationHelper.class);
         intent.setAction(ACTION_PIN_ITEM);
-        intent.putExtra(EXTRA_NOTE_ID, taskId);
-        intent.putExtra(ITEM_TYPE, 'T');
-        intent.putExtra(ITEM_TITLE, title);
-        intent.putExtra(EVENT_TIME, initEventTime);
+        intent.putExtra(EXTRA_ITEM_ID, taskId);
         PendingIntent pinNotificationPI = PendingIntent.getBroadcast(getContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         try {
             pinNotificationPI.send();
@@ -939,10 +947,24 @@ public class TaskEditFragment extends Fragment {
         }
     }
 
+    private void updateToolbar(){
+        if (notificationToolEnable && DateUtils.isToday(taskDate.getTimeInMillis())){
+
+            Intent toolBarIntent = new Intent(getContext(), NotificationHelper.class);
+            toolBarIntent.setAction(ACTION_TOOL_BAR);
+            PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(getContext(), 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            try {
+                toolbarPendingIntent.send();
+            } catch (PendingIntent.CanceledException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public static TaskEditFragment newEditFragmentInstance(long taskId){
         TaskEditFragment fragment = new TaskEditFragment();
         Bundle bundle = new Bundle();
-        bundle.putLong(EXTRA_NOTE_ID, taskId);
+        bundle.putLong(EXTRA_ITEM_ID, taskId);
         fragment.setArguments(bundle);
         return fragment;
     }
