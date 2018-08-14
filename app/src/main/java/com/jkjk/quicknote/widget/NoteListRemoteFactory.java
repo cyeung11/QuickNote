@@ -61,7 +61,7 @@ public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFact
 
     @Override
     public void onDestroy() {
-        noteCursor.close();
+        if (noteCursor!=null) noteCursor.close();
     }
 
     @Override

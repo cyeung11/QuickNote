@@ -16,25 +16,25 @@ import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 public class AlarmHelper {
 
     public static final String ITEM_TYPE = "type";
-    public static final String ITEM_TITLE = "title";
-    public static final String ITEM_CONTENT = "content";
-    public static final String EVENT_TIME = "eventTime";
+//    static final String ITEM_TITLE = "title";
+//    static final String ITEM_CONTENT = "content";
+//    static final String EVENT_TIME = "eventTime";
 
     public AlarmHelper(){
     }
 
-    public static void setReminder(Context context, char itemType, long id, String title, String content, long eventTime, long remindTime){
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+    public static void setReminder(Context applicationContext, long id, long remindTime){
+        AlarmManager alarmManager = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
 
-        Intent intent = new Intent(context, NotificationHelper.class);
-        intent.setAction(ACTION_POST_REMINDER).putExtra(EXTRA_ITEM_ID, id)
-                .putExtra(ITEM_TYPE, itemType).putExtra(ITEM_TITLE, title)
-                .putExtra(ITEM_CONTENT, content).putExtra(EVENT_TIME, eventTime);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, (int)id, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         if (alarmManager != null) {
+            Intent intent = new Intent(applicationContext, NotificationHelper.class);
+            intent.setAction(ACTION_POST_REMINDER);
+            intent.putExtra(EXTRA_ITEM_ID, id);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(applicationContext, (int)id, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, remindTime, pendingIntent);
-        } else Toast.makeText(context, R.string.error_reminder, Toast.LENGTH_SHORT).show();
+        } else Toast.makeText(applicationContext, R.string.error_reminder, Toast.LENGTH_SHORT).show();
     }
 
     public static void setTaskWidgetUpdate(Context context){
@@ -107,15 +107,15 @@ public class AlarmHelper {
         }
     }
 
-    public static void cancelReminder(Context context, long id){
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-
-        Intent intent = new Intent(context, NotificationHelper.class);
-        intent.setAction(ACTION_POST_REMINDER);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, (int)id, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    public static void cancelReminder(Context applicationContext, long id){
+        AlarmManager alarmManager = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
 
         if (alarmManager != null) {
+            Intent intent = new Intent(applicationContext, NotificationHelper.class);
+            intent.setAction(ACTION_POST_REMINDER);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(applicationContext, (int)id, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
             alarmManager.cancel(pendingIntent);
-        } else Toast.makeText(context, R.string.error_reminder, Toast.LENGTH_SHORT).show();
+        } else Toast.makeText(applicationContext, R.string.error_reminder, Toast.LENGTH_SHORT).show();
     }
 }

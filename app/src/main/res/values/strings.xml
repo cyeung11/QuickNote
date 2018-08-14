@@ -139,8 +139,8 @@
     <string name="default_sort_by_urgency">Sorting by urgency by default</string>
     <string name="task_as_home_page">Using To Do as default page</string>
     <string name="note_as_home_page">Using Note as default page</string>
-    <string name="remove_date_hint">Long press to remove due date</string>
-    <string name="remove_time_hint">Long press to remove due time</string>
+    <string name="remove_date_hint">Long press to remove date</string>
+    <string name="remove_time_hint">Long press to remove time</string>
     <string name="add_note">Add Note</string>
     <string name="add_task">Add To Do</string>
     <string name="due_today">Due Today</string>
@@ -148,7 +148,7 @@
     <string name="due_tomorrow">Due Tomorrow</string>
     <string name="due_someday">Due %s</string>
     <string name="daily_update">Send Daily Update</string>
-    <string name="send_daily_update">Post a daily notification if there is any To Dos pending</string>
+    <string name="send_daily_update">Post a daily notification if there is any To Dos due</string>
     <string name="notification_cap">NOTIFICATION</string>
     <string name="snooze_for">Snooze for…</string>
     <string name="five_minutes">5 minutes</string>

@@ -8,8 +8,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.jkjk.quicknote.R;
@@ -26,12 +28,14 @@ public class Settings extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        android.support.v7.widget.Toolbar settingsMenu;
-        settingsMenu = findViewById(R.id.settings_menu);
-        ((AppCompatActivity)this).setSupportActionBar(settingsMenu);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setTitle(R.string.settings);
+        Toolbar settingsMenu = findViewById(R.id.settings_menu);
+        setSupportActionBar(settingsMenu);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowHomeEnabled(true);
+            actionBar.setTitle(R.string.settings);
+        }
 
         final String fragmentTag = "settingsFragment";
 

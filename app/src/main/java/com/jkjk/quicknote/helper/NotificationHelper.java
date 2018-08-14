@@ -29,12 +29,7 @@ import java.util.Calendar;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.jkjk.quicknote.MyApplication.PINNED_NOTIFICATION_IDS;
-import static com.jkjk.quicknote.helper.AlarmHelper.EVENT_TIME;
-import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_CONTENT;
-import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TITLE;
-import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TYPE;
 import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
-import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.DEFAULT_NOTE_ID;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.DATE_NOT_SET_INDICATOR;
 import static com.jkjk.quicknote.taskeditscreen.TaskEditFragment.TIME_NOT_SET_HOUR_INDICATOR;
@@ -58,7 +53,6 @@ public class NotificationHelper extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         database = ((MyApplication)context.getApplicationContext()).database;
-        final String GROUP_KEY = context.getPackageName();
 
         if (intent != null && intent.getAction() != null) {
             long taskId;
@@ -67,11 +61,21 @@ public class NotificationHelper extends BroadcastReceiver {
             switch (intent.getAction()) {
                 case ACTION_POST_REMINDER:
 
-                    if (intent.hasExtra(EXTRA_ITEM_ID)
-                            && (taskId = intent.getLongExtra(EXTRA_ITEM_ID, DEFAULT_NOTE_ID)) != DEFAULT_NOTE_ID
-                            && intent.hasExtra(ITEM_TYPE)
-                            && intent.hasExtra(ITEM_TITLE)
-                            && intent.hasExtra(ITEM_CONTENT)) {
+                    if (intent.hasExtra(EXTRA_ITEM_ID)) {
+                        taskId = intent.getLongExtra(EXTRA_ITEM_ID, 0);
+                        cursor = database.query(DATABASE_NAME, new String[]{"title", "content", "event_time", "type", "repeat_interval"}, "_id =" + taskId, null, null
+                                , null, null);
+
+                        String title, content;
+                        long eventTime;
+
+                        if (cursor == null || !cursor.moveToFirst()){
+                            break;
+                        } else {
+                            title = cursor.getString(0);
+                            content = cursor.getString(1);
+                            eventTime = cursor.getLong(2);
+                        }
 
                         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                         if (notificationManager == null){
@@ -95,11 +99,7 @@ public class NotificationHelper extends BroadcastReceiver {
 
                         // Intent for launching the corresponding task
                         Intent openItemIntent = new Intent();
-                        if (intent.getCharExtra(ITEM_TYPE, 'A') == 'T') {
-                            openItemIntent.setClass(context, TaskEdit.class);
-                        } else if (intent.getCharExtra(ITEM_TYPE, 'A') == 'N') {
-                            openItemIntent.setClass(context, NoteEdit.class);
-                        }
+                        openItemIntent.setClass(context, cursor.getInt(3) == 0 ? NoteEdit.class  :TaskEdit.class);
                         openItemIntent.putExtra(EXTRA_ITEM_ID, taskId);
                         PendingIntent startPendingIntent = PendingIntent.getActivity(context, (int)taskId, openItemIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -113,7 +113,7 @@ public class NotificationHelper extends BroadcastReceiver {
                         markAsDoneIntent.setAction(ACTION_MARK_AS_DONE).putExtra(EXTRA_ITEM_ID, taskId);
                         PendingIntent markAsDonePendingIntent = PendingIntent.getBroadcast(context, (int)taskId, markAsDoneIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-                        builder.setContentTitle(intent.getStringExtra(ITEM_TITLE)).setSmallIcon(R.drawable.ic_stat_name)
+                        builder.setContentTitle(title).setSmallIcon(R.drawable.ic_stat_name)
                                 .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher_round))
                                 .setContentIntent(startPendingIntent).setAutoCancel(true);
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT_WATCH) {
@@ -127,50 +127,39 @@ public class NotificationHelper extends BroadcastReceiver {
                         // if reminder has content field, show it
                         // On kit katm big text style is showing improperly
                         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH) {
-                            if (!intent.getStringExtra(ITEM_CONTENT).equals("")) {
-                                builder.setStyle(new Notification.BigTextStyle().bigText(intent.getStringExtra(ITEM_CONTENT)));
+                            if (!title.equals("")) {
+                                builder.setStyle(new Notification.BigTextStyle().bigText(title));
                             }
                         }
                         // if devices supports, use group notification
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            builder.setGroup(GROUP_KEY);
+                            builder.setGroup(context.getPackageName());
                         }
-
-                        long eventTime = intent.getLongExtra(EVENT_TIME, DATE_NOT_SET_INDICATOR);
 
                         if (eventTime != DATE_NOT_SET_INDICATOR) {
                             builder.setContentText(formatDueString(context, eventTime));
+                        } else {
+                            builder.setContentText(content);
                         }
 
                         notificationManager.notify((int) taskId, builder.build());
 
                         // Reset reminder option to "No reminder" after presenting the notification
-                        ContentValues values = new ContentValues();
-                        values.put("reminder_time", 0L);
-                        database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
+                        if (cursor.getLong(4) == 0 ) {
+                            ContentValues values = new ContentValues();
+                            values.put("reminder_time", 0L);
+                            database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
+                        }
                     }
                     break;
 
 
                 case Intent.ACTION_BOOT_COMPLETED:
-                    cursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "type", "event_time", "reminder_time", "content"}, "reminder_time > 0", null, null
+                    cursor = database.query(DATABASE_NAME, new String[]{"_id", "reminder_time"}, "reminder_time > 0", null, null
                             , null, null);
                     if (cursor != null && cursor.moveToFirst()) {
                         do {
-                            char itemType;
-                            switch (cursor.getInt(2)) {
-                                case 0:
-                                    itemType = 'N';
-                                    break;
-                                case 1:
-                                    itemType = 'T';
-                                    break;
-                                default:
-                                    itemType = 'T';
-                            }
-                            // setReminder(Context context, char itemType, long id, String title, String content, long eventTime, long remindTime)
-                            AlarmHelper.setReminder(context, itemType, cursor.getLong(0), cursor.getString(1), cursor.getString(5), cursor.getLong(3), cursor.getLong(4));
-
+                            AlarmHelper.setReminder(context.getApplicationContext(), cursor.getLong(0), cursor.getLong(1));
                         } while (cursor.moveToNext());
                         cursor.close();
                     }
@@ -186,18 +175,25 @@ public class NotificationHelper extends BroadcastReceiver {
 
                     if (intent.hasExtra(EXTRA_ITEM_ID) && (taskId = intent.getLongExtra(EXTRA_ITEM_ID, 98876146L)) != 98876146L) {
 
-                        cursor = database.query(DATABASE_NAME, new String[]{"event_time", "repeat_interval"}, "_id='" +taskId + "'" ,
+                        cursor = database.query(DATABASE_NAME, new String[]{"event_time", "reminder_time", "repeat_interval"}, "_id='" +taskId + "'" ,
                                 null, null, null, null, null);
                         ContentValues values = new ContentValues();
 
-                        long repeatInterval = 0;
+                        long repeatInterval;
                         if (cursor != null && cursor.moveToFirst()) {
-                            if ((repeatInterval = cursor.getLong(1)) == 0L) {
+                            if ((repeatInterval = cursor.getLong(2)) == 0L) {
                                 // update the task to done
                                 values.put("done", 1);
                             } else {
-                                values.put("event_time", cursor.getLong(0) + cursor.getLong(1));
+                                long newEventTime = cursor.getLong(0) + cursor.getLong(2);
+                                long newReminderTime = cursor.getLong(1) + cursor.getLong(2);
+                                values.put("event_time", newEventTime);
+                                values.put("reminder_time", newReminderTime);
+                                AlarmHelper.setReminder(context.getApplicationContext(), taskId, newReminderTime);
                             }
+                        } else {
+                            Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
+                            break;
                         }
 
                         database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);

@@ -61,16 +61,23 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     static final  int BACK_UP_REQUEST_CODE = 3433;
     static final  int RESTORE_REQUEST_CODE = 3449;
+    private Context context;
 
     public SettingsFragment() {
         // Required empty public constructor
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.context = context;
+    }
+
+    @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.preferences, rootKey);
 
-        PreferenceManager.setDefaultValues(getContext(), R.xml.preferences, false);
+        PreferenceManager.setDefaultValues(context, R.xml.preferences, false);
 
 
         Preference defaultScreen = findPreference(getString(R.string.default_screen));
@@ -88,12 +95,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             @Override
             public boolean onPreferenceClick(Preference preference) {
 
-                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
 
                     // Permission is not granted
                     if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                        new AlertDialog.Builder(getActivity()).setTitle(R.string.permission_required).setMessage(R.string.permission)
+                        new AlertDialog.Builder(context).setTitle(R.string.permission_required).setMessage(R.string.permission)
                                 .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -125,7 +132,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             public boolean onPreferenceClick(Preference preference) {
 
                 //Check permission
-                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
 
                     // Permission is not granted
@@ -174,11 +181,15 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                 switch (requestCode){
                     case BACK_UP_REQUEST_CODE:
                         try {
-                            ParcelFileDescriptor pfd = getActivity().getContentResolver().openFileDescriptor(uri, "w");
+                            ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "w");
+                            if (pfd == null) {
+                                Toast.makeText(getActivity(),R.string.error_back_up,Toast.LENGTH_SHORT).show();
+                                break;
+                            }
                             FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
 
                             File dataPath = Environment.getDataDirectory();
-                            String dbPath = "//data//"+getActivity().getPackageName()+"//databases//"+DATABASE_NAME+"_db";
+                            String dbPath = "//data//"+context.getPackageName()+"//databases//"+DATABASE_NAME+"_db";
                             File db = new File(dataPath, dbPath);
                             FileInputStream fileInputStream = new FileInputStream(db);
 
@@ -302,11 +313,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                 }
 
             } else {
-                NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                 if (notificationManager != null) {
                     notificationManager.cancel(TOOL_BAR_NOTIFICATION_ID);
                 }
-                AlarmHelper.cancelDailyUpdate(getContext(), ACTION_TOOL_BAR, TOOL_BAR_REQUEST_CODE);
+                AlarmHelper.cancelDailyUpdate(context, ACTION_TOOL_BAR, TOOL_BAR_REQUEST_CODE);
             }
 
         } else if  (key.equals(getString(R.string.daily_update))){
@@ -320,7 +331,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                     e.printStackTrace();
                 }
             } else {
-                AlarmHelper.cancelDailyUpdate(getContext(), ACTION_DAILY_UPDATE, DAILY_UPDATE_REQUEST_CODE);
+                AlarmHelper.cancelDailyUpdate(context, ACTION_DAILY_UPDATE, DAILY_UPDATE_REQUEST_CODE);
             }
         }
     }
@@ -356,6 +367,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         try {
             ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "r");
+            if (pfd == null) return false;
             FileInputStream fileInputStream = new FileInputStream(pfd.getFileDescriptor());
 
             // Verify integrity of  restoreWithResult file

@@ -25,6 +25,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
@@ -33,6 +34,7 @@ import android.widget.Toast;
 import com.google.android.gms.actions.NoteIntents;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.helper.AlarmHelper;
 import com.jkjk.quicknote.helper.NotificationHelper;
 
 import java.util.Calendar;
@@ -48,6 +50,7 @@ import static com.jkjk.quicknote.widget.NoteWidget.updateNoteWidget;
 
 public class NoteEditFragment extends Fragment {
 
+    private Context context;
     public final static String EXTRA_ITEM_ID = "extraItemId";
     private static final String NOTE_ID = "noteId";
     public final static long DEFAULT_NOTE_ID = 999999999L;
@@ -57,6 +60,7 @@ public class NoteEditFragment extends Fragment {
     private EditText titleInFragment, contentInFragment;
     private boolean newNote;
     private String title, content;
+    private float doneButtonYPosition;
 
     // 0 stands for not starred, 1 starred
     private int isStarred = 0;
@@ -67,16 +71,17 @@ public class NoteEditFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        database = ((MyApplication)getActivity().getApplication()).database;
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.context = context;
+        database = ((MyApplication)context.getApplicationContext()).database;
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Obtain correspond value from preferences to show appropriate size for the view
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         String editViewSize = sharedPref.getString(getResources().getString(R.string.font_size_editing_screen),"m");
         int editViewInt;
         switch (editViewSize){
@@ -135,8 +140,14 @@ public class NoteEditFragment extends Fragment {
             } catch (Exception e) {
                 Toast.makeText(container.getContext(), R.string.error_loading, Toast.LENGTH_SHORT).show();
                 Log.e(this.getClass().getName(), "error", e);
+                hasNoteSave = true;
+                if (getActivity() != null) {
+                    getActivity().finish();
+                }
+                return view;
             }
         }
+
 
         final ImageButton showDropMenu = view.findViewById(R.id.edit_show_drop_menu);
 
@@ -146,7 +157,7 @@ public class NoteEditFragment extends Fragment {
                 PopupMenu editDropMenu = new PopupMenu(view.getContext(), showDropMenu);
                 editDropMenu.inflate(R.menu.note_edit_drop_menu);
 
-                SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+                SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
                 MenuItem pinToNotification = editDropMenu.getMenu().findItem(R.id.edit_drop_menu_pin);
                 if (!newNote && idPref.getLong(Long.toString(noteId), 999999L)!=999999L){
                     pinToNotification.setTitle(R.string.notification_unpin);
@@ -180,16 +191,7 @@ public class NoteEditFragment extends Fragment {
                                 if (newNote){
                                     //save new note in and star
                                     isStarred = 1;
-                                    String noteTitle = titleInFragment.getText().toString().trim();
-                                    if (noteTitle.length()<1){
-                                        noteTitle = getActivity().getString(R.string.untitled_note);
-                                    }
-                                    values.put("title", noteTitle);
-                                    values.put("content", contentInFragment.getText().toString());
-                                    values.put("event_time", Calendar.getInstance().getTimeInMillis());
-                                    values.put("starred", isStarred);
-                                    noteId = database.insert(DATABASE_NAME, "",values);
-                                    newNote = false;
+                                    saveNote();
                                     Toast.makeText(getContext(), R.string.saved_starred_toast, Toast.LENGTH_SHORT).show();
                                 } else if (isStarred == 1){
                                     // Unstarred
@@ -208,7 +210,7 @@ public class NoteEditFragment extends Fragment {
 
                             case R.id.edit_drop_menu_delete:
                                 //Delete note
-                                new AlertDialog.Builder(getContext()).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete_edit)
+                                new AlertDialog.Builder(context).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete_edit)
                                         .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialogInterface, int i) {
@@ -216,10 +218,12 @@ public class NoteEditFragment extends Fragment {
                                                     database.delete(DATABASE_NAME, "_id='" + noteId + "'", null);
                                                     updateNoteListWidget(getContext());
 
-                                                    SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+                                                    AlarmHelper.cancelReminder(context.getApplicationContext(), noteId);
+
+                                                    SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
                                                     if (idPref.getLong(Long.toString(noteId), 999999L)!=999999L) {
                                                         idPref.edit().remove(Long.toString(noteId)).apply();
-                                                        NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                                                        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                                                         if (notificationManager != null) {
                                                             notificationManager.cancel((int)noteId*PIN_ITEM_NOTIFICATION_ID);
                                                         }
@@ -245,12 +249,12 @@ public class NoteEditFragment extends Fragment {
                                     hasNoteSave = false;
                                 }
 
-                                SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+                                SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
 
                                 if (idPref.getLong(Long.toString(noteId), 999999L)==999999L) {
                                     pinNoteToNotification();
                                 } else {
-                                    NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                                    NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                                     if (notificationManager!=null){
                                         // to distinguish reminder and pin item, id of pin item is the item id * PIN_ITEM_NOTIFICATION_ID
                                         notificationManager.cancel((int)noteId*PIN_ITEM_NOTIFICATION_ID);
@@ -275,21 +279,39 @@ public class NoteEditFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         // Define save function for the done button
-        FloatingActionButton done = getActivity().findViewById(R.id.done_fab);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-            done.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.sharp_done_24));
-        } else {
-            done.setImageResource(R.drawable.sharp_done_24);
-        }
-        done.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.highlight)));
-        done.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                saveNote();
-                hasNoteSave = true;
-                getActivity().finish();
+        if (getActivity() != null) {
+            final FloatingActionButton done = getActivity().findViewById(R.id.done_fab);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+                done.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.sharp_done_24));
+            } else {
+                done.setImageResource(R.drawable.sharp_done_24);
             }
-        });
+            done.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.highlight)));
+            done.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    saveNote();
+                    hasNoteSave = true;
+                    getActivity().finish();
+                }
+            });
+
+            doneButtonYPosition = done.getY();
+            done.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    float y = done.getY();
+                    if (y < doneButtonYPosition){
+                        if (contentInFragment.hasFocus()) {
+                            done.setVisibility(View.INVISIBLE);
+                        }
+                    } else {
+                        if (done.getVisibility() != View.VISIBLE) done.setVisibility(View.VISIBLE);
+                    }
+                    doneButtonYPosition = y;
+                }
+            });
+        }
     }
 
     @Override
@@ -316,6 +338,12 @@ public class NoteEditFragment extends Fragment {
         super.onPause();
     }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        context = null;
+    }
+
     public void saveNote(){
         ContentValues values = new ContentValues();
         title = titleInFragment.getText().toString().trim();
@@ -330,9 +358,9 @@ public class NoteEditFragment extends Fragment {
         values.put("type", 0);
 
         if (!newNote) {
-            ((MyApplication)getActivity().getApplication()).database.update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
+            ((MyApplication)context.getApplicationContext()).database.update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
 
-            SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+            SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
             if (idPref.getLong(Long.toString(noteId), 999999L)!=999999L){
                 pinNoteToNotification();
             }

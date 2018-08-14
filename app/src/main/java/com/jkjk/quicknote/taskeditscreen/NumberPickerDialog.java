@@ -21,7 +21,7 @@ public class NumberPickerDialog extends AlertDialog implements DialogInterface.O
     private static final String CURRENT_VALUE_FOR_NUM_PICKER = "current value";
 
     // A dialog class that include a single number picker within itself with positive button. pressing the button will trigger the listener which return the value selected
-    public NumberPickerDialog(Context context, NumberPicker.OnValueChangeListener onValueChangeListener, int minValue, int maxValue){
+    NumberPickerDialog(Context context, NumberPicker.OnValueChangeListener onValueChangeListener, int minValue, int maxValue){
         super(context);
         setTitle(R.string.repeat_interval);
         setButton(BUTTON_POSITIVE, context.getText(R.string.done), this);

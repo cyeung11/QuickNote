@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.helper.AlarmHelper;
 import com.jkjk.quicknote.helper.NotificationHelper;
 
 import java.util.ArrayList;
@@ -262,14 +263,22 @@ public class TaskListAdapter extends ItemListAdapter {
                                             SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
                                             for (int pendingPosition : selectedItems) {
                                                 itemCursor.moveToPosition(pendingPosition);
+                                                String doneId = itemCursor.getString(0);
                                                 if ((repeatInterval = itemCursor.getLong(5)) == 0L) {
                                                     // update the task to done
                                                     values.put("done", 1);
                                                 } else {
-                                                    values.put("event_time", itemCursor.getLong(3) + repeatInterval);
+                                                    Cursor repeatCursor =  database.query(DATABASE_NAME, new String[]{"reminder_time"}, "_id =" + doneId, null, null
+                                                            , null, null);
+                                                    if (repeatCursor.moveToFirst()) {
+                                                        long newEventTime = itemCursor.getLong(3) + repeatInterval;
+                                                        long newReminderTime = repeatCursor.getLong(0) + repeatInterval;
+                                                        values.put("event_time", newEventTime);
+                                                        values.put("reminder_time", newReminderTime);
+                                                        AlarmHelper.setReminder(context.getApplicationContext(), holder.itemId, newReminderTime);
+                                                    }
+                                                    repeatCursor.close();
                                                 }
-
-                                                String doneId = itemCursor.getString(0);
 
                                                 //Update to done
                                                 database.update(DATABASE_NAME, values, "_id='" + doneId + "'", null);
@@ -355,15 +364,25 @@ public class TaskListAdapter extends ItemListAdapter {
                             // Check if the item has repeat property, if yes, delay the event time instead
 
                             if (itemCursor != null) {
+
                                 if ((repeatInterval = itemCursor.getLong(5)) == 0L) {
                                     // update the task to done
                                     values.put("done", 1);
                                     holder.isDone = true;
                                 } else {
-                                    values.put("event_time", itemCursor.getLong(3) + repeatInterval);
+                                    Cursor repeatCursor =  database.query(DATABASE_NAME, new String[]{"reminder_time"}, "_id =" + holder.itemId, null, null
+                                            , null, null);
+                                    if (repeatCursor.moveToFirst()) {
+                                        long newEventTime = itemCursor.getLong(3) + itemCursor.getLong(5);
+                                        long newReminderTime = repeatCursor.getLong(0) + itemCursor.getLong(5);
+                                        values.put("event_time", newEventTime);
+                                        values.put("reminder_time", newReminderTime);
+                                        AlarmHelper.setReminder(context.getApplicationContext(), holder.itemId, newReminderTime);
+                                    }
+                                    repeatCursor.close();
                                 }
                                 database.update(DATABASE_NAME, values, "_id='" + holder.itemId + "'", null);
-                                if (repeatInterval != 0) {
+                                if (repeatInterval > 0) {
                                     SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
                                     if (idPref.getLong(Long.toString(holder.itemId), 999999L) != 999999L) {
                                         Intent intent = new Intent(context, NotificationHelper.class);
@@ -450,6 +469,7 @@ public class TaskListAdapter extends ItemListAdapter {
             holder.itemTitle.setMaxLines(1);
         }
 
+        holder.urgency.setVisibility(View.GONE);
 
         if (itemCursor != null) {
             try {
@@ -460,19 +480,24 @@ public class TaskListAdapter extends ItemListAdapter {
 
                 switch (itemCursor.getInt(2)){
                     case 2:
+                        if (!holder.isDone) {
+                            holder.urgency.setVisibility(View.VISIBLE);
+                        }
                         holder.urgency.setText(R.string.asap);
                         holder.urgency.setTextColor(fragment.getResources().getColor(R.color.colorPrimary));
                         holder.urgency.setTypeface(Typeface.DEFAULT_BOLD);
                         holder.flagIcon.setVisibility(showingDone ?View.GONE :View.VISIBLE);
                         break;
                     case 1:
+                        if (!holder.isDone) {
+                            holder.urgency.setVisibility(View.VISIBLE);
+                        }
                         holder.urgency.setText(R.string.important);
                         holder.urgency.setTextColor(fragment.getResources().getColor(R.color.darkGrey));
                         holder.urgency.setTypeface(Typeface.DEFAULT);
                         holder.flagIcon.setVisibility(showingDone ?View.GONE :View.VISIBLE);
                         break;
                     case 0:
-                        holder.urgency.setVisibility(View.GONE);
                         layoutParams.addRule(RelativeLayout.START_OF, R.id.item_date);
                         holder.itemTitle.setMaxLines(2);
                         holder.flagIcon.setVisibility(View.GONE);

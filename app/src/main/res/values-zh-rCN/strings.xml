@@ -128,7 +128,7 @@
     <string name="ten_min_before">到期前10分钟</string>
     <string name="thirty_min_before">到期前30分钟</string>
     <string name="a_day_beofre">到期前24小时</string>
-    <string name="custom">自订</string>
+    <string name="custom">自订…</string>
     <string name="repeat">重复</string>
     <string name="notification_channel_name">提醒</string>
     <string name="snooze">延时</string>
@@ -194,13 +194,21 @@
         <item>无提醒</item>
         <item>到期时</item>
         <item>24小时前</item>
-        <item>自订</item>
+        <item>自订…</item>
     </string-array>
     <string-array name="reminder_list_with_time">
         <item>10分钟前</item>
         <item>30分钟前</item>
     </string-array>
-    <string name="other_spinner">自订</string>
+    <string-array name="repeat_list">
+        <item>不重复</item>
+        <item>每天</item>
+        <item>每周</item>
+        <item>每月</item>
+        <item>每年</item>
+        <item>自订…</item>
+    </string-array>
+    <string name="other_spinner">自订…</string>
     <string name="day">天</string>
     <string name="repeat_interval">重覆间隔</string>
     <string name="not_repeating">不重复</string>

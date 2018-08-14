@@ -4,7 +4,6 @@ import android.app.ActionBar;
 import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -66,33 +65,16 @@ public class SnoozeDurationDialog extends AppCompatActivity {
                 if (getIntent().hasExtra(EXTRA_ITEM_ID)
                         && (taskId = getIntent().getLongExtra(EXTRA_ITEM_ID, 98876146L)) != 98876146L) {
 
-                    Cursor cursor = database.query(DATABASE_NAME, new String[]{"title", "type", "event_time", "content"}
-                            , "_id= " + taskId
-                            , null, null, null, null);
-                    if (cursor != null && cursor.moveToFirst()) {
-                        char itemType;
-                        switch (cursor.getInt(1)) {
-                            case 0:
-                                itemType = 'N';
-                                break;
-                            default:
-                                itemType = 'T';
-                        }
+                    AlarmHelper.setReminder(getApplicationContext(), taskId, Calendar.getInstance().getTimeInMillis() + snoozeDuration);
+                    ContentValues values = new ContentValues();
+                    values.put("reminder_time", Calendar.getInstance().getTimeInMillis() + snoozeDuration);
+                    database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
 
-                        // setReminder(Context context, char itemType, long id, String title, String content, long eventTime, long remindTime)
-                        AlarmHelper.setReminder(SnoozeDurationDialog.this, itemType, taskId, cursor.getString(0)
-                                , cursor.getString(3), cursor.getLong(2), Calendar.getInstance().getTimeInMillis() + snoozeDuration);
-                        ContentValues values = new ContentValues();
-                        values.put("reminder_time", Calendar.getInstance().getTimeInMillis() + snoozeDuration);
-                        database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
-                        cursor.close();
-
-                        NotificationManager notificationManager = (NotificationManager) SnoozeDurationDialog.this.getSystemService(Context.NOTIFICATION_SERVICE);
-                        if (notificationManager != null) {
-                            notificationManager.cancel((int)taskId);
-                        }
-                        SnoozeDurationDialog.this.finish();
+                    NotificationManager notificationManager = (NotificationManager) SnoozeDurationDialog.this.getSystemService(Context.NOTIFICATION_SERVICE);
+                    if (notificationManager != null) {
+                        notificationManager.cancel((int)taskId);
                     }
+                    SnoozeDurationDialog.this.finish();
                 }
             }
         });

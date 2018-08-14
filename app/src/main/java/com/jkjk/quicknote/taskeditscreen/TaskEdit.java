@@ -1,6 +1,7 @@
 package com.jkjk.quicknote.taskeditscreen;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -12,13 +13,13 @@ import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 public class TaskEdit extends AppCompatActivity {
 
     private TaskEditFragment taskEditFragment;
+    private long taskId;
+    private static final String fragmentTag = "taskEditFragmentTag";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_edit);
-        long taskId;
-        final String fragmentTag = "taskEditFragmentTag";
 
         if (savedInstanceState == null) {
             //Case when the activity is newly created
@@ -38,6 +39,21 @@ public class TaskEdit extends AppCompatActivity {
             //Case when restoring from saved instance, rotate etc.
             taskEditFragment = (TaskEditFragment) getSupportFragmentManager().findFragmentByTag(fragmentTag);
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent.hasExtra(EXTRA_ITEM_ID)) {
+            //Case when activity is called by note list activity after user selected existing note
+            taskId = intent.getLongExtra(EXTRA_ITEM_ID, 0L);
+            taskEditFragment = TaskEditFragment.newEditFragmentInstance(taskId);
+
+        } else {
+            //Case when opening a new note
+            taskEditFragment = TaskEditFragment.newEditFragmentInstance();
+        }
+        getSupportFragmentManager().beginTransaction().replace(R.id.task_container, taskEditFragment,fragmentTag).commit();
     }
 
     @Override

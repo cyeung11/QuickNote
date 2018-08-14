@@ -196,6 +196,14 @@
         <item>締め切り10分前</item>
         <item>締め切り30分前</item>
     </string-array>
+    <string-array name="repeat_list">
+        <item>繰り返しなし</item>
+        <item>毎日</item>
+        <item>毎週</item>
+        <item>毎月</item>
+        <item>毎年</item>
+        <item>カスタム…</item>
+    </string-array>
     <string name="other_spinner">カスタム…</string>
     <string name="day">日</string>
     <string name="repeat_interval">繰り返す</string>

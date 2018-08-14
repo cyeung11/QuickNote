@@ -43,7 +43,7 @@ public class MyApplication extends Application {
 
         SharedPreferences idPref = this.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
         Map<String, ?> pinnedItem = idPref.getAll();
-        for (String key : idPref.getAll().keySet()){
+        for (String key : pinnedItem.keySet()){
             Intent intent = new Intent(this, NotificationHelper.class);
             intent.setAction(ACTION_PIN_ITEM);
             intent.putExtra(EXTRA_ITEM_ID,  (Long) pinnedItem.get(key));

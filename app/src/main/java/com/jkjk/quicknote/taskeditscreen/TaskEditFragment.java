@@ -28,6 +28,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
@@ -84,6 +85,8 @@ public class TaskEditFragment extends Fragment {
     private Spinner urgencyInFragment, reminderInFragment, repeatInFragment;
     private int reminderPresetSize, repeatPresetSize;
     private LinearLayout timeRow, repeatRow;
+    private Context context;
+    private float doneButtonYPosition;
 
     private ArrayList<String> reminderArray, repeatArray;
 
@@ -92,16 +95,17 @@ public class TaskEditFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        database = ((MyApplication)getActivity().getApplication()).database;
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.context = context;
+        database = ((MyApplication)context.getApplicationContext()).database;
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Obtain correspond value from preferences to show appropriate size for the view
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         String editViewSize = sharedPref.getString(getResources().getString(R.string.font_size_editing_screen),"m");
         notificationToolEnable = sharedPref.getBoolean(getString(R.string.notification_pin), false);
         int editViewInt;
@@ -171,9 +175,16 @@ public class TaskEditFragment extends Fragment {
                 taskCursor = database.query(DATABASE_NAME, new String[]{"title", "content", "event_time","urgency","done", "reminder_time", "repeat_interval"}, "_id= " + taskId ,
                         null, null, null, null, null);
                 taskCursor.moveToFirst();
+                titleInFragment.setText(taskCursor.getString(0));
+                remarkInFragment.setText(taskCursor.getString(1));
             } catch (Exception e) {
-                Toast.makeText(container.getContext(), R.string.error_loading, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, R.string.error_loading, Toast.LENGTH_SHORT).show();
                 Log.e(this.getClass().getName(), "loading task from cursor       ", e);
+                hasTaskSave = true;
+                if (getActivity() != null) {
+                    getActivity().finish();
+                }
+                return view;
             }
         }
 
@@ -183,9 +194,6 @@ public class TaskEditFragment extends Fragment {
         reminderTime.setTimeInMillis(0);
 
         if (taskCursor != null && taskCursor.getColumnCount() > 0) {
-            titleInFragment.setText(taskCursor.getString(0));
-            remarkInFragment.setText(taskCursor.getString(1));
-
             // read time to date and time field
             taskDate.setTimeInMillis(taskCursor.getLong(2));
             if (taskDate.getTimeInMillis() != DATE_NOT_SET_INDICATOR) {
@@ -217,7 +225,7 @@ public class TaskEditFragment extends Fragment {
 
 
         // Urgency
-        ArrayAdapter<CharSequence> urgencyAdapter = ArrayAdapter.createFromResource(getContext(),R.array.urgency_list, spinnerItemInt);
+        ArrayAdapter<CharSequence> urgencyAdapter = ArrayAdapter.createFromResource(context,R.array.urgency_list, spinnerItemInt);
         urgencyAdapter.setDropDownViewResource(spinnerDropDownInt);
         urgencyInFragment.setAdapter(urgencyAdapter);
         urgencyInFragment.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -240,9 +248,9 @@ public class TaskEditFragment extends Fragment {
         }
 
         // Repeat
-        repeatArray = new ArrayList<>(Arrays.asList(getContext().getResources().getStringArray(R.array.repeat_list)));
+        repeatArray = new ArrayList<>(Arrays.asList(context.getResources().getStringArray(R.array.repeat_list)));
         repeatPresetSize = repeatArray.size();
-        final ArrayAdapter<String> repeatAdapter = new ArrayAdapter<>(getContext(), spinnerItemInt, repeatArray);
+        final ArrayAdapter<String> repeatAdapter = new ArrayAdapter<>(context, spinnerItemInt, repeatArray);
         repeatAdapter.setDropDownViewResource(spinnerDropDownInt);
         repeatInFragment.setAdapter(repeatAdapter);
         repeatInFragment.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -254,7 +262,7 @@ public class TaskEditFragment extends Fragment {
 
 //                    if select the last item, i.e. other, show the number picker
                     if (i == repeatArray.size()-1){
-                        new NumberPickerDialog(getContext(), new NumberPicker.OnValueChangeListener() {
+                        NumberPickerDialog numberPickerDialog = new NumberPickerDialog(context, new NumberPicker.OnValueChangeListener() {
                             @Override
                             public void onValueChange(NumberPicker numberPicker, int oldValue, int newValue) {
                                 repeatTime = newValue * 86400000L;
@@ -266,7 +274,15 @@ public class TaskEditFragment extends Fragment {
                                 repeatSelectByUser = false;
                                 repeatInFragment.setSelection(0);
                             }
-                        }, 1, 99).show();
+                        }, 1, 365);
+                        numberPickerDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialogInterface) {
+                                repeatSelectByUser = false;
+                                repeatInFragment.setSelection(0);
+                            }
+                        });
+                        numberPickerDialog.show();
                     } else if (repeatArray.size() > repeatPresetSize) {
                         repeatArray.remove(0);
                         switch (i){
@@ -351,7 +367,7 @@ public class TaskEditFragment extends Fragment {
 
         reminderPresetSize = reminderArray.size();
 
-        final ArrayAdapter<String> reminderAdapter = new ArrayAdapter<>(getContext(), spinnerItemInt, reminderArray);
+        final ArrayAdapter<String> reminderAdapter = new ArrayAdapter<>(context, spinnerItemInt, reminderArray);
         reminderAdapter.setDropDownViewResource(spinnerDropDownInt);
         reminderInFragment.setAdapter(reminderAdapter);
         reminderInFragment.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -373,7 +389,7 @@ public class TaskEditFragment extends Fragment {
                             dy = reminderTime.get(Calendar.DAY_OF_MONTH);
                         }
 
-                        DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(), new DatePickerDialog.OnDateSetListener() {
+                        DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker datePicker,int year, int month, int dayOfMonth) {
                                 int hr, min;
@@ -388,7 +404,7 @@ public class TaskEditFragment extends Fragment {
                                 reminderTime.set(Calendar.MONTH, month);
                                 reminderTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
-                                TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
+                                TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
                                     @Override
                                     public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute){
                                         reminderTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
@@ -499,7 +515,7 @@ public class TaskEditFragment extends Fragment {
                 // Only show hint in the first time for every instance of the activity
                 if (!hasShowRemoveDateHint) {
                     hasShowRemoveDateHint = true;
-                    Toast.makeText(getContext(), R.string.remove_date_hint, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, R.string.remove_date_hint, Toast.LENGTH_SHORT).show();
                 }
 
                 int year, month, dayOfMonth;
@@ -513,7 +529,7 @@ public class TaskEditFragment extends Fragment {
                     dayOfMonth = taskDate.get(Calendar.DAY_OF_MONTH);
                 }
 
-                new DatePickerDialog(getContext(), new DatePickerDialog.OnDateSetListener() {
+                new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker datePicker,int year, int month, int dayOfMonth) {
                         if (taskDate.getTimeInMillis()==DATE_NOT_SET_INDICATOR){
@@ -521,6 +537,11 @@ public class TaskEditFragment extends Fragment {
                             taskDate.set(Calendar.MINUTE, TIME_NOT_SET_MINUTE_SECOND_INDICATOR);
                             taskDate.set(Calendar.SECOND, TIME_NOT_SET_MINUTE_SECOND_INDICATOR);
                             taskDate.set(Calendar.MILLISECOND, TIME_NOT_SET_MILLISECOND_INDICATOR);
+
+                            if (reminderTime.getTimeInMillis() == 0L) {
+                                reminderSelectByUser = false;
+                                reminderInFragment.setSelection(1);
+                            }
                         }
                         taskDate.set(Calendar.YEAR, year);
                         taskDate.set(Calendar.MONTH, month);
@@ -528,6 +549,7 @@ public class TaskEditFragment extends Fragment {
 
                         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
                         dateInFragment.setText(dateFormat.format(taskDate.getTime()));
+
                         timeRow.setVisibility(View.VISIBLE);
                         repeatRow.setVisibility(View.VISIBLE);
                         hasModified = true;
@@ -555,19 +577,27 @@ public class TaskEditFragment extends Fragment {
                     timeRow.setVisibility(View.GONE);
                     repeatTime = 0L;
                     repeatRow.setVisibility(View.GONE);
+                    if (repeatArray.size()>repeatPresetSize){
+                        repeatArray.remove(0);
+                    }
+                    repeatAdapter.notifyDataSetChanged();
+                    repeatSelectByUser = false;
+                    repeatInFragment.setSelection(0);
                     hasModified = true;
+
+                    String currentReminderSelection = (String) reminderInFragment.getSelectedItem();
 
                     reminderArray.clear();
                     reminderArray.add(getString(R.string.no_reminder_set));
                     reminderArray.add(getString(R.string.custom));
                     reminderAdapter.notifyDataSetChanged();
 
-                    if (reminderTime.getTimeInMillis() != 0){
+                    if (reminderTime.getTimeInMillis() != 0 && !currentReminderSelection.equals(getString(R.string.no_reminder_set))){
                         reminderArray.add(0, dateTimeFormat.format(new Date(reminderTime.getTimeInMillis())));
                         reminderAdapter.notifyDataSetChanged();
-                        reminderSelectByUser = false;
-                        reminderInFragment.setSelection(0);
                     }
+                    reminderSelectByUser = false;
+                    reminderInFragment.setSelection(0);
                     return true;
                 } else return false;
             }
@@ -579,7 +609,7 @@ public class TaskEditFragment extends Fragment {
                 // Only show hint in the first time for every instance of the activity
                 if (!hasShowRemoveTimeHint) {
                     hasShowRemoveTimeHint = true;
-                    Toast.makeText(getContext(), R.string.remove_time_hint, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, R.string.remove_time_hint, Toast.LENGTH_SHORT).show();
                 }
                 int hourOfDay, minute;
                 // Change hour and minute shown as current time or event time
@@ -594,7 +624,7 @@ public class TaskEditFragment extends Fragment {
                     minute = taskDate.get(Calendar.MINUTE);
                 }
 
-                new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
+                new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute){
                         taskDate.set(Calendar.HOUR_OF_DAY, hourOfDay);
@@ -652,7 +682,7 @@ public class TaskEditFragment extends Fragment {
                 PopupMenu editDropMenu = new PopupMenu(view.getContext(),showDropMenu);
                 editDropMenu.inflate(R.menu.task_edit_drop_menu);
 
-                SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+                SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
 
                 MenuItem pinToNotification = editDropMenu.getMenu().findItem(R.id.edit_drop_menu_pin);
                 if (!newTask && idPref.getLong(Long.toString(taskId), 999999L)!=999999L){
@@ -667,18 +697,19 @@ public class TaskEditFragment extends Fragment {
                         switch (menuItem.getItemId()){
                             case R.id.edit_drop_menu_delete:
                                 //Delete task
-                                new AlertDialog.Builder(getContext()).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete_edit)
+                                new AlertDialog.Builder(context).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete_edit)
                                         .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
                                                     @Override
                                                     public void onClick(DialogInterface dialogInterface, int i) {
                                                         if (!newTask) {
                                                             database.delete(DATABASE_NAME, "_id='" + taskId + "'", null);
-                                                            updateTaskListWidget(getContext());
+                                                            updateTaskListWidget(context);
+                                                            AlarmHelper.cancelReminder(context.getApplicationContext(), taskId);
 
-                                                            SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+                                                            SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
                                                             if (idPref.getLong(Long.toString(taskId), 999999L)!=999999L) {
                                                                 idPref.edit().remove(Long.toString(taskId)).apply();
-                                                                NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                                                                NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                                                                 if (notificationManager != null) {
                                                                     notificationManager.cancel((int)taskId*PIN_ITEM_NOTIFICATION_ID);
                                                                 }
@@ -687,7 +718,7 @@ public class TaskEditFragment extends Fragment {
                                                         }
                                                         // No need to do saving
                                                         hasTaskSave = true;
-                                                        Toast.makeText(getContext(), R.string.note_deleted_toast, Toast.LENGTH_SHORT).show();
+                                                        Toast.makeText(context, R.string.task_deleted_toast, Toast.LENGTH_SHORT).show();
                                                         if (getActivity()!=null) {
                                                             getActivity().finish();
                                                         }
@@ -731,12 +762,12 @@ public class TaskEditFragment extends Fragment {
                                     hasTaskSave = false;
                                 }
 
-                                SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+                                SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
 
                                 if (idPref.getLong(Long.toString(taskId), 999999L)==999999L) {
                                     pinTaskToNotification();
                                 } else {
-                                    NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                                    NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                                     if (notificationManager!=null){
                                         // to distinguish reminder and pin item, id of pin item is the item id * PIN_ITEM_NOTIFICATION_ID
                                         notificationManager.cancel((int)taskId*PIN_ITEM_NOTIFICATION_ID);
@@ -765,27 +796,52 @@ public class TaskEditFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         // Define save function for the done button
-        FloatingActionButton done = getActivity().findViewById(R.id.done_fab);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-            done.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.sharp_done_24));
-        } else {
-            done.setImageResource(R.drawable.sharp_done_24);
-        }
-        done.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.highlight)));
-        done.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                saveTask();
-                hasTaskSave = true;
-                getActivity().finish();
+        if (getActivity() != null) {
+            final FloatingActionButton done = getActivity().findViewById(R.id.done_fab);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                done.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.sharp_done_24));
+            } else {
+                done.setImageResource(R.drawable.sharp_done_24);
             }
-        });
+            done.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.highlight)));
+            done.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    saveTask();
+                    hasTaskSave = true;
+                    getActivity().finish();
+                }
+            });
+
+            doneButtonYPosition = done.getY();
+            done.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    float y = done.getY();
+                    if (y < doneButtonYPosition) {
+                        if (remarkInFragment.hasFocus()) {
+                            done.setVisibility(View.INVISIBLE);
+                        }
+                    } else {
+                        if (done.getVisibility() != View.VISIBLE) done.setVisibility(View.VISIBLE);
+                    }
+                    doneButtonYPosition = y;
+
+                }
+            });
+        }
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putLong(TASK_ID, taskId);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        context = null;
     }
 
     @Override
@@ -837,9 +893,8 @@ public class TaskEditFragment extends Fragment {
             values.put("event_time", values.getAsLong("event_time") + repeatTime);
         }
 
-//        long saveReminderTime;
         if (reminderInFragment.getSelectedItem().toString().equals(getString(R.string.no_reminder_set))){
-            AlarmHelper.cancelReminder(getContext(),taskId);
+            AlarmHelper.cancelReminder(context.getApplicationContext(),taskId);
             reminderTime.setTimeInMillis(0);
 
         } else {
@@ -875,16 +930,19 @@ public class TaskEditFragment extends Fragment {
                     reminderTime.set(Calendar.SECOND, 0);
                     reminderTime.set(Calendar.MINUTE, 0);
                     reminderTime.set(Calendar.HOUR_OF_DAY, 0);
+                    reminderTime.setTimeInMillis(reminderTime.getTimeInMillis()-86400000);
                 }
             }
-            AlarmHelper.setReminder(getContext(), 'T', taskId, title, remark, taskDate.getTimeInMillis(), reminderTime.getTimeInMillis());
+            if (markAsDoneInFragment.isChecked() && repeatTime > 0){
+                reminderTime.setTimeInMillis(reminderTime.getTimeInMillis()+repeatTime);
+            }
         }
         values.put("reminder_time", reminderTime.getTimeInMillis());
 
         if (!newTask) {
             database.update(DATABASE_NAME, values, "_id='" + taskId +"'", null);
 
-            SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+            SharedPreferences idPref = context.getApplicationContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
             if (idPref.getLong(Long.toString(taskId), 999999L)!=999999L){
                 pinTaskToNotification();
             }
@@ -897,10 +955,13 @@ public class TaskEditFragment extends Fragment {
         }else {
             taskId = database.insert(DATABASE_NAME, "",values);
         }
+        if (reminderTime.getTimeInMillis() > 0) {
+            AlarmHelper.setReminder(context.getApplicationContext(), taskId, reminderTime.getTimeInMillis());
+        }
         values.clear();
         hasTaskSave = true;
         newTask = false;
-        updateTaskListWidget(getContext());
+        updateTaskListWidget(context);
         updateToolbar();
         Toast.makeText(getActivity(),R.string.saved_task, Toast.LENGTH_SHORT).show();
     }
@@ -922,10 +983,10 @@ public class TaskEditFragment extends Fragment {
 //    }
 
     private void pinTaskToNotification(){
-        Intent intent = new Intent(getContext(), NotificationHelper.class);
+        Intent intent = new Intent(context, NotificationHelper.class);
         intent.setAction(ACTION_PIN_ITEM);
         intent.putExtra(EXTRA_ITEM_ID, taskId);
-        PendingIntent pinNotificationPI = PendingIntent.getBroadcast(getContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pinNotificationPI = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         try {
             pinNotificationPI.send();
         } catch (PendingIntent.CanceledException e) {
@@ -950,9 +1011,9 @@ public class TaskEditFragment extends Fragment {
     private void updateToolbar(){
         if (notificationToolEnable && DateUtils.isToday(taskDate.getTimeInMillis())){
 
-            Intent toolBarIntent = new Intent(getContext(), NotificationHelper.class);
+            Intent toolBarIntent = new Intent(context, NotificationHelper.class);
             toolBarIntent.setAction(ACTION_TOOL_BAR);
-            PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(getContext(), 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(context, 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             try {
                 toolbarPendingIntent.send();
             } catch (PendingIntent.CanceledException e) {

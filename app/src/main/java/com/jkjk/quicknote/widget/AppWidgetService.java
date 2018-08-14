@@ -7,7 +7,6 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.support.v7.preference.PreferenceManager;
 import android.util.TypedValue;
@@ -39,8 +38,6 @@ public class AppWidgetService extends IntentService {
     public static final int NOTE_LIST_WIDGET_REQUEST_CODE = 2;
     public static final int NOTE_LIST_WIDGET_START_APP_REQUEST_CODE = 1399;
     public static final int TASK_LIST_WIDGET_START_APP_REQUEST_CODE = 2333;
-
-    private SQLiteDatabase database;
 
     public AppWidgetService(){
         super("AppWidgetService");
@@ -150,13 +147,12 @@ public class AppWidgetService extends IntentService {
                 , startAppIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent newItemIntent = new Intent(this, itemIsNote ?NoteEdit.class :TaskEdit.class);
-        newItemIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        newItemIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP| Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent newItemPendingIntent = PendingIntent.getActivity(this, 0, newItemIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent listWidgetAdapterIntent = new Intent(this, itemIsNote ?NoteListWidgetRemoteService.class :TaskListWidgetRemoteService.class);
         Intent itemIntentTemplate = new Intent(this, itemIsNote ?NoteEdit.class :TaskEdit.class);
-        itemIntentTemplate.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent pendingIntentTemplate = PendingIntent.getActivity(this, 0, itemIntentTemplate, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntentTemplate = PendingIntent.getActivity(this, 455463, itemIntentTemplate, PendingIntent.FLAG_UPDATE_CURRENT);
 
         for (int i = 0; i < appWidgetIds.length; i++) {
             views[i] = new RemoteViews("com.jkjk.quicknote", itemIsNote ?R.layout.note_list_widget :R.layout.task_list_widget);

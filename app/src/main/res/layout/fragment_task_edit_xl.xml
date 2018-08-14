@@ -78,24 +78,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/category_caption"
-                android:layout_marginBottom="8dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:textSize="18sp"
-                android:textColor="@color/colorPrimary"/>
-
-            <Spinner
-                android:id="@+id/task_urgency"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="20dp"
-                android:layout_marginStart="20dp"
-                android:layout_marginBottom="20dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:text="@string/due_date_caption"
                 android:textSize="18sp"
                 android:layout_marginBottom="12dp"
@@ -124,7 +106,6 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginEnd="16dp"
                     android:hint="@string/date_hint"
                     android:textSize="24sp"
                     android:textColor="@android:color/black"/>
@@ -207,14 +188,30 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/remark_caption"
+                android:text="@string/category_caption"
                 android:layout_marginBottom="8dp"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:textSize="18sp"
                 android:textColor="@color/colorPrimary"/>
 
+            <Spinner
+                android:id="@+id/task_urgency"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginBottom="20dp"/>
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/remark_caption"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:textSize="18sp"
+                android:textColor="@color/colorPrimary"/>
 
             <EditText
                 android:id="@+id/task_remark"

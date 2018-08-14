@@ -16,14 +16,14 @@ import static com.jkjk.quicknote.widget.NoteWidget.updateNoteWidget;
 
 public class NoteEdit extends AppCompatActivity {
 
+    private static final String fragmentTag = "noteEditFragmentTag";
     private NoteEditFragment noteEditFragment;
+    private long noteId;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_edit);
-        long noteId;
-        final String fragmentTag = "noteEditFragmentTag";
 
         if (savedInstanceState == null) {
             //Case when the activity is newly created
@@ -49,6 +49,24 @@ public class NoteEdit extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent.getAction()!= null && (intent.getAction().equals(Intent.ACTION_SEND) || intent.getAction().equals(NoteIntents.ACTION_CREATE_NOTE))) {
+            //Case when activity is called by external intent
+            noteEditFragment = NoteEditFragment.newEditFragmentInstance(intent);
+
+        } else if (intent.hasExtra(EXTRA_ITEM_ID)) {
+            //Case when activity is called by note list activity after user selected existing note
+            noteId = intent.getLongExtra(EXTRA_ITEM_ID, 0L);
+            noteEditFragment = NoteEditFragment.newEditFragmentInstance(noteId);
+
+        } else {
+            //Case when opening a new note
+            noteEditFragment = NoteEditFragment.newEditFragmentInstance();
+        }
+        getSupportFragmentManager().beginTransaction().replace(R.id.note_container, noteEditFragment,fragmentTag).commit();
+    }
 
     @Override
     public void onBackPressed() {

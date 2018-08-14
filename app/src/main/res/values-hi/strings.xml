@@ -130,7 +130,7 @@
     <string name="ten_min_before">10 मिनट पहले</string>
     <string name="thirty_min_before">30 मिनट पहले</string>
     <string name="a_day_beofre">24 घंटे पहले</string>
-    <string name="custom">कस्टम</string>
+    <string name="custom">कस्टम…</string>
     <string name="notification_channel_name">अनुस्मारक</string>
     <string name="snooze">दिन में झपकी लेना</string>
     <string name="snooze_duration">दिन में झपकी अवधि</string>
@@ -190,13 +190,21 @@
         <item>कोई अनुस्मारक नहीं</item>
         <item>समाप्त होने पर</item>
         <item>24 घंटे पहले</item>
-        <item>कस्टम</item>
+        <item>कस्टम…</item>
     </string-array>
     <string-array name="reminder_list_with_time">
         <item>10 मिनट पहले</item>
         <item>30 मिनट पहले</item>
     </string-array>
-    <string name="other_spinner">कस्टम</string>
+    <string-array name="repeat_list">
+        <item>कोई दोहराव नहीं</item>
+        <item>हर दिन</item>
+        <item>हर हफ्ते</item>
+        <item>हर महीने</item>
+        <item>हर साल</item>
+        <item>कस्टम…</item>
+    </string-array>
+    <string name="other_spinner">कस्टम…</string>
     <string name="day">दिन</string>
     <string name="repeat_interval">दोहराना</string>
     <string name="not_repeating">कोई दोहराव नहीं</string>

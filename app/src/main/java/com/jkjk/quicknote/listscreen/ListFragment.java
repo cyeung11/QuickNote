@@ -3,7 +3,6 @@ package com.jkjk.quicknote.listscreen;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,9 +12,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -34,6 +35,7 @@ import android.widget.Toast;
 
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.helper.AlarmHelper;
 import com.jkjk.quicknote.helper.NotificationHelper;
 import com.jkjk.quicknote.helper.SearchHelper;
 import com.jkjk.quicknote.settings.Settings;
@@ -70,6 +72,7 @@ public class ListFragment extends Fragment{
     private NoteListAdapter noteListAdapter;
     private TaskListAdapter taskListAdapter;
     private SQLiteDatabase database;
+    private Context context;
 
 
     public ListFragment() {
@@ -80,18 +83,26 @@ public class ListFragment extends Fragment{
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        database = ((MyApplication)getActivity().getApplication()).database;
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.context = context;
+        database = ((MyApplication)context.getApplicationContext()).database;
+    }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        Toolbar listMenu = getActivity().findViewById(R.id.list_menu);
-        ((AppCompatActivity) getActivity()).setSupportActionBar(listMenu);
+        final FragmentActivity activity = getActivity();
+        if (activity == null) return;
 
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        Toolbar listMenu = activity.findViewById(R.id.list_menu);
+        ((AppCompatActivity) activity).setSupportActionBar(listMenu);
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         isNotificationToolbarEnable = sharedPref.getBoolean(getString(R.string.notification_pin), false);
         defaultPageIsTask = sharedPref.getBoolean(getString(R.string.default_screen), false);
         byUrgencyByDefault = sharedPref.getBoolean(getString(R.string.change_default_sorting), false);
@@ -99,14 +110,14 @@ public class ListFragment extends Fragment{
 
         if (defaultPageIsTask) {
             currentPage = 'T';
-            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.task);
+            ((AppCompatActivity) activity).getSupportActionBar().setTitle(R.string.task);
         } else {
             currentPage = 'N';
-            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.note);
+            ((AppCompatActivity) activity).getSupportActionBar().setTitle(R.string.note);
         }
 
-        ListPageAdapter listPageAdapter = new ListPageAdapter(getContext(), getChildFragmentManager());
-        viewPager = getActivity().findViewById(R.id.pager);
+        ListPageAdapter listPageAdapter = new ListPageAdapter(context, getChildFragmentManager());
+        viewPager = activity.findViewById(R.id.pager);
         viewPager.setAdapter(listPageAdapter);
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -136,7 +147,7 @@ public class ListFragment extends Fragment{
                 } else if (position == 1){
                     currentPage = defaultPageIsTask ?'N' :'T';
                 }
-                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(currentPage == 'N' ?R.string.note :R.string.task);
+                ((AppCompatActivity) activity).getSupportActionBar().setTitle(currentPage == 'N' ?R.string.note :R.string.task);
                 setMenuItemForPage(currentPage == 'N');
             }
 
@@ -145,7 +156,7 @@ public class ListFragment extends Fragment{
             }
         });
 
-        Intent intent = getActivity().getIntent();
+        Intent intent = activity.getIntent();
         if (intent != null && intent.hasExtra(ITEM_TYPE)){
             char itemPageToBeOpened = intent.getCharExtra(ITEM_TYPE, 'N');
             if (itemPageToBeOpened == 'N') {
@@ -155,9 +166,9 @@ public class ListFragment extends Fragment{
             }
         }
 
-        FloatingActionButton addNote =  getActivity().findViewById(R.id.add_note);
+        FloatingActionButton addNote =  activity.findViewById(R.id.add_note);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-            addNote.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.pencil));
+            addNote.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.pencil));
         } else {
             addNote.setImageResource(R.drawable.pencil);
         }
@@ -184,13 +195,14 @@ public class ListFragment extends Fragment{
                                     // delete note from  selectedItems
                                     ArrayList<Integer> mSelect = itemListAdapter.getSelected();
                                     Cursor itemCursor = itemListAdapter.getItemCursor();
-                                    SharedPreferences idPref = getContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+                                    SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
                                     boolean isItemToday = false;
 
                                     for (int removedPosition : mSelect) {
                                         itemCursor.moveToPosition(removedPosition);
                                         String removedId = itemCursor.getString(0);
                                         database.delete(DATABASE_NAME, "_id='" + removedId + "'", null);
+                                        AlarmHelper.cancelReminder(context.getApplicationContext(), Long.valueOf(removedId));
 
                                         // To check if the deleted item is due today. If so (which will only check if other deleted items are not today) and if notification toolbar is on, update the notification below
                                         if (!currentPageIsNote && isNotificationToolbarEnable && !isItemToday && DateUtils.isToday(itemCursor.getLong(3))){
@@ -199,7 +211,7 @@ public class ListFragment extends Fragment{
 
                                         if (idPref.getLong(removedId, 999999L)!=999999L) {
                                             idPref.edit().remove(removedId).apply();
-                                            NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                                            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                                             if (notificationManager != null) {
                                                 notificationManager.cancel(Integer.valueOf(removedId)*PIN_ITEM_NOTIFICATION_ID);
                                             }
@@ -212,9 +224,9 @@ public class ListFragment extends Fragment{
                                     }
 
                                     if (isItemToday){
-                                        Intent toolBarIntent = new Intent(getContext(), NotificationHelper.class);
+                                        Intent toolBarIntent = new Intent(context, NotificationHelper.class);
                                         toolBarIntent.setAction(ACTION_TOOL_BAR);
-                                        PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(getContext(), 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                        PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(context, 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                                         try {
                                             toolbarPendingIntent.send();
                                         } catch (PendingIntent.CanceledException e) {
@@ -222,12 +234,12 @@ public class ListFragment extends Fragment{
                                         }
                                     }
 
-                                    Toast.makeText(getContext(), currentPageIsNote ?R.string.note_deleted_toast :R.string.task_deleted_toast, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context, currentPageIsNote ?R.string.note_deleted_toast :R.string.task_deleted_toast, Toast.LENGTH_SHORT).show();
                                     itemListAdapter.actionMode.finish();
                                     if (currentPageIsNote) {
-                                        updateNoteListWidget(getContext());
+                                        updateNoteListWidget(context);
                                     } else {
-                                        updateTaskListWidget(getContext());
+                                        updateTaskListWidget(context);
                                     }
                                     itemCursor.close();
                                 }
@@ -245,7 +257,7 @@ public class ListFragment extends Fragment{
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_list, container, false);
@@ -268,16 +280,14 @@ public class ListFragment extends Fragment{
         settings.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
-                Intent intent = new Intent(getContext(), Settings.class);
+                Intent intent = new Intent(context, Settings.class);
                 startActivity(intent);
-                getActivity().finish();
+                if (getActivity() != null) getActivity().finish();
                 return true;
             }
         });
 
-        final SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
         SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
         searchView.setQueryHint(getResources().getString(R.string.search));
         searchView.setSubmitButtonEnabled(false);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
