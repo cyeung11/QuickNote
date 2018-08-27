@@ -63,7 +63,7 @@
     <string name="back_up">備份</string>
     <string name="back_up_summary">備份文件到儲存空間</string>
     <string name="permission_required">需要系統權限</string>
-    <string name="permission">請批准儲存裝置讀寫權限以開啟備份及回復功能</string>
+    <string name="storage_permission_msg">請批准儲存裝置讀寫權限以開啟備份及回復功能</string>
     <string name="open_settings">前往設定</string>
     <string name="restore">回復</string>
     <string name="restore_summary">從備份文件回復筆記及待辦事件</string>

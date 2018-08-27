@@ -64,7 +64,7 @@
     <string name="back_up">बैकअप</string>
     <string name="back_up_summary">भंडारण के लिए बैकअप</string>
     <string name="permission_required">अनुमति आवश्यक है</string>
-    <string name="permission">बैकअप सक्षम करने और फ़ंक्शन को पुनर्स्थापित करने के लिए संग्रहण अनुमति चालू करें।</string>
+    <string name="storage_permission_msg">बैकअप सक्षम करने और फ़ंक्शन को पुनर्स्थापित करने के लिए संग्रहण अनुमति चालू करें।</string>
     <string name="open_settings">सेटिंग्स खोलें</string>
     <string name="restore">पुनर्स्थापित</string>
     <string name="restore_summary">बैकअप फ़ाइल से पुनर्स्थापित करें</string>

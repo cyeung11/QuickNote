@@ -1,6 +1,8 @@
 package com.jkjk.quicknote.taskeditscreen;
 
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -10,15 +12,21 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.Address;
+import android.location.Geocoder;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.PreferenceManager;
@@ -43,16 +51,25 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.maps.android.SphericalUtil;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
 import com.jkjk.quicknote.helper.NotificationHelper;
 
+import java.io.IOException;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.jkjk.quicknote.MyApplication.PINNED_NOTIFICATION_IDS;
@@ -71,12 +88,15 @@ public class TaskEditFragment extends Fragment {
     public static final int TIME_NOT_SET_MINUTE_SECOND_INDICATOR = 59;
     public static final int TIME_NOT_SET_HOUR_INDICATOR = 23;
     public static final long DATE_NOT_SET_INDICATOR = 9999999999999L;
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 0;
+    private static final int LOCATION_PICKER_REQUEST_CODE = 1;
+    private static final int LOCATION_PICKER_ZOOM_OUT_METER = 500;
 
     private SQLiteDatabase database;
     boolean hasTaskSave = false;
     private long taskId, initEventTime, repeatTime = 0;
     private EditText titleInFragment, remarkInFragment;
-    private TextView dateInFragment, timeInFragment;
+    private TextView dateInFragment, timeInFragment, locationInFragment;
     private Switch markAsDoneInFragment;
     private boolean newTask, isDone,  hasModified = false, urgencySelectByUser = false, repeatSelectByUser = false
             , reminderSelectByUser = false, hasShowRemoveDateHint = false, hasShowRemoveTimeHint = false, notificationToolEnable;
@@ -86,6 +106,7 @@ public class TaskEditFragment extends Fragment {
     private int reminderPresetSize, repeatPresetSize;
     private LinearLayout timeRow, repeatRow;
     private Context context;
+    private LatLng latLng;
     private float doneButtonYPosition;
 
     private ArrayList<String> reminderArray, repeatArray;
@@ -141,7 +162,6 @@ public class TaskEditFragment extends Fragment {
                 spinnerItemInt = android.R.layout.simple_spinner_item;
         }
 
-
         // Inflate the layout for this fragment
         View view = inflater.inflate(editViewInt, container, false);
         titleInFragment = view.findViewById(R.id.item_title);
@@ -154,6 +174,7 @@ public class TaskEditFragment extends Fragment {
         repeatRow = view.findViewById(R.id.task_repeat_column);
         reminderInFragment = view.findViewById(R.id.task_reminder);
         repeatInFragment = view.findViewById(R.id.task_repeat);
+        locationInFragment = view.findViewById(R.id.item_location);
 
         if (savedInstanceState !=null) {
             // case when restoring from saved instance
@@ -172,7 +193,7 @@ public class TaskEditFragment extends Fragment {
             // Reading from database
         if (!newTask) {
             try {
-                taskCursor = database.query(DATABASE_NAME, new String[]{"title", "content", "event_time","urgency","done", "reminder_time", "repeat_interval"}, "_id= " + taskId ,
+                taskCursor = database.query(DATABASE_NAME, new String[]{"title", "content", "event_time","urgency","done", "reminder_time", "repeat_interval", "lat_lng"}, "_id= " + taskId ,
                         null, null, null, null, null);
                 taskCursor.moveToFirst();
                 titleInFragment.setText(taskCursor.getString(0));
@@ -221,8 +242,15 @@ public class TaskEditFragment extends Fragment {
             reminderTime.setTimeInMillis(taskCursor.getLong(5));
 
             repeatTime = taskCursor.getLong(6);
-        }
 
+            String latLngString = taskCursor.getString(7);
+            if (latLngString != null){
+                String[] latLngValue = latLngString.split(",");
+                if (latLngValue.length == 2){
+                    latLng = new LatLng(Double.valueOf(latLngValue[0]), Double.valueOf(latLngValue[1]));
+                }
+            }
+        }
 
         // Urgency
         ArrayAdapter<CharSequence> urgencyAdapter = ArrayAdapter.createFromResource(context,R.array.urgency_list, spinnerItemInt);
@@ -785,12 +813,75 @@ public class TaskEditFragment extends Fragment {
             }
         });
 
-        if (taskCursor != null) taskCursor.close();
+        if (latLng != null){
+            setLocationText(latLng);
+        }
 
+        locationInFragment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                    if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)){
+                        showPermissionDialog();
+                    } else {
+                        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+                    }
+                } else {
+                    FragmentActivity fragmentActivity = getActivity();
+                    if (fragmentActivity != null) {
+                        PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+                        if (latLng != null){
+                            LatLngBounds.Builder latLngBoundsBuilder = LatLngBounds.builder().include(latLng);
+                            //Make sure the zoom scale is appropriate
+                            latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 0));
+                            latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 90));
+                            latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 180));
+                            latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 270));
+                            builder.setLatLngBounds(latLngBoundsBuilder.build());
+                        }
+                        try {
+                            startActivityForResult(builder.build(fragmentActivity), LOCATION_PICKER_REQUEST_CODE);
+                        } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
+                            Toast.makeText(context, R.string.google_play_service_fail_toast, Toast.LENGTH_SHORT).show();
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        });
+
+        if (taskCursor != null) taskCursor.close();
         return view;
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE){
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                FragmentActivity fragmentActivity = getActivity();
+                if (fragmentActivity != null) {
+                    PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+                    if (latLng != null){
+                        builder.setLatLngBounds(LatLngBounds.builder().include(latLng).build());
+                    }
+                    try {
+                        startActivityForResult(builder.build(fragmentActivity), LOCATION_PICKER_REQUEST_CODE);
+                    } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
+                        Toast.makeText(context, R.string.google_play_service_fail_toast, Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    }
+                }
+            } else showPermissionDialog();
+        } else super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == LOCATION_PICKER_REQUEST_CODE && resultCode == Activity.RESULT_OK){
+            latLng = PlacePicker.getPlace(context, data).getLatLng();
+            setLocationText(latLng);
+        }
+    }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -939,6 +1030,8 @@ public class TaskEditFragment extends Fragment {
         }
         values.put("reminder_time", reminderTime.getTimeInMillis());
 
+        if (latLng != null) values.put("lat_lng", Double.toString(latLng.latitude) + "," + Double.toString(latLng.longitude));
+
         if (!newTask) {
             database.update(DATABASE_NAME, values, "_id='" + taskId +"'", null);
 
@@ -981,6 +1074,54 @@ public class TaskEditFragment extends Fragment {
 //        } else Toast.makeText(getContext(), R.string.error_text, Toast.LENGTH_SHORT).show();
 //        return false;
 //    }
+
+    private void setLocationText(LatLng latLng){
+        try {
+            Geocoder geocoder;
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                geocoder = new Geocoder(context, context.getResources().getConfiguration().locale);
+            } else
+                geocoder = new Geocoder(context, context.getResources().getConfiguration().getLocales().get(0));
+
+            List<Address> addressList = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1);
+            if (addressList.size() == 0) {
+                DecimalFormat decimalFormat = new DecimalFormat("#.00000");
+                locationInFragment.setText(getString(R.string.lat_lng, decimalFormat.format(latLng.latitude), decimalFormat.format(latLng.longitude)));
+            } else {
+                Address address = addressList.get(0);
+                String featureName = address.getFeatureName();
+                if (featureName != null && !featureName.isEmpty() && !isNumericString(featureName)) {
+                    locationInFragment.setText(featureName);
+                } else {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String addressLine = address.getAddressLine(0);
+                    for (int i = 1; addressLine != null; i++) {
+                        stringBuilder.append(addressLine).append(" ");
+                        addressLine = address.getAddressLine(i);
+                    }
+                    locationInFragment.setText(stringBuilder.toString());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            DecimalFormat decimalFormat = new DecimalFormat("#.00000");
+            locationInFragment.setText(getString(R.string.lat_lng, decimalFormat.format(latLng.latitude), decimalFormat.format(latLng.longitude)));
+        }
+    }
+
+    private void showPermissionDialog(){
+        new AlertDialog.Builder(context).setTitle(R.string.permission_required).setMessage(R.string.location_permission_msg).
+                setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        Uri uri = Uri.fromParts("package", context.getPackageName(), null);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        intent.setData(uri);
+                        startActivity(intent);
+                    }
+                }).setNegativeButton(R.string.cancel, null).show();
+    }
 
     private void pinTaskToNotification(){
         Intent intent = new Intent(context, NotificationHelper.class);
@@ -1034,4 +1175,13 @@ public class TaskEditFragment extends Fragment {
         return new TaskEditFragment();
     }
 
+    private boolean isNumericString(String string){
+        try{
+            Integer result = Integer.parseInt(string.trim());
+            Log.d(getClass().getName(),"Confirm "+ string + "is number");
+            return true;
+        } catch (Exception e){
+            return false;
+        }
+    }
 }

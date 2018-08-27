@@ -77,7 +77,7 @@ public class Settings extends AppCompatActivity {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     settingsFragment.selectBackUpLocation();
                 } else {
-                    new AlertDialog.Builder(this).setTitle(R.string.permission_required).setMessage(R.string.permission)
+                    new AlertDialog.Builder(this).setTitle(R.string.permission_required).setMessage(R.string.storage_permission_msg)
                             .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
@@ -98,7 +98,7 @@ public class Settings extends AppCompatActivity {
                     settingsFragment.selectRestoreLocation();
                 } else {
                     if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                        new AlertDialog.Builder(this).setTitle(R.string.permission_required).setMessage(R.string.permission)
+                        new AlertDialog.Builder(this).setTitle(R.string.permission_required).setMessage(R.string.storage_permission_msg)
                                 .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {

@@ -9,14 +9,14 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     // Update restore logic if new column is insert
-    public final static String[] dbColumn = new String[]{"_id", "title", "content", "event_time", "starred", "type", "urgency", "done", "reminder_time", "repeat_interval"};
+    public final static String[] dbColumn = new String[]{"_id", "title", "content", "event_time", "starred", "type", "urgency", "done", "reminder_time", "repeat_interval", "lat_lng"};
     public final static String DATABASE_NAME = "note";
-    public final static int CURRENT_DB_VER = 6;
+    public final static int CURRENT_DB_VER = 7;
     private final static String CREATE_STRING = "CREATE TABLE IF NOT EXISTS " + DATABASE_NAME +
             " (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, content TEXT NOT NULL" +
             ", event_time INTEGER NOT NULL, starred INTEGER NOT NULL DEFAULT '0', type INTEGER NOT NULL" +
             ", urgency INTEGER NOT NULL DEFAULT '0', done INTEGER NOT NULL DEFAULT '0', reminder_time INTEGER NOT NULL DEFAULT '0'" +
-            ", repeat_interval INTEGER NOT NULL DEFAULT '0')";
+            ", repeat_interval INTEGER NOT NULL DEFAULT '0', lat_lng TEXT)";
 
     private static final String DATABASE_ALTER_V2 = "ALTER TABLE "
             + DATABASE_NAME + " ADD COLUMN starred INTEGER;";
@@ -50,6 +50,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_ALTER_V6 =  "ALTER TABLE "
             + DATABASE_NAME + " ADD COLUMN repeat_interval INTEGER NOT NULL DEFAULT '0';";
+
+    private static final String DATABASE_ALTER_V7 =  "ALTER TABLE "
+            + DATABASE_NAME + " ADD COLUMN lat_lng TEXT;";
 
     public DatabaseHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version){
         super(context,name,factory,version);
@@ -104,6 +107,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Insert repeat related column for corresponding function
         if (oldVersion < 6) {
             sqLiteDatabase.execSQL(DATABASE_ALTER_V6);
+        }
+
+        // Insert location value for to do
+        if (oldVersion < 7) {
+            sqLiteDatabase.execSQL(DATABASE_ALTER_V7);
         }
     }
 

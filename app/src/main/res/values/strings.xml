@@ -64,7 +64,7 @@
     <string name="back_up_summary">Backup to storage</string>
     <string name="back_up_name" translatable="false">notebackup-</string>
     <string name="permission_required">Permission required</string>
-    <string name="permission">Turn on storage permission to enable backup &amp; restore function.</string>
+    <string name="storage_permission_msg">Turn on storage permission to enable backup &amp; restore function.</string>
     <string name="open_settings">Open settings</string>
     <string name="restore">Restore</string>
     <string name="restore_summary">Restore from backup file</string>
@@ -164,6 +164,12 @@
     <string name="not_repeating">Not repeating</string>
     <string name="day">Days</string>
     <string name="other_spinner">Other…</string>
+    <string name="location">Location</string>
+    <string name="location_hint">Location not set</string>
+    <string name="location_permission_msg">Turn on location permission to enable function.</string>
+    <string name="google_play_service_fail_toast">Google Play Service not available</string>
+    <string name="location_cap">LOCATION</string>
+    <string name="lat_lng" translatable="false">%1$s° N %2$s° W</string>
 
     <plurals name="notification_title">
         <item quantity="one">You have %d To Do due today.</item>

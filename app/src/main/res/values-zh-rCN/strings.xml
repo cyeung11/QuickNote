@@ -62,7 +62,7 @@
     <string name="back_up">备份</string>
     <string name="back_up_summary">备份文件到储存空间</string>
     <string name="permission_required">需要系统权限</string>
-    <string name="permission">请批准储存装置读写权限以开启备份及回复功能</string>
+    <string name="storage_permission_msg">请批准储存装置读写权限以开启备份及回复功能</string>
     <string name="open_settings">前往设定</string>
     <string name="restore">回复</string>
     <string name="restore_summary">从备份文件回复笔记及待办事件</string>

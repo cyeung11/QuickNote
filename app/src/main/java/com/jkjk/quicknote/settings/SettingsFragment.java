@@ -17,7 +17,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.Preference;
@@ -99,13 +98,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                         != PackageManager.PERMISSION_GRANTED) {
 
                     // Permission is not granted
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                        new AlertDialog.Builder(context).setTitle(R.string.permission_required).setMessage(R.string.permission)
+                    if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                        new AlertDialog.Builder(context).setTitle(R.string.permission_required).setMessage(R.string.storage_permission_msg)
                                 .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
                                         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                        Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
+                                        Uri uri = Uri.fromParts("package", context.getPackageName(), null);
                                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                         intent.setData(uri);
                                         startActivity(intent);
@@ -115,7 +114,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                                 .show();
                     } else {
                         // request the permission
-                        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                                 BACK_UP_REQUEST_CODE);
                     }
                 } else {
@@ -136,13 +135,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                         != PackageManager.PERMISSION_GRANTED) {
 
                     // Permission is not granted
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                        new AlertDialog.Builder(getActivity()).setTitle(R.string.permission_required).setMessage(R.string.permission)
+                    if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                        new AlertDialog.Builder(context).setTitle(R.string.permission_required).setMessage(R.string.storage_permission_msg)
                                 .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
                                         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                        Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
+                                        Uri uri = Uri.fromParts("package", context.getPackageName(), null);
                                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                         intent.setData(uri);
                                         startActivity(intent);
@@ -152,8 +151,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                                 .show();
                     } else {
                         // request the permission
-                        ActivityCompat.requestPermissions(getActivity(),
-                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                                 RESTORE_REQUEST_CODE);
                     }
                 } else {
@@ -396,7 +394,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                     && verifyCursor.getType(3) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(4) == Cursor.FIELD_TYPE_INTEGER
                     && verifyCursor.getType(5) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(6) == Cursor.FIELD_TYPE_INTEGER
                     && verifyCursor.getType(7) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(8) == Cursor.FIELD_TYPE_INTEGER
-                    && verifyCursor.getType(9) == Cursor.FIELD_TYPE_INTEGER){
+                    && verifyCursor.getType(9) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(10) == Cursor.FIELD_TYPE_STRING){
                 // Restore file verified. Begin restoring
 
                 ContentValues values = new ContentValues();

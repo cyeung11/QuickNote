@@ -64,7 +64,7 @@
     <string name="back_up">バックアップ</string>
     <string name="back_up_summary">SDカードにバックアップ</string>
     <string name="permission_required">許可が必要です</string>
-    <string name="permission">この機能を有効にするには、許可を承認してください</string>
+    <string name="storage_permission_msg">この機能を有効にするには、許可を承認してください</string>
     <string name="open_settings">設定を開く</string>
     <string name="restore">復元</string>
     <string name="restore_summary">復元ファイル</string>
