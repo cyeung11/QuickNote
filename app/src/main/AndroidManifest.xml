@@ -17,7 +17,7 @@
         android:theme="@style/AppTheme">
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyD6WDOStreFLKCGdPjJg6Pu8Y6D5aoNunA"/>
+            android:value="@string/MAP_API_KEY"/>
         <activity
             android:name=".noteeditscreen.NoteEdit"
             android:exported="true"
