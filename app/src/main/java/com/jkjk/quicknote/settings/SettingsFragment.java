@@ -394,7 +394,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                     && verifyCursor.getType(3) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(4) == Cursor.FIELD_TYPE_INTEGER
                     && verifyCursor.getType(5) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(6) == Cursor.FIELD_TYPE_INTEGER
                     && verifyCursor.getType(7) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(8) == Cursor.FIELD_TYPE_INTEGER
-                    && verifyCursor.getType(9) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(10) == Cursor.FIELD_TYPE_STRING){
+                    && verifyCursor.getType(9) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(10) == Cursor.FIELD_TYPE_STRING
+                    && verifyCursor.getType(11) == Cursor.FIELD_TYPE_STRING){
                 // Restore file verified. Begin restoring
 
                 ContentValues values = new ContentValues();
@@ -417,6 +418,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                         values.put(columnToBeCopied[6], verifyCursor.getInt(6));
                         values.put(columnToBeCopied[7], verifyCursor.getLong(7));
                         values.put(columnToBeCopied[8], verifyCursor.getLong(8));
+                        values.put(columnToBeCopied[9], verifyCursor.getLong(9));
+                        values.put(columnToBeCopied[10], verifyCursor.getString(10));
+                        values.put(columnToBeCopied[11], verifyCursor.getString(11));
                         currentDatabase.insert(DATABASE_NAME, "", values);
                     } while (verifyCursor.moveToNext());
                 }
