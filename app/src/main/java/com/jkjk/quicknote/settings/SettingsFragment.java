@@ -418,9 +418,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                         values.put(columnToBeCopied[6], verifyCursor.getInt(6));
                         values.put(columnToBeCopied[7], verifyCursor.getLong(7));
                         values.put(columnToBeCopied[8], verifyCursor.getLong(8));
-                        values.put(columnToBeCopied[9], verifyCursor.getLong(9));
-                        values.put(columnToBeCopied[10], verifyCursor.getString(10));
-                        values.put(columnToBeCopied[11], verifyCursor.getString(11));
+                        values.put(columnToBeCopied[10], verifyCursor.getString(9));
+                        values.put(columnToBeCopied[11], verifyCursor.getString(10));
                         currentDatabase.insert(DATABASE_NAME, "", values);
                     } while (verifyCursor.moveToNext());
                 }
