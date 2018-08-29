@@ -9,14 +9,14 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     // Update restore logic if new column is insert
-    public final static String[] dbColumn = new String[]{"_id", "title", "content", "event_time", "starred", "type", "urgency", "done", "reminder_time", "repeat_interval", "lat_lng"};
+    public final static String[] dbColumn = new String[]{"_id", "title", "content", "event_time", "starred", "type", "urgency", "done", "reminder_time", "repeat_interval", "lat_lng", "place_name"};
     public final static String DATABASE_NAME = "note";
-    public final static int CURRENT_DB_VER = 7;
+    public final static int CURRENT_DB_VER = 8;
     private final static String CREATE_STRING = "CREATE TABLE IF NOT EXISTS " + DATABASE_NAME +
             " (_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, content TEXT NOT NULL" +
             ", event_time INTEGER NOT NULL, starred INTEGER NOT NULL DEFAULT '0', type INTEGER NOT NULL" +
             ", urgency INTEGER NOT NULL DEFAULT '0', done INTEGER NOT NULL DEFAULT '0', reminder_time INTEGER NOT NULL DEFAULT '0'" +
-            ", repeat_interval INTEGER NOT NULL DEFAULT '0', lat_lng TEXT)";
+            ", repeat_interval INTEGER NOT NULL DEFAULT '0', lat_lng TEXT, place_name TEXT)";
 
     private static final String DATABASE_ALTER_V2 = "ALTER TABLE "
             + DATABASE_NAME + " ADD COLUMN starred INTEGER;";
@@ -53,6 +53,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_ALTER_V7 =  "ALTER TABLE "
             + DATABASE_NAME + " ADD COLUMN lat_lng TEXT;";
+    
+    private static final String DATABASE_ALTER_V8 =  "ALTER TABLE "
+            + DATABASE_NAME + " ADD COLUMN place_name TEXT;";
 
     public DatabaseHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version){
         super(context,name,factory,version);
@@ -65,55 +68,54 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        // Insert starred column for starring function
-        if (oldVersion < 2) {
-            sqLiteDatabase.execSQL(DATABASE_ALTER_V2);
-        }
-        // Insert 3 task list related column into database for task list function
-        if (oldVersion < 3) {
-            sqLiteDatabase.execSQL(DATABASE_ALTER_V3_1);
-            sqLiteDatabase.execSQL(DATABASE_ALTER_V3_2);
-            sqLiteDatabase.execSQL(DATABASE_ALTER_V3_3);
-        }
-        // rename column "time" to "event_time" and change its type to INTEGER
-        if (oldVersion < 4) {
-            sqLiteDatabase.execSQL(DATABASE_ALTER_V4_1);
-            Cursor alterCursor = sqLiteDatabase.query(DATABASE_NAME, new String[]{"_id", "time"}, null, null, null
-                    , null, null);
-            if (alterCursor != null){
-                ContentValues values = new ContentValues();
+        
+        switch(oldVersion){
+            case 0:
+            case 1:
+               // Insert starred column for starring function
+               sqLiteDatabase.execSQL(DATABASE_ALTER_V2); 
+            case 2:
+               // Insert 3 task list related column into database for task list function 
+                sqLiteDatabase.execSQL(DATABASE_ALTER_V3_1);
+                sqLiteDatabase.execSQL(DATABASE_ALTER_V3_2);
+                sqLiteDatabase.execSQL(DATABASE_ALTER_V3_3);
+            case 3:
+                // rename column "time" to "event_time" and change its type to INTEGER
+                sqLiteDatabase.execSQL(DATABASE_ALTER_V4_1);
+                Cursor alterCursor = sqLiteDatabase.query(DATABASE_NAME, new String[]{"_id", "time"}, null, null, null
+                        , null, null);
+                if (alterCursor != null){
+                    ContentValues values = new ContentValues();
 
-                alterCursor.moveToFirst();
-                do {
-                    String time = alterCursor.getString(1);
-                    values.put("event_time", Long.valueOf(time));
-                    sqLiteDatabase.update(DATABASE_NAME, values, "_id='" + alterCursor.getLong(0) +"'", null);
-                } while (alterCursor.moveToNext());
-                alterCursor.close();
+                    alterCursor.moveToFirst();
+                    do {
+                        String time = alterCursor.getString(1);
+                        values.put("event_time", Long.valueOf(time));
+                        sqLiteDatabase.update(DATABASE_NAME, values, "_id='" + alterCursor.getLong(0) +"'", null);
+                    } while (alterCursor.moveToNext());
+                    alterCursor.close();
 
-                sqLiteDatabase.execSQL(DATABASE_ALTER_V4_2);
-                sqLiteDatabase.execSQL(DATABASE_ALTER_V4_3);
-                sqLiteDatabase.execSQL(DATABASE_ALTER_V4_4);
-                sqLiteDatabase.execSQL(DATABASE_ALTER_V4_5);
-                sqLiteDatabase.execSQL(DATABASE_ALTER_V4_6);
-                sqLiteDatabase.execSQL(DATABASE_ALTER_V4_7);
-            }
-        }
-        // Insert reminder related column for corresponding function
-        if (oldVersion < 5) {
-            sqLiteDatabase.execSQL(DATABASE_ALTER_V5);
-        }
-
-        // Insert repeat related column for corresponding function
-        if (oldVersion < 6) {
-            sqLiteDatabase.execSQL(DATABASE_ALTER_V6);
-        }
-
-        // Insert location value for to do
-        if (oldVersion < 7) {
-            sqLiteDatabase.execSQL(DATABASE_ALTER_V7);
+                    sqLiteDatabase.execSQL(DATABASE_ALTER_V4_2);
+                    sqLiteDatabase.execSQL(DATABASE_ALTER_V4_3);
+                    sqLiteDatabase.execSQL(DATABASE_ALTER_V4_4);
+                    sqLiteDatabase.execSQL(DATABASE_ALTER_V4_5);
+                    sqLiteDatabase.execSQL(DATABASE_ALTER_V4_6);
+                    sqLiteDatabase.execSQL(DATABASE_ALTER_V4_7);
+                case 4:
+                    // Insert reminder related column for corresponding function
+                    sqLiteDatabase.execSQL(DATABASE_ALTER_V5);
+                case 5:
+                    // Insert repeat related column for corresponding function
+                    sqLiteDatabase.execSQL(DATABASE_ALTER_V6);
+                case 6:
+                    // Insert location value for to do
+                    sqLiteDatabase.execSQL(DATABASE_ALTER_V7);
+                case 7:
+                    // Insert location name for to do
+                    sqLiteDatabase.execSQL(DATABASE_ALTER_V8);
+                    break;
+                default:
+                    break;
         }
     }
-
-
 }
