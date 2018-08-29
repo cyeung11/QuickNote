@@ -101,21 +101,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     sqLiteDatabase.execSQL(DATABASE_ALTER_V4_5);
                     sqLiteDatabase.execSQL(DATABASE_ALTER_V4_6);
                     sqLiteDatabase.execSQL(DATABASE_ALTER_V4_7);
-                case 4:
-                    // Insert reminder related column for corresponding function
-                    sqLiteDatabase.execSQL(DATABASE_ALTER_V5);
-                case 5:
-                    // Insert repeat related column for corresponding function
-                    sqLiteDatabase.execSQL(DATABASE_ALTER_V6);
-                case 6:
-                    // Insert location value for to do
-                    sqLiteDatabase.execSQL(DATABASE_ALTER_V7);
-                case 7:
-                    // Insert location name for to do
-                    sqLiteDatabase.execSQL(DATABASE_ALTER_V8);
-                    break;
-                default:
-                    break;
+            case 4:
+                // Insert reminder related column for corresponding function
+                sqLiteDatabase.execSQL(DATABASE_ALTER_V5);
+            case 5:
+                // Insert repeat related column for corresponding function
+                sqLiteDatabase.execSQL(DATABASE_ALTER_V6);
+            case 6:
+                // Insert location value for to do
+                sqLiteDatabase.execSQL(DATABASE_ALTER_V7);
+            case 7:
+                // Insert location name for to do
+                sqLiteDatabase.execSQL(DATABASE_ALTER_V8);
+                break;
+            default:
+                break;
         }
     }
 }
