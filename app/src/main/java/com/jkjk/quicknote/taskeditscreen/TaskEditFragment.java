@@ -53,6 +53,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -81,7 +82,7 @@ import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.DEFAULT_NOTE_ID
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 import static com.jkjk.quicknote.widget.TaskListWidget.updateTaskListWidget;
 
-public class TaskEditFragment extends Fragment {
+public class TaskEditFragment extends Fragment implements View.OnClickListener {
 
     private static final String TASK_ID = "taskId";
     public static final int TIME_NOT_SET_MILLISECOND_INDICATOR = 999;
@@ -101,13 +102,16 @@ public class TaskEditFragment extends Fragment {
     private boolean newTask, isDone,  hasModified = false, urgencySelectByUser = false, repeatSelectByUser = false
             , reminderSelectByUser = false, hasShowRemoveDateHint = false, hasShowRemoveTimeHint = false, notificationToolEnable;
     private Calendar taskDate, reminderTime;
-    private String title, remark;
+    private String title, remark, placeName;
     private Spinner urgencyInFragment, reminderInFragment, repeatInFragment;
     private int reminderPresetSize, repeatPresetSize;
     private LinearLayout timeRow, repeatRow;
     private Context context;
     private LatLng latLng;
     private float doneButtonYPosition;
+    private ArrayAdapter<String> reminderAdapter;
+    private ImageButton showDropMenu;
+    private FloatingActionButton doneButton;
 
     private ArrayList<String> reminderArray, repeatArray;
 
@@ -193,8 +197,8 @@ public class TaskEditFragment extends Fragment {
             // Reading from database
         if (!newTask) {
             try {
-                taskCursor = database.query(DATABASE_NAME, new String[]{"title", "content", "event_time","urgency","done", "reminder_time", "repeat_interval", "lat_lng"}, "_id= " + taskId ,
-                        null, null, null, null, null);
+                taskCursor = database.query(DATABASE_NAME, new String[]{"title", "content", "event_time","urgency","done", "reminder_time", "repeat_interval", "lat_lng", "place_name"},
+                        "_id= " + taskId , null, null, null, null, null);
                 taskCursor.moveToFirst();
                 titleInFragment.setText(taskCursor.getString(0));
                 remarkInFragment.setText(taskCursor.getString(1));
@@ -250,6 +254,8 @@ public class TaskEditFragment extends Fragment {
                     latLng = new LatLng(Double.valueOf(latLngValue[0]), Double.valueOf(latLngValue[1]));
                 }
             }
+
+            placeName = taskCursor.getString(8);
         }
 
         // Urgency
@@ -395,7 +401,7 @@ public class TaskEditFragment extends Fragment {
 
         reminderPresetSize = reminderArray.size();
 
-        final ArrayAdapter<String> reminderAdapter = new ArrayAdapter<>(context, spinnerItemInt, reminderArray);
+        reminderAdapter = new ArrayAdapter<>(context, spinnerItemInt, reminderArray);
         reminderAdapter.setDropDownViewResource(spinnerDropDownInt);
         reminderInFragment.setAdapter(reminderAdapter);
         reminderInFragment.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -537,63 +543,7 @@ public class TaskEditFragment extends Fragment {
             }
         }
 
-        dateInFragment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Only show hint in the first time for every instance of the activity
-                if (!hasShowRemoveDateHint) {
-                    hasShowRemoveDateHint = true;
-                    Toast.makeText(context, R.string.remove_date_hint, Toast.LENGTH_SHORT).show();
-                }
-
-                int year, month, dayOfMonth;
-                if (taskDate.getTimeInMillis()==DATE_NOT_SET_INDICATOR){
-                    year = Calendar.getInstance().get(Calendar.YEAR);
-                    month = Calendar.getInstance().get(Calendar.MONTH);
-                    dayOfMonth = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
-                } else {
-                    year = taskDate.get(Calendar.YEAR);
-                    month = taskDate.get(Calendar.MONTH);
-                    dayOfMonth = taskDate.get(Calendar.DAY_OF_MONTH);
-                }
-
-                new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker datePicker,int year, int month, int dayOfMonth) {
-                        if (taskDate.getTimeInMillis()==DATE_NOT_SET_INDICATOR){
-                            taskDate.set(Calendar.HOUR_OF_DAY, TIME_NOT_SET_HOUR_INDICATOR);
-                            taskDate.set(Calendar.MINUTE, TIME_NOT_SET_MINUTE_SECOND_INDICATOR);
-                            taskDate.set(Calendar.SECOND, TIME_NOT_SET_MINUTE_SECOND_INDICATOR);
-                            taskDate.set(Calendar.MILLISECOND, TIME_NOT_SET_MILLISECOND_INDICATOR);
-
-                            if (reminderTime.getTimeInMillis() == 0L) {
-                                reminderSelectByUser = false;
-                                reminderInFragment.setSelection(1);
-                            }
-                        }
-                        taskDate.set(Calendar.YEAR, year);
-                        taskDate.set(Calendar.MONTH, month);
-                        taskDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-
-                        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
-                        dateInFragment.setText(dateFormat.format(taskDate.getTime()));
-
-                        timeRow.setVisibility(View.VISIBLE);
-                        repeatRow.setVisibility(View.VISIBLE);
-                        hasModified = true;
-                        if (!reminderArray.contains(getString(R.string.zero_min_before))) {
-                            // add two option after "No reminder" for reminder if user has specify event date;
-                            int duePosition = reminderArray.indexOf(getString(R.string.no_reminder_set));
-                            reminderArray.add(duePosition + 1, getString(R.string.zero_min_before));
-                            reminderArray.add(duePosition + 2, getString(R.string.a_day_beofre));
-                            reminderPresetSize += 2;
-                            reminderAdapter.notifyDataSetChanged();
-                        }
-
-                    }
-                }, year, month, dayOfMonth).show();
-            }
-        });
+        dateInFragment.setOnClickListener(this);
 
         // Allow removing date when long click
         dateInFragment.setOnLongClickListener(new View.OnLongClickListener() {
@@ -631,48 +581,7 @@ public class TaskEditFragment extends Fragment {
             }
         });
 
-        timeInFragment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Only show hint in the first time for every instance of the activity
-                if (!hasShowRemoveTimeHint) {
-                    hasShowRemoveTimeHint = true;
-                    Toast.makeText(context, R.string.remove_time_hint, Toast.LENGTH_SHORT).show();
-                }
-                int hourOfDay, minute;
-                // Change hour and minute shown as current time or event time
-                if (taskDate.get(Calendar.MILLISECOND)== TIME_NOT_SET_MILLISECOND_INDICATOR
-                        && taskDate.get(Calendar.SECOND) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
-                        && taskDate.get(Calendar.MINUTE) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
-                        && taskDate.get(Calendar.HOUR_OF_DAY) == TIME_NOT_SET_HOUR_INDICATOR) {
-                    hourOfDay = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-                    minute = Calendar.getInstance().get(Calendar.MINUTE);
-                } else {
-                    hourOfDay = taskDate.get(Calendar.HOUR_OF_DAY);
-                    minute = taskDate.get(Calendar.MINUTE);
-                }
-
-                new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute){
-                        taskDate.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                        taskDate.set(Calendar.MINUTE, minute);
-                        DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
-                        timeInFragment.setText(timeFormat.format(taskDate.getTime()));
-                        hasModified = true;
-
-                        if (!reminderArray.contains(getString(R.string.ten_min_before))) {
-                            // add two option after "Due" for reminder if user has specify event time;
-                            int duePosition = reminderArray.indexOf(getString(R.string.zero_min_before));
-                            reminderArray.add(duePosition + 1, getString(R.string.ten_min_before));
-                            reminderArray.add(duePosition + 2, getString(R.string.thirty_min_before));
-                            reminderPresetSize += 2;
-                            reminderAdapter.notifyDataSetChanged();
-                        }
-                    }
-                }, hourOfDay, minute, false).show();
-            }
-        });
+        timeInFragment.setOnClickListener(this);
 
         timeInFragment.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -703,150 +612,22 @@ public class TaskEditFragment extends Fragment {
             }
         });
 
-        final ImageButton showDropMenu = view.findViewById(R.id.task_show_drop_menu);
-        showDropMenu.setOnClickListener(new View.OnClickListener() {
+        showDropMenu = view.findViewById(R.id.task_show_drop_menu);
+        showDropMenu.setOnClickListener(this);
+
+//        if (latLng != null){
+//            getLocationText(latLng);
+//        }
+        if (placeName != null) locationInFragment.setText(placeName);
+        locationInFragment.setOnClickListener(this);
+        locationInFragment.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
-            public void onClick(View view) {
-                PopupMenu editDropMenu = new PopupMenu(view.getContext(),showDropMenu);
-                editDropMenu.inflate(R.menu.task_edit_drop_menu);
-
-                SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
-
-                MenuItem pinToNotification = editDropMenu.getMenu().findItem(R.id.edit_drop_menu_pin);
-                if (!newTask && idPref.getLong(Long.toString(taskId), 999999L)!=999999L){
-                    pinToNotification.setTitle(R.string.notification_unpin);
-                } else pinToNotification.setTitle(R.string.notification_pin);
-
-                pinToNotification.setVisible(true);
-
-                editDropMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem menuItem) {
-                        switch (menuItem.getItemId()){
-                            case R.id.edit_drop_menu_delete:
-                                //Delete task
-                                new AlertDialog.Builder(context).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete_edit)
-                                        .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
-                                                    @Override
-                                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                                        if (!newTask) {
-                                                            database.delete(DATABASE_NAME, "_id='" + taskId + "'", null);
-                                                            updateTaskListWidget(context);
-                                                            AlarmHelper.cancelReminder(context.getApplicationContext(), taskId);
-
-                                                            SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
-                                                            if (idPref.getLong(Long.toString(taskId), 999999L)!=999999L) {
-                                                                idPref.edit().remove(Long.toString(taskId)).apply();
-                                                                NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                                                                if (notificationManager != null) {
-                                                                    notificationManager.cancel((int)taskId*PIN_ITEM_NOTIFICATION_ID);
-                                                                }
-                                                            }
-                                                           updateToolbar();
-                                                        }
-                                                        // No need to do saving
-                                                        hasTaskSave = true;
-                                                        Toast.makeText(context, R.string.task_deleted_toast, Toast.LENGTH_SHORT).show();
-                                                        if (getActivity()!=null) {
-                                                            getActivity().finish();
-                                                        }
-                                                    }
-                                                }
-                                        )
-                                        .setNegativeButton(R.string.cancel, null)
-                                        .show();
-                                return true;
-                            case R.id.edit_drop_menu_share:
-                                Intent shareIntent = new Intent();
-                                shareIntent.setAction(Intent.ACTION_SEND);
-                                shareIntent.setType("text/plain");
-                                StringBuilder stringBuilder = new StringBuilder();
-                                if (markAsDoneInFragment.isChecked()){
-                                    stringBuilder.append("[").append(getString(R.string.done)).append("] ");
-                                } else if (urgencyInFragment.getSelectedItemPosition()==1){
-                                    stringBuilder.append("[").append(getString(R.string.important)).append("] ");
-                                } else if (urgencyInFragment.getSelectedItemPosition()==2){
-                                    stringBuilder.append("[").append(getString(R.string.asap)).append("] ");
-                                }
-                                stringBuilder.append(titleInFragment.getText().toString());
-                                if (taskDate.getTimeInMillis()!=DATE_NOT_SET_INDICATOR){
-                                    stringBuilder.append("\n").append(dateInFragment.getText());
-                                }
-                                if (!(taskDate.get(Calendar.MILLISECOND) == TIME_NOT_SET_MILLISECOND_INDICATOR
-                                        && taskDate.get(Calendar.SECOND) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
-                                        && taskDate.get(Calendar.MINUTE) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
-                                        && taskDate.get(Calendar.HOUR_OF_DAY) == TIME_NOT_SET_HOUR_INDICATOR)){
-                                    stringBuilder.append(" ").append(timeInFragment.getText().toString());
-                                }
-                                stringBuilder.append("\n").append(remarkInFragment.getText().toString());
-                                shareIntent.putExtra(Intent.EXTRA_TEXT,stringBuilder.toString());
-                                shareIntent.putExtra(Intent.EXTRA_TITLE, titleInFragment.getText());
-                                startActivity(shareIntent);
-                                return true;
-                            case R.id.edit_drop_menu_pin:
-                                // if it is a new note, save the note and then pin to notification
-                                if (newTask) {
-                                    saveTask();
-                                    hasTaskSave = false;
-                                }
-
-                                SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
-
-                                if (idPref.getLong(Long.toString(taskId), 999999L)==999999L) {
-                                    pinTaskToNotification();
-                                } else {
-                                    NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                                    if (notificationManager!=null){
-                                        // to distinguish reminder and pin item, id of pin item is the item id * PIN_ITEM_NOTIFICATION_ID
-                                        notificationManager.cancel((int)taskId*PIN_ITEM_NOTIFICATION_ID);
-                                        idPref.edit().remove(Long.toString(taskId)).apply();
-                                    }
-                                }
-                                return true;
-
-                            default:
-                                return false;
-                        }
-                    }
-                });
-                editDropMenu.show();
-            }
-        });
-
-        if (latLng != null){
-            setLocationText(latLng);
-        }
-
-        locationInFragment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-                    if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)){
-                        showPermissionDialog();
-                    } else {
-                        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
-                    }
-                } else {
-                    FragmentActivity fragmentActivity = getActivity();
-                    if (fragmentActivity != null) {
-                        PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-                        if (latLng != null){
-                            LatLngBounds.Builder latLngBoundsBuilder = LatLngBounds.builder().include(latLng);
-                            //Make sure the zoom scale is appropriate
-                            latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 0));
-                            latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 90));
-                            latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 180));
-                            latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 270));
-                            builder.setLatLngBounds(latLngBoundsBuilder.build());
-                        }
-                        try {
-                            startActivityForResult(builder.build(fragmentActivity), LOCATION_PICKER_REQUEST_CODE);
-                        } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
-                            Toast.makeText(context, R.string.google_play_service_fail_toast, Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
-                        }
-                    }
-                }
+            public boolean onLongClick(View view) {
+                locationInFragment.setText(null);
+                placeName = null;
+                latLng = null;
+                hasModified = true;
+                return true;
             }
         });
 
@@ -878,8 +659,14 @@ public class TaskEditFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == LOCATION_PICKER_REQUEST_CODE && resultCode == Activity.RESULT_OK){
-            latLng = PlacePicker.getPlace(context, data).getLatLng();
-            setLocationText(latLng);
+            Place place = PlacePicker.getPlace(context, data);
+            latLng = place.getLatLng();
+            placeName = (String) place.getName();
+            // Check if the name is coordinate. If so, check if geo coder can return a readable name
+            if (placeName.contains("\"N") && placeName.contains("\"E")) placeName = getLocationText(latLng);
+            locationInFragment.setText(placeName);
+            hasModified = true;
+//            getLocationText(latLng);
         }
     }
 
@@ -888,33 +675,26 @@ public class TaskEditFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         // Define save function for the done button
         if (getActivity() != null) {
-            final FloatingActionButton done = getActivity().findViewById(R.id.done_fab);
+            doneButton = getActivity().findViewById(R.id.done_fab);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                done.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.sharp_done_24));
+                doneButton.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.sharp_done_24));
             } else {
-                done.setImageResource(R.drawable.sharp_done_24);
+                doneButton.setImageResource(R.drawable.sharp_done_24);
             }
-            done.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.highlight)));
-            done.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    saveTask();
-                    hasTaskSave = true;
-                    getActivity().finish();
-                }
-            });
+            doneButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.highlight)));
+            doneButton.setOnClickListener(this);
 
-            doneButtonYPosition = done.getY();
-            done.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            doneButtonYPosition = doneButton.getY();
+            doneButton.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
-                    float y = done.getY();
+                    float y = doneButton.getY();
                     if (y < doneButtonYPosition) {
                         if (remarkInFragment.hasFocus()) {
-                            done.setVisibility(View.INVISIBLE);
+                            doneButton.setVisibility(View.INVISIBLE);
                         }
                     } else {
-                        if (done.getVisibility() != View.VISIBLE) done.setVisibility(View.VISIBLE);
+                        if (doneButton.getVisibility() != View.VISIBLE) doneButton.setVisibility(View.VISIBLE);
                     }
                     doneButtonYPosition = y;
 
@@ -947,9 +727,252 @@ public class TaskEditFragment extends Fragment {
 
     @Override
     public void onPause() {
-        //when user quit the app without choosing save or discard, save the task
-        if (checkModified() && !hasTaskSave) saveTask();
         super.onPause();
+        //when user quit the app without choosing save or discard, save the task
+        if (!hasTaskSave && checkModified()) {
+            if (getActivity() == null || getActivity().isFinishing()) saveTask();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (!hasTaskSave && checkModified()) saveTask();
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (view == dateInFragment){
+            // Only show hint in the first time for every instance of the activity
+            if (!hasShowRemoveDateHint) {
+                hasShowRemoveDateHint = true;
+                Toast.makeText(context, R.string.remove_date_hint, Toast.LENGTH_SHORT).show();
+            }
+
+            int year, month, dayOfMonth;
+            if (taskDate.getTimeInMillis()==DATE_NOT_SET_INDICATOR){
+                year = Calendar.getInstance().get(Calendar.YEAR);
+                month = Calendar.getInstance().get(Calendar.MONTH);
+                dayOfMonth = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+            } else {
+                year = taskDate.get(Calendar.YEAR);
+                month = taskDate.get(Calendar.MONTH);
+                dayOfMonth = taskDate.get(Calendar.DAY_OF_MONTH);
+            }
+
+            new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker datePicker,int year, int month, int dayOfMonth) {
+                    if (taskDate.getTimeInMillis()==DATE_NOT_SET_INDICATOR){
+                        taskDate.set(Calendar.HOUR_OF_DAY, TIME_NOT_SET_HOUR_INDICATOR);
+                        taskDate.set(Calendar.MINUTE, TIME_NOT_SET_MINUTE_SECOND_INDICATOR);
+                        taskDate.set(Calendar.SECOND, TIME_NOT_SET_MINUTE_SECOND_INDICATOR);
+                        taskDate.set(Calendar.MILLISECOND, TIME_NOT_SET_MILLISECOND_INDICATOR);
+
+                        if (reminderTime.getTimeInMillis() == 0L) {
+                            reminderSelectByUser = false;
+                            reminderInFragment.setSelection(1);
+                        }
+                    }
+                    taskDate.set(Calendar.YEAR, year);
+                    taskDate.set(Calendar.MONTH, month);
+                    taskDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+                    DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
+                    dateInFragment.setText(dateFormat.format(taskDate.getTime()));
+
+                    timeRow.setVisibility(View.VISIBLE);
+                    repeatRow.setVisibility(View.VISIBLE);
+                    hasModified = true;
+                    if (!reminderArray.contains(getString(R.string.zero_min_before))) {
+                        // add two option after "No reminder" for reminder if user has specify event date;
+                        int duePosition = reminderArray.indexOf(getString(R.string.no_reminder_set));
+                        reminderArray.add(duePosition + 1, getString(R.string.zero_min_before));
+                        reminderArray.add(duePosition + 2, getString(R.string.a_day_beofre));
+                        reminderPresetSize += 2;
+                        reminderAdapter.notifyDataSetChanged();
+                    }
+
+                }
+            }, year, month, dayOfMonth).show();
+
+        } else if (view == timeInFragment){
+            // Only show hint in the first time for every instance of the activity
+            if (!hasShowRemoveTimeHint) {
+                hasShowRemoveTimeHint = true;
+                Toast.makeText(context, R.string.remove_time_hint, Toast.LENGTH_SHORT).show();
+            }
+            int hourOfDay, minute;
+            // Change hour and minute shown as current time or event time
+            if (taskDate.get(Calendar.MILLISECOND)== TIME_NOT_SET_MILLISECOND_INDICATOR
+                    && taskDate.get(Calendar.SECOND) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                    && taskDate.get(Calendar.MINUTE) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                    && taskDate.get(Calendar.HOUR_OF_DAY) == TIME_NOT_SET_HOUR_INDICATOR) {
+                hourOfDay = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+                minute = Calendar.getInstance().get(Calendar.MINUTE);
+            } else {
+                hourOfDay = taskDate.get(Calendar.HOUR_OF_DAY);
+                minute = taskDate.get(Calendar.MINUTE);
+            }
+
+            new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                @Override
+                public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute){
+                    taskDate.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                    taskDate.set(Calendar.MINUTE, minute);
+                    DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
+                    timeInFragment.setText(timeFormat.format(taskDate.getTime()));
+                    hasModified = true;
+
+                    if (!reminderArray.contains(getString(R.string.ten_min_before))) {
+                        // add two option after "Due" for reminder if user has specify event time;
+                        int duePosition = reminderArray.indexOf(getString(R.string.zero_min_before));
+                        reminderArray.add(duePosition + 1, getString(R.string.ten_min_before));
+                        reminderArray.add(duePosition + 2, getString(R.string.thirty_min_before));
+                        reminderPresetSize += 2;
+                        reminderAdapter.notifyDataSetChanged();
+                    }
+                }
+            }, hourOfDay, minute, false).show();
+
+        } else if (view == showDropMenu){
+            PopupMenu editDropMenu = new PopupMenu(context,showDropMenu);
+            editDropMenu.inflate(R.menu.task_edit_drop_menu);
+
+            SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+
+            MenuItem pinToNotification = editDropMenu.getMenu().findItem(R.id.edit_drop_menu_pin);
+            if (!newTask && idPref.getLong(Long.toString(taskId), 999999L)!=999999L){
+                pinToNotification.setTitle(R.string.notification_unpin);
+            } else pinToNotification.setTitle(R.string.notification_pin);
+
+            pinToNotification.setVisible(true);
+
+            editDropMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem menuItem) {
+                    switch (menuItem.getItemId()){
+                        case R.id.edit_drop_menu_delete:
+                            //Delete task
+                            new AlertDialog.Builder(context).setTitle(R.string.delete_title).setMessage(R.string.confirm_delete_edit)
+                                    .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialogInterface, int i) {
+                                                    if (!newTask) {
+                                                        database.delete(DATABASE_NAME, "_id='" + taskId + "'", null);
+                                                        updateTaskListWidget(context);
+                                                        AlarmHelper.cancelReminder(context.getApplicationContext(), taskId);
+
+                                                        SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+                                                        if (idPref.getLong(Long.toString(taskId), 999999L)!=999999L) {
+                                                            idPref.edit().remove(Long.toString(taskId)).apply();
+                                                            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                                                            if (notificationManager != null) {
+                                                                notificationManager.cancel((int)taskId*PIN_ITEM_NOTIFICATION_ID);
+                                                            }
+                                                        }
+                                                        updateToolbar();
+                                                    }
+                                                    // No need to do saving
+                                                    hasTaskSave = true;
+                                                    Toast.makeText(context, R.string.task_deleted_toast, Toast.LENGTH_SHORT).show();
+                                                    if (getActivity()!=null) {
+                                                        getActivity().finish();
+                                                    }
+                                                }
+                                            }
+                                    )
+                                    .setNegativeButton(R.string.cancel, null)
+                                    .show();
+                            return true;
+                        case R.id.edit_drop_menu_share:
+                            Intent shareIntent = new Intent();
+                            shareIntent.setAction(Intent.ACTION_SEND);
+                            shareIntent.setType("text/plain");
+                            StringBuilder stringBuilder = new StringBuilder();
+                            if (markAsDoneInFragment.isChecked()){
+                                stringBuilder.append("[").append(getString(R.string.done)).append("] ");
+                            } else if (urgencyInFragment.getSelectedItemPosition()==1){
+                                stringBuilder.append("[").append(getString(R.string.important)).append("] ");
+                            } else if (urgencyInFragment.getSelectedItemPosition()==2){
+                                stringBuilder.append("[").append(getString(R.string.asap)).append("] ");
+                            }
+                            stringBuilder.append(titleInFragment.getText().toString());
+                            if (taskDate.getTimeInMillis()!=DATE_NOT_SET_INDICATOR){
+                                stringBuilder.append("\n").append(dateInFragment.getText());
+                            }
+                            if (!(taskDate.get(Calendar.MILLISECOND) == TIME_NOT_SET_MILLISECOND_INDICATOR
+                                    && taskDate.get(Calendar.SECOND) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                                    && taskDate.get(Calendar.MINUTE) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                                    && taskDate.get(Calendar.HOUR_OF_DAY) == TIME_NOT_SET_HOUR_INDICATOR)){
+                                stringBuilder.append(" ").append(timeInFragment.getText().toString());
+                            }
+                            stringBuilder.append("\n").append(remarkInFragment.getText().toString());
+                            shareIntent.putExtra(Intent.EXTRA_TEXT,stringBuilder.toString());
+                            shareIntent.putExtra(Intent.EXTRA_TITLE, titleInFragment.getText());
+                            startActivity(shareIntent);
+                            return true;
+                        case R.id.edit_drop_menu_pin:
+                            // if it is a new note, save the note and then pin to notification
+                            if (newTask) {
+                                saveTask();
+                                hasTaskSave = false;
+                            }
+
+                            SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
+
+                            if (idPref.getLong(Long.toString(taskId), 999999L)==999999L) {
+                                pinTaskToNotification();
+                            } else {
+                                NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                                if (notificationManager!=null){
+                                    // to distinguish reminder and pin item, id of pin item is the item id * PIN_ITEM_NOTIFICATION_ID
+                                    notificationManager.cancel((int)taskId*PIN_ITEM_NOTIFICATION_ID);
+                                    idPref.edit().remove(Long.toString(taskId)).apply();
+                                }
+                            }
+                            return true;
+
+                        default:
+                            return false;
+                    }
+                }
+            });
+            editDropMenu.show();
+
+        } else if (view == locationInFragment){
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)){
+                    showPermissionDialog();
+                } else {
+                    requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+                }
+            } else {
+                FragmentActivity fragmentActivity = getActivity();
+                if (fragmentActivity != null) {
+                    PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+                    if (latLng != null){
+                        LatLngBounds.Builder latLngBoundsBuilder = LatLngBounds.builder().include(latLng);
+                        //Make sure the zoom scale is appropriate
+                        latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 0));
+                        latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 90));
+                        latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 180));
+                        latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 270));
+                        builder.setLatLngBounds(latLngBoundsBuilder.build());
+                    }
+                    try {
+                        startActivityForResult(builder.build(fragmentActivity), LOCATION_PICKER_REQUEST_CODE);
+                    } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
+                        Toast.makeText(context, R.string.google_play_service_fail_toast, Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } else if (view == doneButton){
+            saveTask();
+            hasTaskSave = true;
+            if (getActivity() != null) getActivity().finish();
+        }
     }
 
     public void saveTask(){
@@ -1030,7 +1053,10 @@ public class TaskEditFragment extends Fragment {
         }
         values.put("reminder_time", reminderTime.getTimeInMillis());
 
-        if (latLng != null) values.put("lat_lng", Double.toString(latLng.latitude) + "," + Double.toString(latLng.longitude));
+        if (latLng != null) {
+            values.put("lat_lng", Double.toString(latLng.latitude) + "," + Double.toString(latLng.longitude));
+        } else values.put("lat_lng", (String) null);
+        values.put("place_name", placeName);
 
         if (!newTask) {
             database.update(DATABASE_NAME, values, "_id='" + taskId +"'", null);
@@ -1075,7 +1101,7 @@ public class TaskEditFragment extends Fragment {
 //        return false;
 //    }
 
-    private void setLocationText(LatLng latLng){
+    private String getLocationText(LatLng latLng){
         try {
             Geocoder geocoder;
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
@@ -1086,12 +1112,12 @@ public class TaskEditFragment extends Fragment {
             List<Address> addressList = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1);
             if (addressList.size() == 0) {
                 DecimalFormat decimalFormat = new DecimalFormat("#.00000");
-                locationInFragment.setText(getString(R.string.lat_lng, decimalFormat.format(latLng.latitude), decimalFormat.format(latLng.longitude)));
+                return getString(R.string.lat_lng, decimalFormat.format(latLng.latitude), decimalFormat.format(latLng.longitude));
             } else {
                 Address address = addressList.get(0);
                 String featureName = address.getFeatureName();
                 if (featureName != null && !featureName.isEmpty() && !isNumericString(featureName)) {
-                    locationInFragment.setText(featureName);
+                    return featureName;
                 } else {
                     StringBuilder stringBuilder = new StringBuilder();
                     String addressLine = address.getAddressLine(0);
@@ -1099,13 +1125,13 @@ public class TaskEditFragment extends Fragment {
                         stringBuilder.append(addressLine).append(" ");
                         addressLine = address.getAddressLine(i);
                     }
-                    locationInFragment.setText(stringBuilder.toString());
+                    return stringBuilder.toString();
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
             DecimalFormat decimalFormat = new DecimalFormat("#.00000");
-            locationInFragment.setText(getString(R.string.lat_lng, decimalFormat.format(latLng.latitude), decimalFormat.format(latLng.longitude)));
+            return getString(R.string.lat_lng, decimalFormat.format(latLng.latitude), decimalFormat.format(latLng.longitude));
         }
     }
 
@@ -1137,14 +1163,14 @@ public class TaskEditFragment extends Fragment {
 
     boolean checkModified() {
         if (newTask) {
-            return !titleInFragment.getText().toString().trim().equals("")
-                    || hasModified
-                    || !remarkInFragment.getText().toString().trim().equals("")
-                    || markAsDoneInFragment.isChecked();
+            return hasModified
+                    || markAsDoneInFragment.isChecked()
+                    || !titleInFragment.getText().toString().isEmpty()
+                    || !remarkInFragment.getText().toString().isEmpty();
         } else {
-            return !titleInFragment.getText().toString().equals(title)
+            return hasModified
                     || markAsDoneInFragment.isChecked() != isDone
-                    || hasModified
+                    || !titleInFragment.getText().toString().equals(title)
                     || !remarkInFragment.getText().toString().equals(remark);
         }
     }
@@ -1178,7 +1204,7 @@ public class TaskEditFragment extends Fragment {
     private boolean isNumericString(String string){
         try{
             Integer result = Integer.parseInt(string.trim());
-            Log.d(getClass().getName(),"Confirm "+ string + "is number");
+            Log.i(getClass().getName(),"Confirm "+ string + "is number" + result.toString());
             return true;
         } catch (Exception e){
             return false;

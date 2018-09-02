@@ -84,14 +84,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 sqLiteDatabase.execSQL(DATABASE_ALTER_V4_1);
                 Cursor alterCursor = sqLiteDatabase.query(DATABASE_NAME, new String[]{"_id", "time"}, null, null, null
                         , null, null);
-                if (alterCursor != null){
+                if (alterCursor != null) {
                     ContentValues values = new ContentValues();
 
                     alterCursor.moveToFirst();
                     do {
                         String time = alterCursor.getString(1);
                         values.put("event_time", Long.valueOf(time));
-                        sqLiteDatabase.update(DATABASE_NAME, values, "_id='" + alterCursor.getLong(0) +"'", null);
+                        sqLiteDatabase.update(DATABASE_NAME, values, "_id='" + alterCursor.getLong(0) + "'", null);
                     } while (alterCursor.moveToNext());
                     alterCursor.close();
 
@@ -101,6 +101,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     sqLiteDatabase.execSQL(DATABASE_ALTER_V4_5);
                     sqLiteDatabase.execSQL(DATABASE_ALTER_V4_6);
                     sqLiteDatabase.execSQL(DATABASE_ALTER_V4_7);
+                }
             case 4:
                 // Insert reminder related column for corresponding function
                 sqLiteDatabase.execSQL(DATABASE_ALTER_V5);

@@ -188,6 +188,44 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="@string/location_cap"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:textSize="18sp"
+                android:textColor="@color/colorPrimary"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="20dp">
+
+                <ImageView
+                    android:layout_width="28sp"
+                    android:layout_height="28sp"
+                    android:layout_marginEnd="4dp"
+                    android:contentDescription="@string/location"
+                    app:srcCompat="@drawable/sharp_location_24"/>
+
+                <TextView
+                    android:id="@+id/item_location"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:hint="@string/location_hint"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:textSize="24sp"
+                    android:textColor="@android:color/black"/>
+
+            </LinearLayout>
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="@string/category_caption"
                 android:layout_marginBottom="8dp"
                 android:layout_marginStart="16dp"

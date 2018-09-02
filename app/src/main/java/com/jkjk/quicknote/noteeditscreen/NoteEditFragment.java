@@ -138,7 +138,7 @@ public class NoteEditFragment extends Fragment {
                 isStarred = noteCursor.getInt(2);
                 noteCursor.close();
             } catch (Exception e) {
-                Toast.makeText(container.getContext(), R.string.error_loading, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, R.string.error_loading, Toast.LENGTH_SHORT).show();
                 Log.e(this.getClass().getName(), "error", e);
                 hasNoteSave = true;
                 if (getActivity() != null) {
@@ -154,7 +154,7 @@ public class NoteEditFragment extends Fragment {
         showDropMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                PopupMenu editDropMenu = new PopupMenu(view.getContext(), showDropMenu);
+                PopupMenu editDropMenu = new PopupMenu(context, showDropMenu);
                 editDropMenu.inflate(R.menu.note_edit_drop_menu);
 
                 SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
@@ -192,19 +192,19 @@ public class NoteEditFragment extends Fragment {
                                     //save new note in and star
                                     isStarred = 1;
                                     saveNote();
-                                    Toast.makeText(getContext(), R.string.saved_starred_toast, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context, R.string.saved_starred_toast, Toast.LENGTH_SHORT).show();
                                 } else if (isStarred == 1){
                                     // Unstarred
                                     isStarred = 0;
                                     values.put("starred", isStarred);
                                     database.update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
-                                    Toast.makeText(getContext(), R.string.unstarred_toast, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context, R.string.unstarred_toast, Toast.LENGTH_SHORT).show();
                                 } else {
                                     // Star
                                     isStarred = 1;
                                     values.put("starred", isStarred);
                                     database.update(DATABASE_NAME, values, "_id='" + noteId +"'", null);
-                                    Toast.makeText(getContext(), R.string.starred_toast, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context, R.string.starred_toast, Toast.LENGTH_SHORT).show();
                                 }
                                 return true;
 
@@ -216,7 +216,7 @@ public class NoteEditFragment extends Fragment {
                                             public void onClick(DialogInterface dialogInterface, int i) {
                                                 if (!newNote) {
                                                     database.delete(DATABASE_NAME, "_id='" + noteId + "'", null);
-                                                    updateNoteListWidget(getContext());
+                                                    updateNoteListWidget(context.getApplicationContext());
 
                                                     AlarmHelper.cancelReminder(context.getApplicationContext(), noteId);
 
@@ -231,7 +231,7 @@ public class NoteEditFragment extends Fragment {
                                                 }
                                                     // No need to do saving
                                                     hasNoteSave = true;
-                                                    Toast.makeText(getContext(), R.string.note_deleted_toast, Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(context, R.string.note_deleted_toast, Toast.LENGTH_SHORT).show();
                                                     if (getActivity() != null) {
                                                         getActivity().finish();
                                                     }
@@ -331,11 +331,17 @@ public class NoteEditFragment extends Fragment {
 
     @Override
     public void onPause() {
-        if (checkModified() && !hasNoteSave) {
-            //when user quit the app without choosing save or discard, save the note
-            saveNote();
-        }
         super.onPause();
+        if (!hasNoteSave && checkModified()) {
+            //when user quit the app without choosing save or discard, save the note
+            if (getActivity() == null || getActivity().isFinishing()) saveNote();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (!hasNoteSave && checkModified()) saveNote();
     }
 
     @Override
@@ -378,8 +384,8 @@ public class NoteEditFragment extends Fragment {
 
         hasNoteSave = true;
         newNote = false;
-        updateNoteWidget(getContext());
-        updateNoteListWidget(getContext());
+        updateNoteWidget(context);
+        updateNoteListWidget(context);
         Toast.makeText(getActivity(), R.string.saved_note, Toast.LENGTH_SHORT).show();
     }
 
@@ -400,10 +406,10 @@ public class NoteEditFragment extends Fragment {
 //    }
 
     private void pinNoteToNotification(){
-        Intent intent = new Intent(getContext(), NotificationHelper.class);
+        Intent intent = new Intent(context, NotificationHelper.class);
         intent.setAction(ACTION_PIN_ITEM);
         intent.putExtra(EXTRA_ITEM_ID, noteId);
-        PendingIntent pinNotificationPI = PendingIntent.getBroadcast(getContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pinNotificationPI = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         try {
             pinNotificationPI.send();
         } catch (PendingIntent.CanceledException e) {
@@ -414,8 +420,8 @@ public class NoteEditFragment extends Fragment {
 
     boolean checkModified(){
         if (newNote){
-            return !titleInFragment.getText().toString().trim().equals("")
-                    || !contentInFragment.getText().toString().trim().equals("");
+            return !titleInFragment.getText().toString().isEmpty()
+                    || !contentInFragment.getText().toString().isEmpty();
         } else {
             return !title.equals(titleInFragment.getText().toString())
                     || !content.equals(contentInFragment.getText().toString());
