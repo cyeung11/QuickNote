@@ -93,7 +93,7 @@ public class NoteWidgetAdapter extends ItemListAdapter {
             @Override
             public void onClick(View view) {
 
-                RemoteViews remoteViews = new RemoteViews("com.jkjk.quicknote", R.layout.note_preview_widget);
+                RemoteViews remoteViews = new RemoteViews(view.getContext().getPackageName(), R.layout.note_preview_widget);
 
                 //Obtain correspond data according to the position the user click. As both the recyclerview and cursor are sorted chronically, position equals to cursor index
                 itemCursor.moveToPosition(holder.getAdapterPosition());

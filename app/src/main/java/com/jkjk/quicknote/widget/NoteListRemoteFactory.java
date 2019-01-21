@@ -71,10 +71,10 @@ public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFact
 
     @Override
     public RemoteViews getViewAt(int i) {
-        RemoteViews remoteViews = new RemoteViews("com.jkjk.quicknote", widgetLayout);
+        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), widgetLayout);
 
         if (noteCursor == null){
-            remoteViews = new RemoteViews("com.jkjk.quicknote", R.layout.list_widget_loading);
+            remoteViews = new RemoteViews(context.getPackageName(), R.layout.list_widget_loading);
             remoteViews.setTextViewText(R.id.text, context.getString(R.string.error_loading));
             return remoteViews;
         }
@@ -123,7 +123,7 @@ public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFact
 
     @Override
     public RemoteViews getLoadingView() {
-        return new RemoteViews("com.jkjk.quicknote", R.layout.list_widget_loading);
+        return new RemoteViews(context.getPackageName(), R.layout.list_widget_loading);
     }
 
     @Override

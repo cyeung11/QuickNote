@@ -1,17 +1,18 @@
 package com.jkjk.quicknote.widget;
 
-import android.app.IntentService;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.support.annotation.NonNull;
+import android.support.v4.app.JobIntentService;
 import android.support.v7.preference.PreferenceManager;
 import android.util.TypedValue;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
@@ -26,27 +27,23 @@ import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 
 
-/**
- * An {@link IntentService} subclass for handling asynchronous task requests in
- * a service on a separate handler thread.
- * <p>
- */
-public class AppWidgetService extends IntentService {
+public class AppWidgetJobService extends JobIntentService {
 
-    public static final int NOTE_WIDGET_REQUEST_CODE = 0;
-    public static final int TASK_LIST_WIDGET_REQUEST_CODE = 1;
-    public static final int NOTE_LIST_WIDGET_REQUEST_CODE = 2;
-    public static final int NOTE_LIST_WIDGET_START_APP_REQUEST_CODE = 1399;
-    public static final int TASK_LIST_WIDGET_START_APP_REQUEST_CODE = 2333;
 
-    public AppWidgetService(){
-        super("AppWidgetService");
+    public AppWidgetJobService(){
+        super();
+    }
+
+    static void enqueueWidget(Context context, Class<?> cls, int[] widgetIds) {
+        Intent intent = new Intent().putExtra(EXTRA_APPWIDGET_ID, widgetIds)
+                .putExtra(EXTRA_APPWIDGET_PROVIDER, new ComponentName(context, cls));
+        enqueueWork(context, AppWidgetJobService.class, 1, intent);
     }
 
     @Override
-    protected void onHandleIntent(Intent intent){
+    protected void onHandleWork(@NonNull Intent intent) {
 
-        if (intent!=null && intent.hasExtra(EXTRA_APPWIDGET_PROVIDER)) {
+        if (intent.hasExtra(EXTRA_APPWIDGET_PROVIDER)) {
             int[] appWidgetIds;
             RemoteViews[] views;
 
@@ -122,7 +119,7 @@ public class AppWidgetService extends IntentService {
                         }
 
                     } catch (Exception e) {
-                        Toast.makeText(this, R.string.error_widget, Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
                         views[i].setTextViewText(R.id.widget_title, getResources().getString(R.string.error_loading));
                         views[i].setTextViewText(R.id.widget_content, "");
                     }
@@ -143,7 +140,7 @@ public class AppWidgetService extends IntentService {
         Intent startAppIntent = new Intent(this, List.class);
         startAppIntent.putExtra(ITEM_TYPE, itemIsNote ?'N' :'T');
         PendingIntent startAppPendingIntent = PendingIntent.getActivity(this
-                , itemIsNote ?NOTE_LIST_WIDGET_START_APP_REQUEST_CODE :TASK_LIST_WIDGET_START_APP_REQUEST_CODE
+                , itemIsNote ? AppWidgetService.NOTE_LIST_WIDGET_START_APP_REQUEST_CODE : AppWidgetService.TASK_LIST_WIDGET_START_APP_REQUEST_CODE
                 , startAppIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent newItemIntent = new Intent(this, itemIsNote ?NoteEdit.class :TaskEdit.class);

@@ -60,6 +60,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     static final  int BACK_UP_REQUEST_CODE = 3433;
     static final  int RESTORE_REQUEST_CODE = 3449;
+    static final int PERMISSION_REQUEST_CODE = 3444;
     private Context context;
 
     public SettingsFragment() {
@@ -115,7 +116,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                     } else {
                         // request the permission
                         requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                BACK_UP_REQUEST_CODE);
+                                PERMISSION_REQUEST_CODE);
                     }
                 } else {
                     // Permission has already been granted
@@ -152,7 +153,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                     } else {
                         // request the permission
                         requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                                RESTORE_REQUEST_CODE);
+                                PERMISSION_REQUEST_CODE);
                     }
                 } else {
                     // Permission has already been granted

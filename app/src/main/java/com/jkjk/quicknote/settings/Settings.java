@@ -17,9 +17,6 @@ import android.view.MenuItem;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.listscreen.List;
 
-import static com.jkjk.quicknote.settings.SettingsFragment.BACK_UP_REQUEST_CODE;
-import static com.jkjk.quicknote.settings.SettingsFragment.RESTORE_REQUEST_CODE;
-
 public class Settings extends AppCompatActivity {
 
     private SettingsFragment settingsFragment;
@@ -72,32 +69,13 @@ public class Settings extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode){
-            case BACK_UP_REQUEST_CODE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    settingsFragment.selectBackUpLocation();
-                } else {
-                    new AlertDialog.Builder(this).setTitle(R.string.permission_required).setMessage(R.string.storage_permission_msg)
-                            .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                    Uri uri = Uri.fromParts("package", getPackageName(), null);
-                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                    intent.setData(uri);
-                                    startActivity(intent);
-                                }
-                            })
-                            .setNegativeButton(R.string.cancel, null)
-                            .show();
-                }
-                break;
 
-            case RESTORE_REQUEST_CODE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    settingsFragment.selectRestoreLocation();
-                } else {
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+        if (permissions.length > 0) {
+            switch (permissions[0]) {
+                case Manifest.permission.WRITE_EXTERNAL_STORAGE:
+                    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        settingsFragment.selectBackUpLocation();
+                    } else {
                         new AlertDialog.Builder(this).setTitle(R.string.permission_required).setMessage(R.string.storage_permission_msg)
                                 .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
                                     @Override
@@ -112,8 +90,30 @@ public class Settings extends AppCompatActivity {
                                 .setNegativeButton(R.string.cancel, null)
                                 .show();
                     }
-                }
-                break;
+                    break;
+                case Manifest.permission.READ_EXTERNAL_STORAGE:
+                    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        settingsFragment.selectRestoreLocation();
+                    } else {
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                            new AlertDialog.Builder(this).setTitle(R.string.permission_required).setMessage(R.string.storage_permission_msg)
+                                    .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                            Uri uri = Uri.fromParts("package", getPackageName(), null);
+                                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                            intent.setData(uri);
+                                            startActivity(intent);
+                                        }
+                                    })
+                                    .setNegativeButton(R.string.cancel, null)
+                                    .show();
+                        }
+                    }
+                    break;
+            }
+
         }
     }
 }

@@ -89,7 +89,7 @@ public class TaskListRemoteFactory implements RemoteViewsService.RemoteViewsFact
     public RemoteViews getViewAt(int i) {
         RemoteViews remoteViews;
         if (taskCursor == null){
-            remoteViews = new RemoteViews("com.jkjk.quicknote", R.layout.list_widget_loading);
+            remoteViews = new RemoteViews(context.getPackageName(), R.layout.list_widget_loading);
             remoteViews.setTextViewText(R.id.text, context.getString(R.string.error_loading));
             return remoteViews;
         }
@@ -98,20 +98,20 @@ public class TaskListRemoteFactory implements RemoteViewsService.RemoteViewsFact
 
         switch (taskCursor.getInt(2)){
             case 2:
-                remoteViews = new RemoteViews("com.jkjk.quicknote", widgetLayout);
+                remoteViews = new RemoteViews(context.getPackageName(), widgetLayout);
                 remoteViews.setTextColor(R.id.task_urgency, context.getResources().getColor(R.color.colorPrimary));
                 remoteViews.setTextViewText(R.id.task_urgency, context.getString(R.string.asap));
                 break;
             case 1:
-                remoteViews = new RemoteViews("com.jkjk.quicknote", widgetLayout);
+                remoteViews = new RemoteViews(context.getPackageName(), widgetLayout);
                 remoteViews.setTextColor(R.id.task_urgency, context.getResources().getColor(R.color.darkGrey));
                 remoteViews.setTextViewText(R.id.task_urgency, context.getString(R.string.important));
                 break;
             case 0:
-                remoteViews = new RemoteViews("com.jkjk.quicknote", noUrgencyLayout);
+                remoteViews = new RemoteViews(context.getPackageName(), noUrgencyLayout);
                 break;
             default:
-                remoteViews = new RemoteViews("com.jkjk.quicknote", R.layout.list_widget_loading);
+                remoteViews = new RemoteViews(context.getPackageName(), R.layout.list_widget_loading);
                 remoteViews.setTextViewText(R.id.text, context.getString(R.string.error_loading));
                 return remoteViews;
         }
@@ -156,7 +156,7 @@ public class TaskListRemoteFactory implements RemoteViewsService.RemoteViewsFact
 
     @Override
     public RemoteViews getLoadingView() {
-        return new RemoteViews("com.jkjk.quicknote", R.layout.list_widget_loading);
+        return new RemoteViews(context.getPackageName(), R.layout.list_widget_loading);
     }
 
     @Override
