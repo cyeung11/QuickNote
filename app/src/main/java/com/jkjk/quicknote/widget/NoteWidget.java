@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -44,14 +45,18 @@ public class NoteWidget extends AppWidgetProvider {
             resultIds[i] = checkedIds.get(i);
         }
 
-        Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, resultIds)
-                .putExtra(EXTRA_APPWIDGET_PROVIDER, new ComponentName(context, NoteWidget.class));
-        PendingIntent pendingIntent = PendingIntent.getService(context, NOTE_WIDGET_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        try {
-            pendingIntent.send();
-        } catch (Exception e) {
-            Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
-            Log.e(getClass().getName(), "error",e);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            AppWidgetJobService.enqueueWidget(context, NoteWidget.class, resultIds);
+        } else {
+            Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, resultIds)
+                    .putExtra(EXTRA_APPWIDGET_PROVIDER, new ComponentName(context, NoteWidget.class));
+            PendingIntent pendingIntent = PendingIntent.getService(context, NOTE_WIDGET_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            try {
+                pendingIntent.send();
+            } catch (Exception e) {
+                Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
+                Log.e(getClass().getName(), "error", e);
+            }
         }
     }
 
@@ -71,14 +76,19 @@ public class NoteWidget extends AppWidgetProvider {
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         ComponentName name = new ComponentName(context, NoteWidget.class);
         int[] appWidgetIds = appWidgetManager.getAppWidgetIds(name);
-        Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, appWidgetIds)
-                .putExtra(EXTRA_APPWIDGET_PROVIDER, name);
-        PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        try {
-            pendingIntent.send();
-        } catch (Exception e) {
-            Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
-            Log.e(context.getClass().getName(), "updating widget", e);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            AppWidgetJobService.enqueueWidget(context, NoteWidget.class, appWidgetIds);
+        } else {
+            Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, appWidgetIds)
+                    .putExtra(EXTRA_APPWIDGET_PROVIDER, name);
+            PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            try {
+                pendingIntent.send();
+            } catch (Exception e) {
+                Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
+                Log.e(context.getClass().getName(), "updating widget", e);
+            }
         }
     }
 }

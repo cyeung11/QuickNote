@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -22,14 +23,18 @@ public class NoteListWidget extends AppWidgetProvider {
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, appWidgetIds)
-                .putExtra(EXTRA_APPWIDGET_PROVIDER, new ComponentName(context, NoteListWidget.class));
-        PendingIntent pendingIntent = PendingIntent.getService(context, NOTE_LIST_WIDGET_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        try {
-            pendingIntent.send();
-        } catch (Exception e) {
-            Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
-            Log.e(getClass().getName(), "error",e);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            AppWidgetJobService.enqueueWidget(context, NoteListWidget.class, appWidgetIds);
+        } else {
+            Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, appWidgetIds)
+                    .putExtra(EXTRA_APPWIDGET_PROVIDER, new ComponentName(context, NoteListWidget.class));
+            PendingIntent pendingIntent = PendingIntent.getService(context, NOTE_LIST_WIDGET_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            try {
+                pendingIntent.send();
+            } catch (Exception e) {
+                Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
+                Log.e(getClass().getName(), "error", e);
+            }
         }
     }
 
