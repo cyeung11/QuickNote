@@ -66,7 +66,7 @@ public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFact
 
     @Override
     public int getCount() {
-        return noteCursor.getCount();
+        return noteCursor == null ?0 :noteCursor.getCount();
     }
 
     @Override

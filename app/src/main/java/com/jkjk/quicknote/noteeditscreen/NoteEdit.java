@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.actions.NoteIntents;
 import com.jkjk.quicknote.R;
 
@@ -23,6 +24,8 @@ public class NoteEdit extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Crashlytics.log(getLocalClassName());
+
         setContentView(R.layout.activity_note_edit);
 
         if (savedInstanceState == null) {

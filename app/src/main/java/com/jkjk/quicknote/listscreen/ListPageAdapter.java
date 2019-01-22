@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v7.preference.PreferenceManager;
 
+import com.crashlytics.android.Crashlytics;
 import com.jkjk.quicknote.R;
 
 
@@ -19,6 +20,7 @@ public class ListPageAdapter extends FragmentPagerAdapter {
     ListPageAdapter(Context context, FragmentManager fragmentManager){
         super(fragmentManager);
         this.context = context;
+        Crashlytics.log(getClass().getName());
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         defaultScreenIsTask = sharedPref.getBoolean(context.getString(R.string.default_screen), false);

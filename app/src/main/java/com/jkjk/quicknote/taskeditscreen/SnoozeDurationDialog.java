@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
@@ -26,6 +27,8 @@ public class SnoozeDurationDialog extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Crashlytics.log(getLocalClassName());
+
         setContentView(R.layout.dialog_snooze_duration);
         database = ((MyApplication)getApplication()).database;
         ActionBar actionBar = getActionBar();

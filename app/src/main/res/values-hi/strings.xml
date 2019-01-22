@@ -208,4 +208,9 @@
     <string name="day">दिन</string>
     <string name="repeat_interval">दोहराना</string>
     <string name="not_repeating">कोई दोहराव नहीं</string>
+    <string name="google_play_service_fail_toast">Google Play सेवा उपलब्ध नहीं है</string>
+    <string name="location_cap">स्थान</string>
+    <string name="location">स्थान</string>
+    <string name="location_hint">स्थान सेट नहीं है</string>
+    <string name="location_permission_msg">फ़ंक्शन को सक्षम करने के लिए स्थान अनुमति चालू करें।</string>
 </resources>

@@ -212,4 +212,9 @@
     <string name="day">天</string>
     <string name="repeat_interval">重覆間隔</string>
     <string name="not_repeating">不重覆</string>
+    <string name="location">地點</string>
+    <string name="location_hint">未設定地點</string>
+    <string name="location_permission_msg">請開啟位置權限以使用功能</string>
+    <string name="google_play_service_fail_toast">Google Play服務不可用</string>
+    <string name="location_cap">地點</string>
 </resources>

@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
+import com.crashlytics.android.Crashlytics;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.listscreen.List;
 
@@ -27,6 +28,8 @@ public class Settings extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Crashlytics.log(getLocalClassName());
+
         setContentView(R.layout.activity_settings);
         Toolbar settingsMenu = findViewById(R.id.settings_menu);
         setSupportActionBar(settingsMenu);
@@ -45,7 +48,6 @@ public class Settings extends AppCompatActivity {
         } else {
             settingsFragment = (SettingsFragment) getSupportFragmentManager().findFragmentByTag(fragmentTag);
         }
-
     }
 
     @Override

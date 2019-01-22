@@ -33,6 +33,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
@@ -83,6 +84,7 @@ public class ListFragment extends Fragment{
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        Crashlytics.log(getClass().getName());
     }
 
     @Override
@@ -471,24 +473,14 @@ public class ListFragment extends Fragment{
 
     @Override
     public void onStop() {
+        super.onStop();
         // Clear all filter
-        taskListAdapter = taskListFragment.getTaskListAdapter();
-        noteListAdapter = noteListFragment.getNoteListAdapter();
-
         search.collapseActionView();
         showStarred.setTitle(R.string.show_starred);
         showingStarred = false;
         showDone.setTitle(R.string.show_done);
-        taskListAdapter.showingDone = false;
         sortBy.setTitle(byUrgencyByDefault ?R.string.sort_by_time :R.string.sort_by_urgency);
         sortingBytime = !byUrgencyByDefault;
-        if (taskListAdapter.actionMode !=null) {
-            taskListAdapter.actionMode.finish();
-        }
-        if (noteListAdapter.actionMode !=null) {
-            noteListAdapter.actionMode.finish();
-        }
-        super.onStop();
     }
 
     private void toggleNotResultView (boolean on){

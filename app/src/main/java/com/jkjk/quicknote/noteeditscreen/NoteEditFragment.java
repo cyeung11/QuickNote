@@ -183,7 +183,8 @@ public class NoteEditFragment extends Fragment {
                                 shareIntent.setType("text/plain");
                                 shareIntent.putExtra(Intent.EXTRA_TEXT,titleInFragment.getText()+"\n\n"+contentInFragment.getText());
                                 shareIntent.putExtra(Intent.EXTRA_TITLE, titleInFragment.getText());
-                                startActivity(shareIntent);
+                                Intent chooser = Intent.createChooser(shareIntent, getString(R.string.share));
+                                startActivity(chooser);
                                 return true;
 
                             case R.id.edit_drop_menu_starred:

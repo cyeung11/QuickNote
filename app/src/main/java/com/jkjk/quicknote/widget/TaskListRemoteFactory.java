@@ -77,12 +77,12 @@ public class TaskListRemoteFactory implements RemoteViewsService.RemoteViewsFact
 
     @Override
     public void onDestroy() {
-        taskCursor.close();
+        if (taskCursor!=null)taskCursor.close();
     }
 
     @Override
     public int getCount() {
-        return taskCursor.getCount();
+        return taskCursor == null ?0 :taskCursor.getCount();
     }
 
     @Override

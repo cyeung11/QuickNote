@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.taskeditscreen.TaskEdit;
 
@@ -34,6 +35,7 @@ public class TaskListFragment extends Fragment {
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+        Crashlytics.log(getClass().getName());
         super.onCreate(savedInstanceState);
         taskListAdapter = new TaskListAdapter(this);
         taskListAdapter.updateCursor();
@@ -70,6 +72,14 @@ public class TaskListFragment extends Fragment {
         taskListAdapter.notifyDataSetChanged();
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        taskListAdapter.showingDone = false;
+        if (taskListAdapter.actionMode !=null) {
+            taskListAdapter.actionMode.finish();
+        }
+    }
 
     public void onTaskEdit(long taskId) {
         Intent startTaskActivity = new Intent(getContext(), TaskEdit.class);

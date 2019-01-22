@@ -208,4 +208,9 @@
     <string name="day">日</string>
     <string name="repeat_interval">繰り返す</string>
     <string name="not_repeating">繰り返しなし</string>
+    <string name="location">場所</string>
+    <string name="location_cap">場所</string>
+    <string name="location_hint">未設定場所</string>
+    <string name="google_play_service_fail_toast">Google Play Service使用不可</string>
+    <string name="location_permission_msg">gps権限を開いてください</string>
 </resources>

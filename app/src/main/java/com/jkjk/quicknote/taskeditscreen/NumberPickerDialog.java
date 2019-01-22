@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.NumberPicker;
 
+import com.crashlytics.android.Crashlytics;
 import com.jkjk.quicknote.R;
 
 public class NumberPickerDialog extends AlertDialog implements DialogInterface.OnClickListener, NumberPicker.OnValueChangeListener {
@@ -16,6 +17,7 @@ public class NumberPickerDialog extends AlertDialog implements DialogInterface.O
     private NumberPicker.OnValueChangeListener mCallback;
     private NumberPicker numberPicker;
     private int oldValue, newValue, minValue, maxValue;
+
     private static final String MIN_VALUE_FOR_NUM_PICKER = "minimum value";
     private static final String MAX_VALUE_FOR_NUM_PICKER = "maximum value";
     private static final String CURRENT_VALUE_FOR_NUM_PICKER = "current value";
@@ -23,6 +25,8 @@ public class NumberPickerDialog extends AlertDialog implements DialogInterface.O
     // A dialog class that include a single number picker within itself with positive button. pressing the button will trigger the listener which return the value selected
     NumberPickerDialog(Context context, NumberPicker.OnValueChangeListener onValueChangeListener, int minValue, int maxValue){
         super(context);
+        Crashlytics.log(getClass().getName());
+
         setTitle(R.string.repeat_interval);
         setButton(BUTTON_POSITIVE, context.getText(R.string.done), this);
 
@@ -44,6 +48,7 @@ public class NumberPickerDialog extends AlertDialog implements DialogInterface.O
         numberPicker.setValue(minValue);
         newValue = minValue;
         numberPicker.setOnValueChangedListener(this);
+
     }
 
     @NonNull

@@ -22,6 +22,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.jkjk.quicknote.MyApplication;
@@ -234,11 +235,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         super.onStop();
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
     void selectBackUpLocation(){
         //Define back up file name
         String backUpName = getString(R.string.back_up_name)+new SimpleDateFormat("yyMMddHHmmss", Locale.getDefault()).format(new Date())+"_db";
@@ -394,8 +390,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                     && verifyCursor.getType(3) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(4) == Cursor.FIELD_TYPE_INTEGER
                     && verifyCursor.getType(5) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(6) == Cursor.FIELD_TYPE_INTEGER
                     && verifyCursor.getType(7) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(8) == Cursor.FIELD_TYPE_INTEGER
-                    && verifyCursor.getType(9) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(10) == Cursor.FIELD_TYPE_STRING
-                    && verifyCursor.getType(11) == Cursor.FIELD_TYPE_STRING){
+                    && verifyCursor.getType(9) == Cursor.FIELD_TYPE_INTEGER &&
+                    (verifyCursor.getType(10) == Cursor.FIELD_TYPE_STRING || verifyCursor.getType(10) == Cursor.FIELD_TYPE_NULL) &&
+                    (verifyCursor.getType(11) == Cursor.FIELD_TYPE_STRING || verifyCursor.getType(11) == Cursor.FIELD_TYPE_NULL)){
                 // Restore file verified. Begin restoring
 
                 ContentValues values = new ContentValues();

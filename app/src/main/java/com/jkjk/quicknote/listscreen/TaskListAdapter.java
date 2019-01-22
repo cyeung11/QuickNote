@@ -32,6 +32,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
@@ -61,6 +62,7 @@ public class TaskListAdapter extends ItemListAdapter {
     private boolean byUrgencyByDefault, isNotificationToolbarEnable;
 
     TaskListAdapter(TaskListFragment fragment){
+        Crashlytics.log(getClass().getName());
         this.fragment = fragment;
         database = ((MyApplication)fragment.getActivity().getApplication()).database;
         selectedItems = new ArrayList<>();

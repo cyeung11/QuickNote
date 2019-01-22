@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
+import com.crashlytics.android.Crashlytics;
 import com.jkjk.quicknote.R;
 
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
@@ -19,6 +20,8 @@ public class TaskEdit extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Crashlytics.log(getLocalClassName());
+
         setContentView(R.layout.activity_task_edit);
 
         if (savedInstanceState == null) {
@@ -39,6 +42,7 @@ public class TaskEdit extends AppCompatActivity {
             //Case when restoring from saved instance, rotate etc.
             taskEditFragment = (TaskEditFragment) getSupportFragmentManager().findFragmentByTag(fragmentTag);
         }
+
     }
 
     @Override

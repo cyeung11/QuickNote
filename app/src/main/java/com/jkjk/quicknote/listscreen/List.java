@@ -3,6 +3,7 @@ package com.jkjk.quicknote.listscreen;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import com.crashlytics.android.Crashlytics;
 import com.jkjk.quicknote.R;
 
 
@@ -13,6 +14,7 @@ public class List extends AppCompatActivity  {
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
+        Crashlytics.log(getLocalClassName());
 
     }
 
