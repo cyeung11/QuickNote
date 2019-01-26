@@ -150,6 +150,7 @@ public class NotificationHelper extends BroadcastReceiver {
                             values.put("reminder_time", 0L);
                             database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
                         }
+                        cursor.close();
                     }
                     break;
 
@@ -185,11 +186,20 @@ public class NotificationHelper extends BroadcastReceiver {
                                 // update the task to done
                                 values.put("done", 1);
                             } else {
-                                long newEventTime = cursor.getLong(0) + cursor.getLong(2);
-                                long newReminderTime = cursor.getLong(1) + cursor.getLong(2);
+                                long oldEventTime = cursor.getLong(0);
+                                long oldReminderTime = cursor.getLong(1);
+                                long newEventTime = oldEventTime + repeatInterval;
                                 values.put("event_time", newEventTime);
-                                values.put("reminder_time", newReminderTime);
-                                AlarmHelper.setReminder(context.getApplicationContext(), taskId, newReminderTime);
+                                if (oldReminderTime != 0) {
+                                    long newReminderTime;
+                                    if (oldEventTime == oldReminderTime) {
+                                        newReminderTime = newEventTime;
+                                    } else {
+                                        newReminderTime = oldReminderTime + repeatInterval;
+                                    }
+                                    values.put("reminder_time", newReminderTime);
+                                    AlarmHelper.setReminder(context.getApplicationContext(), taskId, newReminderTime);
+                                }
                             }
                         } else {
                             Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
@@ -218,6 +228,7 @@ public class NotificationHelper extends BroadcastReceiver {
                         if (notificationManager != null) {
                             notificationManager.cancel((int)taskId);
                         }
+                        cursor.close();
                     }
                     break;
 
@@ -355,6 +366,7 @@ public class NotificationHelper extends BroadcastReceiver {
                         notificationManager.notify(((int)itemId*PIN_ITEM_NOTIFICATION_ID), notification);
                         SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
                         idPref.edit().putLong(Long.toString(itemId), itemId).apply();
+                        cursor.close();
                     }
                     break;
                 }

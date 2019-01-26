@@ -281,11 +281,11 @@ public class NoteEditFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         // Define save function for the done button
         if (getActivity() != null) {
-            final FloatingActionButton done = getActivity().findViewById(R.id.done_fab);
+            final FloatingActionButton done = getActivity().findViewById(R.id.save_fab);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-                done.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.sharp_done_24));
+                done.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.sharp_save_24));
             } else {
-                done.setImageResource(R.drawable.sharp_done_24);
+                done.setImageResource(R.drawable.sharp_save_24);
             }
             done.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.highlight)));
             done.setOnClickListener(new View.OnClickListener() {

@@ -1,14 +1,11 @@
 package com.jkjk.quicknote.settings;
 
-import android.Manifest;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -16,13 +13,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
-import android.provider.Settings;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceManager;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.jkjk.quicknote.MyApplication;
@@ -96,33 +89,33 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             @Override
             public boolean onPreferenceClick(Preference preference) {
 
-                if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED) {
-
-                    // Permission is not granted
-                    if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                        new AlertDialog.Builder(context).setTitle(R.string.permission_required).setMessage(R.string.storage_permission_msg)
-                                .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                        Uri uri = Uri.fromParts("package", context.getPackageName(), null);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                        intent.setData(uri);
-                                        startActivity(intent);
-                                    }
-                                })
-                                .setNegativeButton(R.string.cancel, null)
-                                .show();
-                    } else {
-                        // request the permission
-                        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                PERMISSION_REQUEST_CODE);
-                    }
-                } else {
+//                if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//                        != PackageManager.PERMISSION_GRANTED) {
+//
+//                    // Permission is not granted
+//                    if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+//                        new AlertDialog.Builder(context).setTitle(R.string.permission_required).setMessage(R.string.storage_permission_msg)
+//                                .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
+//                                    @Override
+//                                    public void onClick(DialogInterface dialogInterface, int i) {
+//                                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+//                                        Uri uri = Uri.fromParts("package", context.getPackageName(), null);
+//                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                                        intent.setData(uri);
+//                                        startActivity(intent);
+//                                    }
+//                                })
+//                                .setNegativeButton(R.string.cancel, null)
+//                                .show();
+//                    } else {
+//                        // request the permission
+//                        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+//                                PERMISSION_REQUEST_CODE);
+//                    }
+//                } else {
                     // Permission has already been granted
                     selectBackUpLocation();
-                }
+//                }
                 return true;
             }
         });
@@ -132,34 +125,34 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             @Override
             public boolean onPreferenceClick(Preference preference) {
 
-                //Check permission
-                if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED) {
-
-                    // Permission is not granted
-                    if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                        new AlertDialog.Builder(context).setTitle(R.string.permission_required).setMessage(R.string.storage_permission_msg)
-                                .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                        Uri uri = Uri.fromParts("package", context.getPackageName(), null);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                        intent.setData(uri);
-                                        startActivity(intent);
-                                    }
-                                })
-                                .setNegativeButton(R.string.cancel, null)
-                                .show();
-                    } else {
-                        // request the permission
-                        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                                PERMISSION_REQUEST_CODE);
-                    }
-                } else {
+//                //Check permission
+//                if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
+//                        != PackageManager.PERMISSION_GRANTED) {
+//
+//                    // Permission is not granted
+//                    if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+//                        new AlertDialog.Builder(context).setTitle(R.string.permission_required).setMessage(R.string.storage_permission_msg)
+//                                .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
+//                                    @Override
+//                                    public void onClick(DialogInterface dialogInterface, int i) {
+//                                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+//                                        Uri uri = Uri.fromParts("package", context.getPackageName(), null);
+//                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                                        intent.setData(uri);
+//                                        startActivity(intent);
+//                                    }
+//                                })
+//                                .setNegativeButton(R.string.cancel, null)
+//                                .show();
+//                    } else {
+//                        // request the permission
+//                        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+//                                PERMISSION_REQUEST_CODE);
+//                    }
+//                } else {
                     // Permission has already been granted
                     selectRestoreLocation();
-                }
+//                }
                 return true;
             }
         });

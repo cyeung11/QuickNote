@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="newNote"
+        android:enabled="true"
+        android:icon="@drawable/sharp_note_add_blue"
+        android:shortcutLongLabel="@string/add_note"
+
+        android:shortcutDisabledMessage="@string/note"
+        android:shortcutShortLabel="@string/add_note">
+        <intent
+            android:action="com.jkjk.quicknote.shortcut"
+            android:targetPackage="com.jkjk.quicknote"
+            android:targetClass="com.jkjk.quicknote.noteeditscreen.NoteEdit" />
+
+        <categories android:name="android.shortcut.conversation" />
+
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="newTask"
+        android:enabled="true"
+        android:icon="@drawable/sharp_task_add_blue"
+        android:shortcutShortLabel="@string/add_task">
+        <intent
+            android:action="com.jkjk.quicknote.shortcut"
+            android:targetPackage="com.jkjk.quicknote"
+            android:targetClass="com.jkjk.quicknote.taskeditscreen.TaskEdit" />
+        <categories android:name="android.shortcut.conversation" />
+
+    </shortcut>
+
+</shortcuts>

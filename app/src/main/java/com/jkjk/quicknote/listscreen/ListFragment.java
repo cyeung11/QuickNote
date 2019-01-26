@@ -33,7 +33,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
@@ -84,7 +83,6 @@ public class ListFragment extends Fragment{
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        Crashlytics.log(getClass().getName());
     }
 
     @Override

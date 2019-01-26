@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.crashlytics.android.Crashlytics;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.noteeditscreen.NoteEdit;
 import com.jkjk.quicknote.noteeditscreen.NoteEditFragment;
@@ -35,7 +34,6 @@ public class NoteListFragment extends Fragment {
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
-        Crashlytics.log(getClass().getName());
         super.onCreate(savedInstanceState);
         noteListAdapter = new NoteListAdapter(this);
         noteListAdapter.updateCursor();
