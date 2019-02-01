@@ -185,11 +185,6 @@ public class TaskListAdapter extends ItemListAdapter {
                             }
                             addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.alternative)));
 
-                            // Get item count of pending tasks
-                            Cursor checkPendingCursor = database.query(DATABASE_NAME, new String[]{"_id"}, "done=0 AND type=1", null, null
-                                    , null, null);
-                            checkPendingCursor.close();
-
                             isInActionMode = true;
 
                             return true;

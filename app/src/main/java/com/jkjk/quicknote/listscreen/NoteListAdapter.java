@@ -368,11 +368,6 @@ public class NoteListAdapter extends ItemListAdapter {
     }
 
     @Override
-    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
-        super.onDetachedFromRecyclerView(recyclerView);
-    }
-
-    @Override
     public void updateCursor(){
         itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"},  "type = 0", null, null
                 , null, "event_time DESC");
