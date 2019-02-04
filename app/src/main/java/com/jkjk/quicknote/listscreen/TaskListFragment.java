@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -33,18 +32,15 @@ public class TaskListFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        taskListAdapter = new TaskListAdapter(this);
-        taskListAdapter.updateCursor();
-    }
-
-    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_task_list, container, false);
         notFoundTextView = view.findViewById(R.id.result_not_found);
         recyclerView = view.findViewById(R.id.recycler_view);
+
+        taskListAdapter = new TaskListAdapter(getContext(), this);
+        taskListAdapter.updateCursor();
+
         recyclerView.setAdapter(taskListAdapter);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -72,11 +68,10 @@ public class TaskListFragment extends Fragment {
 
     @Override
     public void onStop() {
-        super.onStop();
-        taskListAdapter.showingDone = false;
         if (taskListAdapter.actionMode !=null) {
             taskListAdapter.actionMode.finish();
         }
+        super.onStop();
     }
 
     public void onTaskEdit(long taskId) {

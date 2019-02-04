@@ -22,16 +22,6 @@ class TaskListRemoteFactory internal constructor(private val context: Context) :
     private var noUrgencyLayout: Int = 0
     private var database: SQLiteDatabase? = null
 
-    private val urgentComparator = Comparator<Task> { o1, o2 ->
-        val firstCompare = -Integer.compare(o1.urgency, o2.urgency)
-        if (firstCompare == 0) {
-            timeComparator.compare(o1, o2)
-        } else
-            firstCompare
-    }
-
-    private val timeComparator = Comparator<Task> { o1, o2 -> java.lang.Long.compare(o1.eventTime.timeInMillis, o2.eventTime.timeInMillis) }
-
     override fun onCreate() {
         database = (context.applicationContext as MyApplication).database
     }
@@ -40,13 +30,7 @@ class TaskListRemoteFactory internal constructor(private val context: Context) :
         val sharedPref = PreferenceManager.getDefaultSharedPreferences(context)
         val byUrgencyByDefault = sharedPref.getBoolean(context.getString(R.string.change_default_sorting), false)
 
-        tasks = Task.getAllTask(context).filter { !it.isDone }
-
-        if (byUrgencyByDefault) {
-            tasks = tasks.sortedWith(urgentComparator)
-            } else {
-            tasks = tasks.sortedWith(timeComparator)
-        }
+        tasks = Task.getAllTask(context, byUrgencyByDefault, false)
 
         val widgetSize = sharedPref.getString(context.getString(R.string.font_size_widget), "m")
         when (widgetSize) {
@@ -82,7 +66,7 @@ class TaskListRemoteFactory internal constructor(private val context: Context) :
 
     override fun getViewAt(i: Int): RemoteViews {
         val remoteViews: RemoteViews
-        if (tasks.size - 1 < i) {
+        if (i >= tasks.size) {
             remoteViews = RemoteViews(context.packageName, R.layout.list_widget_loading)
             remoteViews.setTextViewText(R.id.text, context.getString(R.string.error_loading))
             return remoteViews

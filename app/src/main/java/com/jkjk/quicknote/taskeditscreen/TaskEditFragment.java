@@ -235,7 +235,7 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
             repeatRow.setVisibility(View.VISIBLE);
 
             // to see if the save time is default or not. If so, time will be shown as not set
-            if (task.getHasSetTime()) {
+            if (task.isTimeSet()) {
                 DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
                 timeInFragment.setText(timeFormat.format(task.getEventTime().getTime()));
             }
@@ -374,7 +374,7 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
         reminderArray.add(getString(R.string.no_reminder_set));
         if (task.isDateSet()) {
             reminderArray.add(getString(R.string.zero_min_before));
-            if (task.getHasSetTime()) {
+            if (task.isTimeSet()) {
                 reminderArray.add(getString(R.string.ten_min_before));
                 reminderArray.add(getString(R.string.thirty_min_before));
             }
@@ -486,7 +486,7 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
         String customTime;
         if (!task.isReminderSet()) {
             reminderInFragment.setSelection(0);
-        } else if (task.getHasSetTime()) {
+        } else if (task.isTimeSet()) {
             if (task.getReminderTime().getTimeInMillis() == task.getEventTime().getTimeInMillis()) {
                 reminderInFragment.setSelection(1);
             } else if (task.getReminderTime().getTimeInMillis() == task.getEventTime().getTimeInMillis() - 600000L) {
@@ -533,7 +533,6 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
             public boolean onLongClick(View view) {
                 if (task.isDateSet()) {
                     task.removeDate();
-                    task.setHasSetTime(false);
                     dateInFragment.setText("");
                     timeRow.setVisibility(View.GONE);
                     task.setRepeatTime(0L);
@@ -571,7 +570,6 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
             public boolean onLongClick(View view) {
 
                 task.removeTime();
-                task.setHasSetTime(false);
 
                 hasModified = true;
                 timeInFragment.setText("");
@@ -644,7 +642,7 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
             String name = (String) place.getName();
 
             // Check if the name is coordinate. If so, check if geo coder can return a readable name
-            if (name.contains("\"") && name.contains("\"\"") && name.contains("°")) {
+            if (name.contains("\"") && name.contains("\'") && name.contains("°") && name.contains(".")) {
                 task.setPlaceName(getLocationText(place.getLatLng()));
             } else {
                 task.setPlaceName(name);
@@ -789,7 +787,7 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
                 }
                 int hourOfDay, minute;
                 // Change hour and minute shown as current time or event time
-                if (!task.getHasSetTime()) {
+                if (!task.isTimeSet()) {
                     hourOfDay = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
                     minute = Calendar.getInstance().get(Calendar.MINUTE);
                 } else {
@@ -805,7 +803,6 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
                         DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
                         timeInFragment.setText(timeFormat.format(task.getEventTime().getTime()));
                         hasModified = true;
-                        task.setHasSetTime(true);
 
                         if (!reminderArray.contains(getString(R.string.ten_min_before))) {
                             // add two option after "Due" for reminder if user has specify event time;
@@ -887,7 +884,7 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
                                 if (task.isDateSet()) {
                                     stringBuilder.append("\n").append(dateInFragment.getText());
                                 }
-                                if (task.getHasSetTime()) {
+                                if (task.isTimeSet()) {
                                     stringBuilder.append(" ").append(timeInFragment.getText().toString());
                                 }
                                 stringBuilder.append("\n").append(remarkInFragment.getText().toString());
@@ -982,7 +979,7 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
         task.setDone(markAsDoneInFragment.isChecked() && task.getRepeatTime() == 0);
 
         if (markAsDoneInFragment.isChecked() && task.getRepeatTime() > 0) {
-            Long eT = task.getEventTime().getTimeInMillis();
+            long eT = task.getEventTime().getTimeInMillis();
             eT += task.getRepeatTime();
             task.getEventTime().setTimeInMillis(eT);
         }
@@ -993,7 +990,7 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
 
         } else {
             if (reminderInFragment.getSelectedItem().toString().equals(getString(R.string.zero_min_before))) {
-                if (task.getHasSetTime()) {
+                if (task.isTimeSet()) {
                     task.getReminderTime().setTimeInMillis(task.getEventTime().getTimeInMillis());
                 } else {
                     task.getReminderTime().setTimeInMillis(task.getEventTime().getTimeInMillis());
@@ -1008,7 +1005,7 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
             } else if (reminderInFragment.getSelectedItem().toString().equals(getString(R.string.thirty_min_before))) {
                 task.getReminderTime().setTimeInMillis(task.getEventTime().getTimeInMillis() - 1800000L);
             } else if (reminderInFragment.getSelectedItem().toString().equals(getString(R.string.a_day_beofre))) {
-                if (task.getHasSetTime()) {
+                if (task.isTimeSet()) {
                     task.getReminderTime().setTimeInMillis(task.getEventTime().getTimeInMillis() - 86400000L);
                 } else {
                     task.getReminderTime().setTimeInMillis(task.getEventTime().getTimeInMillis());
@@ -1038,7 +1035,7 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
 //                }
 //            }
         } else {
-            Long newId = task.save(context);
+            Long newId = task.saveAsNew(context);
             if (newId != null) {
                 taskId = newId;
             }
@@ -1155,8 +1152,8 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
 
     private boolean isNumericString(String string) {
         try {
-            Integer result = Integer.parseInt(string.trim());
-            Log.i(getClass().getName(), "Confirm " + string + "is number" + result.toString());
+            int result = Integer.parseInt(string.trim());
+            Log.i(getClass().getName(), "Confirm " + string + "is number" + Integer.toString(result));
             return true;
         } catch (Exception e) {
             return false;

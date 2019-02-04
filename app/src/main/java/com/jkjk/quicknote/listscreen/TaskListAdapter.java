@@ -1,7 +1,6 @@
 package com.jkjk.quicknote.listscreen;
 
 import android.app.PendingIntent;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -36,6 +35,7 @@ import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
 import com.jkjk.quicknote.helper.NotificationHelper;
+import com.jkjk.quicknote.taskeditscreen.Task;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -56,19 +56,26 @@ import static com.jkjk.quicknote.widget.TaskListWidget.updateTaskListWidget;
 public class TaskListAdapter extends ItemListAdapter {
 
     boolean showingDone = false;
-    private TaskListFragment fragment;
     private MenuItem markAsDone;
     private boolean byUrgencyByDefault, isNotificationToolbarEnable;
 
-    TaskListAdapter(TaskListFragment fragment){
+    private Context context;
+    private TaskListFragment fragment;
+
+    ArrayList<Task> tasks;
+
+    TaskListAdapter(Context context, TaskListFragment fragment){
+        this.context = context;
         this.fragment = fragment;
-        database = ((MyApplication)fragment.getActivity().getApplication()).database;
+        database = ((MyApplication)context.getApplicationContext()).database;
         selectedItems = new ArrayList<>();
         // Obtain correspond value from preferences to show appropriate size for the card view
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(fragment.getContext());
-        String cardViewSize = sharedPref.getString(fragment.getString(R.string.font_size_main_screen),"m");
-        byUrgencyByDefault = sharedPref.getBoolean(fragment.getString(R.string.change_default_sorting), false);
-        isNotificationToolbarEnable = sharedPref.getBoolean(fragment.getString(R.string.notification_pin), false);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        String cardViewSize = sharedPref.getString(context.getString(R.string.font_size_main_screen),"m");
+        byUrgencyByDefault = sharedPref.getBoolean(context.getString(R.string.change_default_sorting), false);
+        isNotificationToolbarEnable = sharedPref.getBoolean(context.getString(R.string.notification_pin), false);
+
+        tasks = Task.Companion.getAllTask(context, byUrgencyByDefault);
 
         switch (cardViewSize){
             case ("s"):
@@ -92,7 +99,7 @@ public class TaskListAdapter extends ItemListAdapter {
         TextView urgency;
         CheckBox taskDone;
         LinearLayout taskBody;
-        boolean isDone;
+        Task task;
 
         private ViewHolder(CardView card) {
             super(card);
@@ -107,7 +114,7 @@ public class TaskListAdapter extends ItemListAdapter {
     @Override
     public TaskListAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-        CardView v = (CardView) LayoutInflater.from(parent.getContext()).inflate(cardViewInt, parent, false);
+        CardView v = (CardView) LayoutInflater.from(context).inflate(cardViewInt, parent, false);
         final ViewHolder holder = new ViewHolder(v);
 
         v.setOnClickListener(new View.OnClickListener() {
@@ -119,7 +126,7 @@ public class TaskListAdapter extends ItemListAdapter {
                     if (selectedItems.contains(clickPosition)) {
                         // Not all task are selected, so change title to select all
                         if (selectedItems.size()==itemCount){
-                            selectAll.setTitle(fragment.getResources().getString(R.string.select_all));
+                            selectAll.setTitle(context.getResources().getString(R.string.select_all));
                         }
                         // Item has already been selected, so deselect
                         selectedItems.remove(Integer.valueOf(clickPosition));
@@ -133,11 +140,11 @@ public class TaskListAdapter extends ItemListAdapter {
 
                         // if all have been select, change title to deselect all
                         if (selectedItems.size()==itemCount){
-                            selectAll.setTitle(fragment.getResources().getString(R.string.deselect_all));
+                            selectAll.setTitle(context.getResources().getString(R.string.deselect_all));
                         }
                     }
 
-                } else fragment.onTaskEdit(holder.itemId);
+                } else fragment.onTaskEdit(holder.task.getId());
             }
         });
 
@@ -168,22 +175,22 @@ public class TaskListAdapter extends ItemListAdapter {
                             markAsDone = menu.findItem(R.id.mark_as_done);
 
                             if (showingDone){
-                                markAsDone.setTitle(fragment.getResources().getString(R.string.mark_as_pending));
-                            } else markAsDone.setTitle(fragment.getResources().getString(R.string.mark_as_done));
+                                markAsDone.setTitle(context.getResources().getString(R.string.mark_as_pending));
+                            } else markAsDone.setTitle(context.getResources().getString(R.string.mark_as_done));
 
                             if (itemCount == 1){
-                                menu.findItem(R.id.select_all).setTitle(fragment.getResources().getString(R.string.deselect_all));
+                                menu.findItem(R.id.select_all).setTitle(context.getResources().getString(R.string.deselect_all));
                             }
 
                             holder.cardView.setCardBackgroundColor(Color.LTGRAY);
 
                             //change the FAB to delete
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-                                addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.sharp_delete_24));
+                                addNote.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.sharp_delete_24));
                             } else {
                                 addNote.setImageResource(R.drawable.sharp_delete_24);
                             }
-                            addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.alternative)));
+                            addNote.setBackgroundTintList(ColorStateList.valueOf(context.getResources().getColor(R.color.alternative)));
 
                             isInActionMode = true;
 
@@ -202,7 +209,7 @@ public class TaskListAdapter extends ItemListAdapter {
                                     if (itemCount != selectedItems.size()) {
                                         //select all, change title to deselect all
                                         selectedItems.clear();
-                                        menuItem.setTitle(fragment.getResources().getString(R.string.deselect_all));
+                                        menuItem.setTitle(context.getResources().getString(R.string.deselect_all));
                                         for (int i = 0; i < itemCount; i++) {
                                             selectedItems.add(i);
                                         }
@@ -211,26 +218,21 @@ public class TaskListAdapter extends ItemListAdapter {
                                     } else {
                                         //deselect all, change title to select all
                                         selectedItems.clear();
-                                        menuItem.setTitle(fragment.getResources().getString(R.string.select_all));
+                                        menuItem.setTitle(context.getResources().getString(R.string.select_all));
                                         notifyDataSetChanged();
                                     }
                                     return true;
 
                                 case R.id.mark_as_done:
-                                    Context context = fragment.getContext();
                                     if (selectedItems.size() > 0) {
-
-                                        ContentValues values = new ContentValues();
                                         //Convert selected items' position to note ID
-
                                         if (showingDone) {
                                             // When all selected notes are done, change them to pending
-                                            values.put("done", 0);
                                             for (int pendingPosition : selectedItems) {
-                                                itemCursor.moveToPosition(pendingPosition);
-                                                String pendingId = itemCursor.getString(0);
+                                                Task selectedTask = tasks.get(pendingPosition);
+                                                selectedTask.setDone(false);
                                                 //Update to pending
-                                                database.update(DATABASE_NAME, values, "_id='" + pendingId + "'", null);
+                                                selectedTask.save(context, selectedTask.getId());
                                             }
 
                                             updateTaskListWidget(context);
@@ -254,35 +256,33 @@ public class TaskListAdapter extends ItemListAdapter {
 
                                         } else {
                                             // When selected tasks are pending, mark all of them done
-                                            long repeatInterval;
                                             SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
                                             for (int pendingPosition : selectedItems) {
-                                                itemCursor.moveToPosition(pendingPosition);
-                                                String doneId = itemCursor.getString(0);
-                                                if ((repeatInterval = itemCursor.getLong(5)) == 0L) {
+                                                Task selectedTask = tasks.get(pendingPosition);
+                                                if (selectedTask.getRepeatTime() == 0L) {
                                                     // update the task to done
-                                                    values.put("done", 1);
+                                                    selectedTask.setDone(true);
                                                 } else {
-                                                    Cursor repeatCursor =  database.query(DATABASE_NAME, new String[]{"reminder_time"}, "_id =" + doneId, null, null
+                                                    Cursor repeatCursor =  database.query(DATABASE_NAME, new String[]{"reminder_time"}, "_id =" + selectedTask.getId().toString(), null, null
                                                             , null, null);
                                                     if (repeatCursor.moveToFirst()) {
-                                                        long newEventTime = itemCursor.getLong(3) + repeatInterval;
-                                                        long newReminderTime = repeatCursor.getLong(0) + repeatInterval;
-                                                        values.put("event_time", newEventTime);
-                                                        values.put("reminder_time", newReminderTime);
-                                                        AlarmHelper.setReminder(context.getApplicationContext(), holder.itemId, newReminderTime);
+                                                        long newEventTime = holder.task.getEventTime().getTimeInMillis() + holder.task.getRepeatTime();
+                                                        long newReminderTime = holder.task.getReminderTime().getTimeInMillis() + holder.task.getRepeatTime();
+                                                        selectedTask.getEventTime().setTimeInMillis(newEventTime);
+                                                        selectedTask.getReminderTime().setTimeInMillis(newReminderTime);
+                                                        AlarmHelper.setReminder(context.getApplicationContext(), holder.task.getId(), newReminderTime);
                                                     }
                                                     repeatCursor.close();
                                                 }
 
                                                 //Update to done
-                                                database.update(DATABASE_NAME, values, "_id='" + doneId + "'", null);
+                                                selectedTask.save(context, selectedTask.getId());
 
-                                                if (repeatInterval != 0) {
-                                                    if (idPref.getLong(doneId, 999999L) != 999999L) {
+                                                if (selectedTask.getRepeatTime() != 0) {
+                                                    if (idPref.getLong(selectedTask.getId().toString(), 999999L) != 999999L) {
                                                         Intent intent = new Intent(context, NotificationHelper.class);
                                                         intent.setAction(ACTION_PIN_ITEM);
-                                                        intent.putExtra(EXTRA_ITEM_ID, Long.valueOf(doneId));
+                                                        intent.putExtra(EXTRA_ITEM_ID, selectedTask.getId());
                                                         PendingIntent pinNotificationPI = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
                                                         try {
                                                             pinNotificationPI.send();
@@ -328,13 +328,13 @@ public class TaskListAdapter extends ItemListAdapter {
                             selectedItems.clear();
 
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-                                addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.pencil));
+                                addNote.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.pencil));
                             } else {
                                 addNote.setImageResource(R.drawable.pencil);
                             }
-                            addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.highlight)));
+                            addNote.setBackgroundTintList(ColorStateList.valueOf(context.getResources().getColor(R.color.highlight)));
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                fragment.getActivity().getWindow().setStatusBarColor(fragment.getResources().getColor(R.color.colorPrimaryDark));
+                                fragment.getActivity().getWindow().setStatusBarColor(context.getResources().getColor(R.color.colorPrimaryDark));
                             }
                         }
                     });
@@ -349,40 +349,30 @@ public class TaskListAdapter extends ItemListAdapter {
             public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
 
                 if (compoundButton.isPressed()) {
-                    ContentValues values = new ContentValues();
-                    long repeatInterval = 0L;
-                    Context context = fragment.getContext();
-                    itemCursor.moveToPosition(holder.getAdapterPosition());
 
                     if (context!=null) {
                         if (checked) {
                             // Check if the item has repeat property, if yes, delay the event time instead
 
-                            if (itemCursor != null) {
+                            if (holder.task != null) {
 
-                                if ((repeatInterval = itemCursor.getLong(5)) == 0L) {
+                                if (holder.task.getRepeatTime() == 0L) {
                                     // update the task to done
-                                    values.put("done", 1);
-                                    holder.isDone = true;
+                                    holder.task.setDone(true);
                                 } else {
-                                    Cursor repeatCursor =  database.query(DATABASE_NAME, new String[]{"reminder_time"}, "_id =" + holder.itemId, null, null
-                                            , null, null);
-                                    if (repeatCursor.moveToFirst()) {
-                                        long newEventTime = itemCursor.getLong(3) + itemCursor.getLong(5);
-                                        long newReminderTime = repeatCursor.getLong(0) + itemCursor.getLong(5);
-                                        values.put("event_time", newEventTime);
-                                        values.put("reminder_time", newReminderTime);
-                                        AlarmHelper.setReminder(context.getApplicationContext(), holder.itemId, newReminderTime);
-                                    }
-                                    repeatCursor.close();
+                                    long newEventTime = holder.task.getEventTime().getTimeInMillis() + holder.task.getRepeatTime();
+                                    long newReminderTime = holder.task.getReminderTime().getTimeInMillis() + holder.task.getRepeatTime();
+                                    holder.task.getEventTime().setTimeInMillis(newEventTime);
+                                    holder.task.getReminderTime().setTimeInMillis(newReminderTime);
+                                    AlarmHelper.setReminder(context.getApplicationContext(), holder.task.getId(), newReminderTime);
                                 }
-                                database.update(DATABASE_NAME, values, "_id='" + holder.itemId + "'", null);
-                                if (repeatInterval > 0) {
+                                holder.task.save(context, holder.task.getId());
+                                if (holder.task.getRepeatTime() > 0) {
                                     SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
-                                    if (idPref.getLong(Long.toString(holder.itemId), 999999L) != 999999L) {
+                                    if (idPref.getLong(Long.toString(holder.task.getId()), 999999L) != 999999L) {
                                         Intent intent = new Intent(context, NotificationHelper.class);
                                         intent.setAction(ACTION_PIN_ITEM);
-                                        intent.putExtra(EXTRA_ITEM_ID, holder.itemId);
+                                        intent.putExtra(EXTRA_ITEM_ID, holder.task.getId());
                                         PendingIntent pinNotificationPI = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
                                         try {
                                             pinNotificationPI.send();
@@ -399,9 +389,8 @@ public class TaskListAdapter extends ItemListAdapter {
 
                         } else {
                             // update the task to pending
-                            values.put("done", 0);
-                            holder.isDone = false;
-                            database.update(DATABASE_NAME, values, "_id='" + holder.itemId + "'", null);
+                            holder.task.setDone(false);
+                            holder.task.save(context, holder.task.getId());
                             updateTaskListWidget(context);
                             Toast.makeText(context, R.string.pending_toast, Toast.LENGTH_SHORT).show();
                         }
@@ -422,7 +411,7 @@ public class TaskListAdapter extends ItemListAdapter {
                     } else {
                         updateCursor();
                     }
-                    if (repeatInterval == 0L) {
+                    if (holder.task.getRepeatTime() == 0L) {
                         notifyItemRemoved(holder.getAdapterPosition());
                     } else {
                         notifyDataSetChanged();
@@ -438,7 +427,6 @@ public class TaskListAdapter extends ItemListAdapter {
     public void onBindViewHolder(@NonNull ItemListAdapter.ViewHolder viewHolder, int position) {
 
         ViewHolder holder = (ViewHolder)viewHolder;
-        final Context context = holder.cardView.getContext();
 
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) holder.taskBody.getLayoutParams();
 
@@ -451,13 +439,11 @@ public class TaskListAdapter extends ItemListAdapter {
 
         // if showing done item
         if (showingDone) {
-            holder.isDone = true;
             layoutParams.addRule(RelativeLayout.START_OF, R.id.item_date);
             holder.taskDone.setChecked(true);
             holder.itemTitle.setPaintFlags(holder.itemTitle.getPaintFlags()|STRIKE_THRU_TEXT_FLAG);
             holder.itemTitle.setMaxLines(2);
         } else {
-            holder.isDone = false;
             layoutParams.removeRule(RelativeLayout.START_OF);
             holder.taskDone.setChecked(false);
             holder.itemTitle.setPaintFlags(holder.itemTitle.getPaintFlags() & (~STRIKE_THRU_TEXT_FLAG));
@@ -466,81 +452,83 @@ public class TaskListAdapter extends ItemListAdapter {
 
         holder.urgency.setVisibility(View.GONE);
 
-        if (itemCursor != null) {
-            try {
-                itemCursor.moveToPosition(position);
-                holder.itemId = itemCursor.getLong(0);
+        if (position < tasks.size() ) {
+            holder.task = tasks.get(position);
+            if (holder.task != null) {
+                try {
+                    holder.itemTitle.setText(holder.task.getTitle().trim());
 
-                holder.itemTitle.setText(itemCursor.getString(1).trim());
-
-                switch (itemCursor.getInt(2)){
-                    case 2:
-                        if (!holder.isDone) {
-                            holder.urgency.setVisibility(View.VISIBLE);
-                        }
-                        holder.urgency.setText(R.string.asap);
-                        holder.urgency.setTextColor(fragment.getResources().getColor(R.color.colorPrimary));
-                        holder.urgency.setTypeface(Typeface.DEFAULT_BOLD);
-                        holder.flagIcon.setVisibility(showingDone ?View.GONE :View.VISIBLE);
-                        break;
-                    case 1:
-                        if (!holder.isDone) {
-                            holder.urgency.setVisibility(View.VISIBLE);
-                        }
-                        holder.urgency.setText(R.string.important);
-                        holder.urgency.setTextColor(fragment.getResources().getColor(R.color.darkGrey));
-                        holder.urgency.setTypeface(Typeface.DEFAULT);
-                        holder.flagIcon.setVisibility(showingDone ?View.GONE :View.VISIBLE);
-                        break;
-                    case 0:
-                        layoutParams.addRule(RelativeLayout.START_OF, R.id.item_date);
-                        holder.itemTitle.setMaxLines(2);
-                        holder.flagIcon.setVisibility(View.GONE);
-                        break;
-                }
-
-                long time = itemCursor.getLong(3);
-
-                if (time!=DATE_NOT_SET_INDICATOR) {
-
-                    // Make the time red if the task is expired
-                    Calendar calendar = Calendar.getInstance();
-                    if (!showingDone && calendar.getTimeInMillis()>time){
-                        holder.itemTime.setTextColor(fragment.getResources().getColor(R.color.alternative));
-                    } else holder.itemTime.setTextColor(fragment.getResources().getColor(R.color.darkGrey));
-
-                    if (DateUtils.isToday(time)) {
-                        calendar.setTimeInMillis(time);
-
-                        //get the time to see if the time was set by user
-                        if (calendar.get(Calendar.MILLISECOND) == TIME_NOT_SET_MILLISECOND_INDICATOR
-                                && calendar.get(Calendar.SECOND) ==  TIME_NOT_SET_MINUTE_SECOND_INDICATOR
-                                && calendar.get(Calendar.MINUTE) ==  TIME_NOT_SET_MINUTE_SECOND_INDICATOR
-                                && calendar.get(Calendar.HOUR_OF_DAY) ==  TIME_NOT_SET_HOUR_INDICATOR) {
-
-                            holder.itemTime.setText(R.string.today);
-
-                        } else holder.itemTime.setText(DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_TIME));
-
-                    } else if (isTomorrow(time)) {
-                        holder.itemTime.setText(R.string.tomorrow);
-                    } else {
-                        holder.itemTime.setText(DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_DATE));
+                    switch (holder.task.getUrgency()) {
+                        case 2:
+                            if (!holder.task.isDone()) {
+                                holder.urgency.setVisibility(View.VISIBLE);
+                            }
+                            holder.urgency.setText(R.string.asap);
+                            holder.urgency.setTextColor(context.getResources().getColor(R.color.colorPrimary));
+                            holder.urgency.setTypeface(Typeface.DEFAULT_BOLD);
+                            holder.flagIcon.setVisibility(showingDone ? View.GONE : View.VISIBLE);
+                            break;
+                        case 1:
+                            if (!holder.task.isDone()) {
+                                holder.urgency.setVisibility(View.VISIBLE);
+                            }
+                            holder.urgency.setText(R.string.important);
+                            holder.urgency.setTextColor(context.getResources().getColor(R.color.darkGrey));
+                            holder.urgency.setTypeface(Typeface.DEFAULT);
+                            holder.flagIcon.setVisibility(showingDone ? View.GONE : View.VISIBLE);
+                            break;
+                        case 0:
+                            layoutParams.addRule(RelativeLayout.START_OF, R.id.item_date);
+                            holder.itemTitle.setMaxLines(2);
+                            holder.flagIcon.setVisibility(View.GONE);
+                            break;
                     }
-                } else {
-                    holder.itemTime.setText("");
-                }
 
-            }catch (Exception e) {
-                Toast.makeText(context, R.string.error_loading, Toast.LENGTH_SHORT).show();
-                Log.e(this.getClass().getName(), "Loading task into card view", e);
+                    long time = holder.task.getEventTime().getTimeInMillis();
+
+                    if (time != DATE_NOT_SET_INDICATOR) {
+
+                        // Make the time red if the task is expired
+                        Calendar calendar = Calendar.getInstance();
+                        if (!showingDone && calendar.getTimeInMillis() > time) {
+                            holder.itemTime.setTextColor(context.getResources().getColor(R.color.alternative));
+                        } else
+                            holder.itemTime.setTextColor(context.getResources().getColor(R.color.darkGrey));
+
+                        if (DateUtils.isToday(time)) {
+                            calendar.setTimeInMillis(time);
+
+                            //get the time to see if the time was set by user
+                            if (calendar.get(Calendar.MILLISECOND) == TIME_NOT_SET_MILLISECOND_INDICATOR
+                                    && calendar.get(Calendar.SECOND) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                                    && calendar.get(Calendar.MINUTE) == TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                                    && calendar.get(Calendar.HOUR_OF_DAY) == TIME_NOT_SET_HOUR_INDICATOR) {
+
+                                holder.itemTime.setText(R.string.today);
+
+                            } else
+                                holder.itemTime.setText(DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_TIME));
+
+                        } else if (isTomorrow(time)) {
+                            holder.itemTime.setText(R.string.tomorrow);
+                        } else {
+                            holder.itemTime.setText(DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_DATE));
+                        }
+                    } else {
+                        holder.itemTime.setText("");
+                    }
+
+                } catch (Exception e) {
+                    Toast.makeText(context, R.string.error_loading, Toast.LENGTH_SHORT).show();
+                    Log.e(this.getClass().getName(), "Loading task into card view", e);
+                }
             }
         }
     }
 
     @Override
     public int getItemCount() {
-        return super.getItemCount();
+        return tasks.size();
     }
 
     @Override
@@ -550,43 +538,27 @@ public class TaskListAdapter extends ItemListAdapter {
 
     @Override
     public void updateCursor(){
-        if (byUrgencyByDefault){
-            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done", "repeat_interval"}, "type = 1 AND done = 0", null, null
-                    , null, "urgency DESC, event_time ASC");
-        } else {
-            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done", "repeat_interval"}, "type = 1 AND done = 0", null, null
-                    , null, "event_time ASC");
-        }
+        showingDone = false;
+        tasks = Task.Companion.getAllTask(context, byUrgencyByDefault, false);
     }
 
     @Override
     public void updateCursorForSearch(String result){
-        if (byUrgencyByDefault) {
-            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done", "repeat_interval"}, "_id in (" + result + ") AND type = 1", null, null
-                    , null, "urgency DESC, event_time ASC");
-        } else {
-            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done", "repeat_interval"}, "_id in (" + result + ") AND type = 1", null, null
-                    , null, "event_time ASC");
-        }
+        tasks = Task.Companion.getAllTask(context, byUrgencyByDefault, showingDone, result);
     }
 
-    public void updateCursorForDone(){
-        if (byUrgencyByDefault){
-            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done", "repeat_interval"}, "type=1 AND done=1", null, null
-                    , null, "urgency DESC, event_time ASC");
-        } else {
-            itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time","done", "repeat_interval"}, "type=1 AND done=1", null, null
-                    , null, "event_time ASC");
-        }
+    void updateCursorForDone(){
+        showingDone = true;
+        tasks = Task.Companion.getAllTask(context, byUrgencyByDefault, true);
     }
 
-    public void updateCursorByUrgency(){
-        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done", "repeat_interval"}, "type = 1 AND done = 0", null, null
-                , null, "urgency DESC, event_time ASC");
+    void updateCursorByUrgency(){
+        showingDone = false;
+        tasks = Task.Companion.getAllTask(context, true, false);
     }
 
-    public void updateCursorByTime(){
-        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "urgency", "event_time", "done", "repeat_interval"}, "type = 1 AND done = 0", null, null
-                , null, "event_time ASC");
+    void updateCursorByTime(){
+        showingDone = false;
+        tasks = Task.Companion.getAllTask(context, false, false);
     }
 }

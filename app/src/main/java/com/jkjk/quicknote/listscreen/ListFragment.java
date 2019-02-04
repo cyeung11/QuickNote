@@ -39,6 +39,7 @@ import com.jkjk.quicknote.helper.AlarmHelper;
 import com.jkjk.quicknote.helper.NotificationHelper;
 import com.jkjk.quicknote.helper.SearchHelper;
 import com.jkjk.quicknote.settings.Settings;
+import com.jkjk.quicknote.taskeditscreen.Task;
 
 import java.util.ArrayList;
 
@@ -198,16 +199,29 @@ public class ListFragment extends Fragment{
                                     SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
                                     boolean isItemToday = false;
 
-                                    for (int removedPosition : mSelect) {
-                                        itemCursor.moveToPosition(removedPosition);
-                                        String removedId = itemCursor.getString(0);
-                                        database.delete(DATABASE_NAME, "_id='" + removedId + "'", null);
-                                        AlarmHelper.cancelReminder(context.getApplicationContext(), Long.valueOf(removedId));
 
-                                        // To check if the deleted item is due today. If so (which will only check if other deleted items are not today) and if notification toolbar is on, update the notification below
-                                        if (!currentPageIsNote && isNotificationToolbarEnable && !isItemToday && DateUtils.isToday(itemCursor.getLong(3))){
-                                            isItemToday = true;
+                                    for (int removedPosition : mSelect) {
+                                        String removedId;
+                                        if (currentPageIsNote) {
+                                            itemCursor.moveToPosition(removedPosition);
+                                            removedId = itemCursor.getString(0);
+
+                                            itemCursor.close();
+
+                                            database.delete(DATABASE_NAME, "_id='" + removedId + "'", null);
+                                        } else  {
+                                            Task taskToRemove = ((TaskListAdapter) itemListAdapter).tasks.get(removedPosition);
+                                            if (taskToRemove.getId() != null) {
+                                                Task.Companion.delete(context, taskToRemove.getId());
+                                            }
+                                            removedId = Long.toString(taskToRemove.getId());
+
+                                            // To check if the deleted item is due today. If so (which will only check if other deleted items are not today) and if notification toolbar is on, update the notification below
+                                            if (isNotificationToolbarEnable && DateUtils.isToday(taskToRemove.getEventTime().getTimeInMillis())){
+                                                isItemToday = true;
+                                            }
                                         }
+                                        AlarmHelper.cancelReminder(context.getApplicationContext(), Long.valueOf(removedId));
 
                                         if (idPref.getLong(removedId, 999999L)!=999999L) {
                                             idPref.edit().remove(removedId).apply();
@@ -241,7 +255,6 @@ public class ListFragment extends Fragment{
                                     } else {
                                         updateTaskListWidget(context);
                                     }
-                                    itemCursor.close();
                                 }
                             })
                             .setNegativeButton(R.string.cancel, null)
@@ -321,7 +334,11 @@ public class ListFragment extends Fragment{
                 } else {
                     //after finish searching and user empty the search input, reset the view
                     noteListAdapter.updateCursor();
-                    taskListAdapter.updateCursor();
+                    if (taskListAdapter.showingDone) {
+                        taskListAdapter.updateCursorForDone();
+                    } else {
+                        taskListAdapter.updateCursor();
+                    }
                     noteListAdapter.notifyDataSetChanged();
                     taskListAdapter.notifyDataSetChanged();
                     toggleNotResultView(false);
@@ -344,14 +361,10 @@ public class ListFragment extends Fragment{
                 switchTab.setVisible(false);
 
                 showingStarred = false;
-                taskListAdapter.showingDone = false;
 
                 showStarred.setTitle(R.string.show_starred);
                 sortBy.setTitle(R.string.sort_by_urgency);
-                showDone.setTitle(R.string.show_done);
 
-                taskListAdapter.updateCursor();
-                taskListAdapter.notifyDataSetChanged();
                 noteListAdapter.updateCursor();
                 noteListAdapter.notifyDataSetChanged();
 
@@ -408,12 +421,10 @@ public class ListFragment extends Fragment{
                 taskListAdapter = taskListFragment.getTaskListAdapter();
 
                 if(!taskListAdapter.showingDone){
-                    taskListAdapter.showingDone = true;
                     showDone.setTitle(R.string.show_all_task);
                     taskListAdapter.updateCursorForDone();
 
                 } else {
-                    taskListAdapter.showingDone = false;
                     showDone.setTitle(R.string.show_done);
                     taskListAdapter.updateCursor();
                 }
@@ -431,7 +442,6 @@ public class ListFragment extends Fragment{
             public boolean onMenuItemClick(MenuItem menuItem) {
 
                 taskListAdapter = taskListFragment.getTaskListAdapter();
-                taskListAdapter.showingDone = false;
                 showDone.setTitle(R.string.show_done);
 
                 if (sortingBytime){

@@ -24,12 +24,10 @@ class Task {
     var latLng: LatLng? = null
     var placeName: String? = null
 
-    var hasSetTime = false
-
     val isDateSet: Boolean
         get() = eventTime.timeInMillis != DATE_NOT_SET_INDICATOR
 
-    private val isTimeSet: Boolean
+    val isTimeSet: Boolean
         get() = eventTime.get(Calendar.MILLISECOND) != TIME_NOT_SET_MILLISECOND_INDICATOR
                 && eventTime.get(Calendar.SECOND) != TIME_NOT_SET_MINUTE_SECOND_INDICATOR
                 && eventTime.get(Calendar.MINUTE) != TIME_NOT_SET_MINUTE_SECOND_INDICATOR
@@ -47,21 +45,21 @@ class Task {
         eventTime.set(Calendar.MINUTE, TIME_NOT_SET_MINUTE_SECOND_INDICATOR)
         eventTime.set(Calendar.SECOND, TIME_NOT_SET_MINUTE_SECOND_INDICATOR)
         eventTime.set(Calendar.MILLISECOND, TIME_NOT_SET_MILLISECOND_INDICATOR)
+        eventTime.clear(Calendar.ZONE_OFFSET)
     }
 
-    @JvmOverloads
+    fun saveAsNew(context: Context): Long?{
+        return save(context, null)
+    }
+
     fun save(context: Context, taskId: Long? = null): Long? {
         var finalId = taskId
         val values = ContentValues()
         values.put("title", title)
         values.put("content", content)
 
-        if (hasSetTime) {
-            values.put("event_time", eventTime.timeInMillis)
-        } else {
-            removeTime()
-            values.put("event_time", eventTime.timeInMillis)
-        }
+        values.put("event_time", eventTime.timeInMillis)
+
         values.put("repeat_interval", repeatTime)
         values.put("type", 1)
         values.put("urgency", urgency)
@@ -87,13 +85,27 @@ class Task {
 
     companion object {
 
-//        "_id", "title", "content", "event_time", "starred", "type", "urgency", "done", "reminder_time", "repeat_interval", "lat_lng", "place_name"
+        val urgentComparator = Comparator<Task> { o1, o2 ->
+            val firstCompare = -o1.urgency.compareTo(o2.urgency)
+            if (firstCompare == 0) {
+                timeComparator.compare(o1, o2)
+            } else
+                firstCompare
+        }
 
-        fun getAllTask(context: Context): ArrayList<Task> {
+        val timeComparator = Comparator<Task> { o1, o2 -> o1.eventTime.timeInMillis.compareTo(o2.eventTime.timeInMillis) }
+
+        fun delete(context: Context, id: Long) {
+            val database = (context.applicationContext as MyApplication).database
+            database.delete(DATABASE_NAME, "_id='$id'", null)
+        }
+
+        @JvmOverloads
+        fun getAllTask(context: Context, sortByUrgency: Boolean, isDone: Boolean? = null, queryResult: String? = null): ArrayList<Task> {
             val results = arrayListOf<Task>()
             val database = (context.applicationContext as MyApplication).database
             val taskCursor = database.query(DATABASE_NAME, arrayOf(dbColumn[0], dbColumn[1], dbColumn[2], dbColumn[3], dbColumn[6], dbColumn[7], dbColumn[8], dbColumn[9], dbColumn[10], dbColumn[11]),
-                    "${dbColumn[5]}= 1", null, null, null, null, null)
+                    "${ if (queryResult != null) {"_id in ($queryResult) AND "} else ""}${dbColumn[5]}= 1", null, null, null, null, null)
             if (taskCursor.moveToFirst()) {
                 do {
                     Task.createFromCursor(taskCursor)?.let {
@@ -102,7 +114,18 @@ class Task {
                 } while (taskCursor.moveToNext())
             }
             taskCursor.close()
-            return results
+            if (sortByUrgency) {
+                results.sortWith(urgentComparator)
+            } else {
+                results.sortWith(timeComparator)
+            }
+            return if (isDone == true) {
+                ArrayList(results.filter { it.isDone })
+            } else if (isDone == false) {
+                ArrayList(results.filter { !it.isDone })
+            } else {
+                results
+            }
         }
 
         fun getTask(context: Context, taskId: Long?): Task? {
@@ -220,7 +243,6 @@ class Task {
                     e.printStackTrace()
                 }
             }
-            result.hasSetTime = result.isTimeSet
 
             return result
         }
