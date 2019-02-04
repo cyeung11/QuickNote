@@ -78,8 +78,6 @@ class Task {
         } else {
             finalId = database.insert(DATABASE_NAME, "", values)
         }
-
-        values.clear()
         return finalId
     }
 

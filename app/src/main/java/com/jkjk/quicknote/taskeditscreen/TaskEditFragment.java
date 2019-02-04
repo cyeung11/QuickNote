@@ -1021,7 +1021,6 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
             }
         }
 
-
         if (!newTask) {
             task.save(context, taskId);
             SharedPreferences idPref = context.getApplicationContext().getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);

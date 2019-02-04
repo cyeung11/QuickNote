@@ -3,28 +3,27 @@ package com.jkjk.quicknote.widget;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.preference.PreferenceManager;
 import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
-import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.noteeditscreen.Note;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 
-import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.listscreen.NoteListAdapter.isYesterday;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 
 public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFactory {
-    private Cursor noteCursor;
+
     private Context context;
     private int widgetLayout;
-    private SQLiteDatabase database;
+
+    private ArrayList<Note> notes = new ArrayList<>();
 
     NoteListRemoteFactory(Context context) {
         this.context = context;
@@ -32,13 +31,11 @@ public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFact
 
     @Override
     public void onCreate() {
-        database = ((MyApplication)context.getApplicationContext()).database;
     }
 
     @Override
     public void onDataSetChanged() {
-        noteCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"},  "type = 0", null, null
-                , null, "event_time DESC");
+        notes = Note.Companion.getAllNotes(context);
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         String widgetSize = sharedPref.getString(context.getString(R.string.font_size_widget), "m");
         switch (widgetSize){
@@ -61,31 +58,30 @@ public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFact
 
     @Override
     public void onDestroy() {
-        if (noteCursor!=null) noteCursor.close();
     }
 
     @Override
     public int getCount() {
-        return noteCursor == null ?0 :noteCursor.getCount();
+        return notes.size();
     }
 
     @Override
     public RemoteViews getViewAt(int i) {
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), widgetLayout);
 
-        if (noteCursor == null){
+        if (i >= notes.size()){
             remoteViews = new RemoteViews(context.getPackageName(), R.layout.list_widget_loading);
             remoteViews.setTextViewText(R.id.text, context.getString(R.string.error_loading));
             return remoteViews;
         }
 
-        noteCursor.moveToPosition(i);
+        Note note = notes.get(i);
 
-        remoteViews.setTextViewText(R.id.item_title, noteCursor.getString(1));
+        remoteViews.setTextViewText(R.id.item_title, note.getTitle());
 
-        remoteViews.setTextViewText(R.id.note_content, noteCursor.getString(2));
+        remoteViews.setTextViewText(R.id.note_content, note.getContent());
 
-        long time = noteCursor.getLong(3);
+        long time = note.getEditTime().getTimeInMillis();
         String shownTime;
         // Get current time from Calendar and check how long ago was the note edited
         long timeSpan = Calendar.getInstance().getTimeInMillis() - time;
@@ -109,14 +105,14 @@ public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFact
         }
         remoteViews.setTextViewText(R.id.item_date, shownTime);
 
-        if (noteCursor.getInt(4) == 0){
+        if (!note.isStarred()){
             remoteViews.setViewVisibility(R.id.flag, View.GONE);
         } else {
             remoteViews.setViewVisibility(R.id.flag, View.VISIBLE);
         }
 
         Intent openNoteIntent = new Intent();
-        openNoteIntent.putExtra(EXTRA_ITEM_ID, noteCursor.getLong(0));
+        openNoteIntent.putExtra(EXTRA_ITEM_ID, note.getId());
         remoteViews.setOnClickFillInIntent(R.id.container, openNoteIntent);
         return remoteViews;
     }
@@ -133,9 +129,8 @@ public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFact
 
     @Override
     public long getItemId(int i) {
-        if (noteCursor != null) {
-            noteCursor.moveToPosition(i);
-            return noteCursor.getLong(0);
+        if (i < notes.size()) {
+            return notes.get(i).getId();
         } else return 0;
     }
 
