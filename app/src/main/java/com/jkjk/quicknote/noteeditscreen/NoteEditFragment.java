@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -30,14 +29,12 @@ import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import com.google.android.gms.actions.NoteIntents;
-import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
 import com.jkjk.quicknote.helper.NotificationHelper;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.jkjk.quicknote.MyApplication.PINNED_NOTIFICATION_IDS;
-import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_PIN_ITEM;
 import static com.jkjk.quicknote.helper.NotificationHelper.PIN_ITEM_NOTIFICATION_ID;
 import static com.jkjk.quicknote.widget.NoteListWidget.updateNoteListWidget;
@@ -50,7 +47,6 @@ public class NoteEditFragment extends Fragment {
     public final static String EXTRA_ITEM_ID = "extraItemId";
     private static final String NOTE_ID = "noteId";
     public final static long DEFAULT_NOTE_ID = 999999999L;
-    private SQLiteDatabase database;
     boolean hasNoteSave = false;
     private long noteId;
     private EditText titleInFragment, contentInFragment;
@@ -67,7 +63,6 @@ public class NoteEditFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         this.context = context;
-        database = ((MyApplication)context.getApplicationContext()).database;
     }
 
     @Override
@@ -205,7 +200,7 @@ public class NoteEditFragment extends Fragment {
                                                     @Override
                                                     public void onClick(DialogInterface dialogInterface, int i) {
                                                         if (!newNote) {
-                                                            database.delete(DATABASE_NAME, "_id='" + noteId + "'", null);
+                                                            Note.Companion.delete(context, noteId);
                                                             updateNoteListWidget(context.getApplicationContext());
 
                                                             AlarmHelper.cancelReminder(context.getApplicationContext(), noteId);
@@ -332,8 +327,8 @@ public class NoteEditFragment extends Fragment {
 
     @Override
     public void onDetach() {
-        super.onDetach();
         context = null;
+        super.onDetach();
     }
 
     public void saveNote(){
@@ -347,7 +342,7 @@ public class NoteEditFragment extends Fragment {
         if (!newNote) {
             note.save(context, noteId);
             SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
-            if (idPref.getLong(Long.toString(noteId), 999999L)!=999999L){
+            if (idPref.getLong(Long.toString(noteId), 999999L) != 999999L) {
                 pinNoteToNotification();
             }
 

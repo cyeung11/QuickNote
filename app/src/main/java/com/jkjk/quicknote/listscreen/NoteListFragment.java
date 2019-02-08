@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -33,18 +32,11 @@ public class NoteListFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        noteListAdapter = new NoteListAdapter(this);
-        noteListAdapter.updateCursor();
-    }
-
-    @Override
     public void onStop() {
-        super.onStop();
         if (noteListAdapter.actionMode !=null) {
             noteListAdapter.actionMode.finish();
         }
+        super.onStop();
     }
 
     @Override
@@ -53,9 +45,12 @@ public class NoteListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_note_list, container, false);
         notFoundTextView = view.findViewById(R.id.result_not_found);
         recyclerView = view.findViewById(R.id.recycler_view);
-        recyclerView.setAdapter(noteListAdapter);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        noteListAdapter = new NoteListAdapter(getContext(), this);
+        noteListAdapter.updateCursor();
+        recyclerView.setAdapter(noteListAdapter);
 
         return view;
     }

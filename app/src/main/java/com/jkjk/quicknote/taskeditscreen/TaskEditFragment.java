@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
-import android.database.sqlite.SQLiteDatabase;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
@@ -56,7 +55,6 @@ import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.maps.android.SphericalUtil;
-import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
 import com.jkjk.quicknote.helper.NotificationHelper;
@@ -72,7 +70,6 @@ import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.jkjk.quicknote.MyApplication.PINNED_NOTIFICATION_IDS;
-import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_PIN_ITEM;
 import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_TOOL_BAR;
 import static com.jkjk.quicknote.helper.NotificationHelper.PIN_ITEM_NOTIFICATION_ID;
@@ -91,7 +88,6 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
     private static final int LOCATION_PICKER_REQUEST_CODE = 1;
     private static final int LOCATION_PICKER_ZOOM_OUT_METER = 500;
 
-    private SQLiteDatabase database;
     boolean hasTaskSave = false;
 
     private Task task = new Task();
@@ -128,7 +124,6 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
     public void onAttach(Context context) {
         super.onAttach(context);
         this.context = context;
-        database = ((MyApplication) context.getApplicationContext()).database;
     }
 
     @Override
@@ -842,7 +837,7 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
                                                     @Override
                                                     public void onClick(DialogInterface dialogInterface, int i) {
                                                         if (!newTask) {
-                                                            database.delete(DATABASE_NAME, "_id='" + taskId + "'", null);
+                                                            Task.Companion.delete(context, taskId);
                                                             updateTaskListWidget(context);
                                                             AlarmHelper.cancelReminder(context.getApplicationContext(), taskId);
 

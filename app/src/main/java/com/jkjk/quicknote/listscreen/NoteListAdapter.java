@@ -24,7 +24,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.noteeditscreen.Note;
 
@@ -35,18 +34,19 @@ public class NoteListAdapter extends ItemListAdapter {
 
     private NoteListFragment fragment;
     private int selectedNotStarred, notStarredCount;
-    private boolean showingStarred = false;
+    boolean showingStarred = false;
 
     private Context context;
 
     ArrayList<Note> notes = new ArrayList<>();
 
-    NoteListAdapter(NoteListFragment fragment){
+    NoteListAdapter(Context context, NoteListFragment fragment){
         this.fragment = fragment;
+        this.context = context;
         selectedItems = new ArrayList<>();
         // Obtain correspond value from preferences to show appropriate size for the card view
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(fragment.getContext());
-        String cardViewSize = sharedPref.getString(fragment.getResources().getString(R.string.font_size_main_screen),"m");
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        String cardViewSize = sharedPref.getString(context.getString(R.string.font_size_main_screen),"m");
         switch (cardViewSize){
             case ("s"):
                 cardViewInt = R.layout.card_note_s;
@@ -102,7 +102,7 @@ public class NoteListAdapter extends ItemListAdapter {
                     if (selectedItems.contains(clickPosition)) {
                         // Not all notes are selected, so set title to select all
                         if (selectedItems.size() == notes.size()) {
-                            selectAll.setTitle(fragment.getResources().getString(R.string.select_all));
+                            selectAll.setTitle(context.getString(R.string.select_all));
                         }
                         // Item has already been selected, so deselect
                         selectedItems.remove(Integer.valueOf(clickPosition));
@@ -114,7 +114,7 @@ public class NoteListAdapter extends ItemListAdapter {
                         }
                         // if all selected item are starred, set title of menu item to unstar
                         if (selectedNotStarred == 0){
-                            starred.setTitle(fragment.getResources().getString(R.string.unstarred));
+                            starred.setTitle(context.getString(R.string.unstarred));
                             starred.setIcon(R.drawable.sharp_outlined_flag_24);
                         }
 
@@ -125,13 +125,13 @@ public class NoteListAdapter extends ItemListAdapter {
 
                         if (!holder.note.isStarred()){
                             selectedNotStarred += 1;
-                            starred.setTitle(fragment.getResources().getString(R.string.starred));
+                            starred.setTitle(context.getString(R.string.starred));
                             starred.setIcon(R.drawable.sharp_flag_24);
                         }
 
                         // if all have been select, change title to deselect all
                         if (selectedItems.size() == notes.size()) {
-                            selectAll.setTitle(fragment.getResources().getString(R.string.deselect_all));
+                            selectAll.setTitle(context.getString(R.string.deselect_all));
                         }
                     }
 
@@ -167,16 +167,16 @@ public class NoteListAdapter extends ItemListAdapter {
                             MenuItem starred = menu.findItem(R.id.starred);
                             if (holder.note.isStarred()){
                                 selectedNotStarred = 0;
-                                starred.setTitle(fragment.getResources().getString(R.string.unstarred));
+                                starred.setTitle(context.getString(R.string.unstarred));
                                 starred.setIcon(R.drawable.sharp_outlined_flag_24);
                             }else {
                                 selectedNotStarred = 1;
-                                starred.setTitle(fragment.getResources().getString(R.string.starred));
+                                starred.setTitle(context.getString(R.string.starred));
                                 starred.setIcon(R.drawable.sharp_flag_24);
                             }
 
                             if (notes.size() == 1){
-                                menu.findItem(R.id.select_all).setTitle(fragment.getResources().getString(R.string.deselect_all));
+                                menu.findItem(R.id.select_all).setTitle(context.getString(R.string.deselect_all));
                             }
                             holder.cardView.setCardBackgroundColor(Color.LTGRAY);
                             //change the FAB to delete
@@ -185,7 +185,7 @@ public class NoteListAdapter extends ItemListAdapter {
                             } else {
                                 addNote.setImageResource(R.drawable.sharp_delete_24);
                             }
-                            addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.alternative)));
+                            addNote.setBackgroundTintList(ColorStateList.valueOf(context.getResources().getColor(R.color.alternative)));
 
                             // Get item count of not starred note
                             notStarredCount = Note.Companion.getAllNotes(context, false).size();
@@ -204,7 +204,7 @@ public class NoteListAdapter extends ItemListAdapter {
                                     if (notes.size() != selectedItems.size()){
                                         //select all, change title to deselect all
                                         selectedItems.clear();
-                                        menuItem.setTitle(fragment.getResources().getString(R.string.deselect_all));
+                                        menuItem.setTitle(context.getString(R.string.deselect_all));
                                         for (int i = 0 ; i < notes.size() ; i++) {
                                             selectedItems.add(i);
                                         }
@@ -214,7 +214,7 @@ public class NoteListAdapter extends ItemListAdapter {
                                     } else {
                                         //deselect all, change title to select all
                                         selectedItems.clear();
-                                        menuItem.setTitle(fragment.getResources().getString(R.string.select_all));
+                                        menuItem.setTitle(context.getString(R.string.select_all));
                                         notifyDataSetChanged();
                                         selectedNotStarred = 0;
                                     }
@@ -234,7 +234,7 @@ public class NoteListAdapter extends ItemListAdapter {
                                             for (int unstarredPosition : selectedItems) {
                                                 Note toUnstar = notes.get(unstarredPosition);
                                                 toUnstar.setStarred(false);
-                                                toUnstar.save(context, toUnstar.getId());
+                                                toUnstar.save(context, toUnstar.getId(), false);
                                             }
 
                                             updateCursor();
@@ -242,7 +242,7 @@ public class NoteListAdapter extends ItemListAdapter {
                                                 notifyItemChanged(unstarredPosition);
                                             }
 
-                                            Toast.makeText(fragment.getContext(),R.string.unstarred_toast,Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(context,R.string.unstarred_toast,Toast.LENGTH_SHORT).show();
 
                                         } else if (selectedNotStarred >0){
                                             // When some of the selected notes are not starred, starred them all again
@@ -251,7 +251,7 @@ public class NoteListAdapter extends ItemListAdapter {
                                             for (int starredPosition : selectedItems) {
                                                 Note toStar = notes.get(starredPosition);
                                                 toStar.setStarred(true);
-                                                toStar.save(context, toStar.getId());
+                                                toStar.save(context, toStar.getId(), false);
                                             }
 
                                             updateCursor();
@@ -259,7 +259,7 @@ public class NoteListAdapter extends ItemListAdapter {
                                                 notifyItemChanged(starredPosition);
                                             }
 
-                                            Toast.makeText(fragment.getContext(),R.string.starred_toast,Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(context,R.string.starred_toast,Toast.LENGTH_SHORT).show();
                                         }
                                         actionMode.finish();
                                         return true;
@@ -282,9 +282,9 @@ public class NoteListAdapter extends ItemListAdapter {
                             } else {
                                 addNote.setImageResource(R.drawable.pencil);
                             }
-                            addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.highlight)));
+                            addNote.setBackgroundTintList(ColorStateList.valueOf(context.getResources().getColor(R.color.highlight)));
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                fragment.getActivity().getWindow().setStatusBarColor(fragment.getResources().getColor(R.color.colorPrimaryDark));
+                                fragment.getActivity().getWindow().setStatusBarColor(context.getResources().getColor(R.color.colorPrimaryDark));
                             }
                         }
                     });
@@ -364,7 +364,7 @@ public class NoteListAdapter extends ItemListAdapter {
 
     @Override
     public void updateCursorForSearch(String result){
-        notes = Note.Companion.getAllNotes(context, showingStarred, result);
+        notes = Note.Companion.getAllNotes(context, showingStarred ? true :null, result);
     }
 
     void updateCursorForStarred(){

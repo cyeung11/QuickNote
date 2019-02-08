@@ -13,21 +13,24 @@ import java.util.*
 
 class Note{
     var id: Long? = null
-    var title: String = ""
-    var content: String = ""
+    var title = ""
+    var content = ""
     var isStarred = false
-    var editTime = Calendar.getInstance()
+    var editTime: Calendar = Calendar.getInstance()
 
     fun saveAsNew(context: Context): Long{
         return save(context, null)
     }
 
-    fun save(context: Context, noteId: Long? = null): Long {
+    @JvmOverloads
+    fun save(context: Context, noteId: Long? = null, updateEditTime: Boolean = true): Long {
         var finalId = noteId
         val values = ContentValues()
         values.put("title", title)
         values.put("content", content)
-        values.put("event_time", Calendar.getInstance().timeInMillis)
+        if (updateEditTime || noteId == null) {
+            values.put("event_time", Calendar.getInstance().timeInMillis)
+        }
         values.put("starred", if (isStarred) 1 else 0)
         values.put("type", 0)
 

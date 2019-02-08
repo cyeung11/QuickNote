@@ -14,12 +14,12 @@ import kotlin.collections.ArrayList
 
 class Task {
     var id: Long? = null
-    var title: String = ""
-    var content: String = ""
-    var eventTime = Calendar.getInstance().apply { timeInMillis = DATE_NOT_SET_INDICATOR }
-    var urgency: Int = 0
-    var isDone: Boolean = false
-    var reminderTime = Calendar.getInstance().apply { timeInMillis = 0 }
+    var title = ""
+    var content = ""
+    var eventTime: Calendar = Calendar.getInstance().apply { timeInMillis = DATE_NOT_SET_INDICATOR }
+    var urgency = 0
+    var isDone = false
+    var reminderTime: Calendar = Calendar.getInstance().apply { timeInMillis = 0 }
     var repeatTime = 0L
     var latLng: LatLng? = null
     var placeName: String? = null

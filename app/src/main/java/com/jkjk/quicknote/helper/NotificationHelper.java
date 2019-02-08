@@ -5,7 +5,6 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -23,6 +22,7 @@ import com.jkjk.quicknote.listscreen.ItemListAdapter;
 import com.jkjk.quicknote.listscreen.List;
 import com.jkjk.quicknote.noteeditscreen.NoteEdit;
 import com.jkjk.quicknote.taskeditscreen.SnoozeDurationDialog;
+import com.jkjk.quicknote.taskeditscreen.Task;
 import com.jkjk.quicknote.taskeditscreen.TaskEdit;
 
 import java.util.Calendar;
@@ -63,18 +63,10 @@ public class NotificationHelper extends BroadcastReceiver {
 
                     if (intent.hasExtra(EXTRA_ITEM_ID)) {
                         taskId = intent.getLongExtra(EXTRA_ITEM_ID, 0);
-                        cursor = database.query(DATABASE_NAME, new String[]{"title", "content", "event_time", "type", "repeat_interval"}, "_id =" + taskId, null, null
-                                , null, null);
+                        Task task = Task.Companion.getTask(context, taskId);
 
-                        String title, content;
-                        long eventTime;
-
-                        if (cursor == null || !cursor.moveToFirst()){
+                        if (task == null){
                             break;
-                        } else {
-                            title = cursor.getString(0);
-                            content = cursor.getString(1);
-                            eventTime = cursor.getLong(2);
                         }
 
                         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -99,7 +91,7 @@ public class NotificationHelper extends BroadcastReceiver {
 
                         // Intent for launching the corresponding task
                         Intent openItemIntent = new Intent();
-                        openItemIntent.setClass(context, cursor.getInt(3) == 0 ? NoteEdit.class  :TaskEdit.class);
+                        openItemIntent.setClass(context, TaskEdit.class);
                         openItemIntent.putExtra(EXTRA_ITEM_ID, taskId);
                         PendingIntent startPendingIntent = PendingIntent.getActivity(context, (int)taskId, openItemIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -113,7 +105,7 @@ public class NotificationHelper extends BroadcastReceiver {
                         markAsDoneIntent.setAction(ACTION_MARK_AS_DONE).putExtra(EXTRA_ITEM_ID, taskId);
                         PendingIntent markAsDonePendingIntent = PendingIntent.getBroadcast(context, (int)taskId, markAsDoneIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-                        builder.setContentTitle(title).setSmallIcon(R.drawable.ic_stat_name)
+                        builder.setContentTitle(task.getTitle()).setSmallIcon(R.drawable.ic_stat_name)
                                 .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher_round))
                                 .setContentIntent(startPendingIntent).setAutoCancel(true);
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT_WATCH) {
@@ -127,8 +119,8 @@ public class NotificationHelper extends BroadcastReceiver {
                         // if reminder has content field, show it
                         // On kit katm big text style is showing improperly
                         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH) {
-                            if (!title.equals("")) {
-                                builder.setStyle(new Notification.BigTextStyle().bigText(title));
+                            if (!task.getTitle().isEmpty()) {
+                                builder.setStyle(new Notification.BigTextStyle().bigText(task.getTitle()));
                             }
                         }
                         // if devices supports, use group notification
@@ -136,21 +128,19 @@ public class NotificationHelper extends BroadcastReceiver {
                             builder.setGroup(context.getPackageName());
                         }
 
-                        if (eventTime != DATE_NOT_SET_INDICATOR) {
-                            builder.setContentText(formatDueString(context, eventTime));
+                        if (task.getEventTime().getTimeInMillis() != DATE_NOT_SET_INDICATOR) {
+                            builder.setContentText(formatDueString(context, task.getEventTime().getTimeInMillis()));
                         } else {
-                            builder.setContentText(content);
+                            builder.setContentText(task.getContent());
                         }
 
                         notificationManager.notify((int) taskId, builder.build());
 
                         // Reset reminder option to "No reminder" after presenting the notification
-                        if (cursor.getLong(4) == 0 ) {
-                            ContentValues values = new ContentValues();
-                            values.put("reminder_time", 0L);
-                            database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
+                        if (task.getRepeatTime() == 0 ) {
+                            task.getReminderTime().setTimeInMillis(0L);
+                            task.save(context, task.getId());
                         }
-                        cursor.close();
                     }
                     break;
 
@@ -176,40 +166,37 @@ public class NotificationHelper extends BroadcastReceiver {
 
                     if (intent.hasExtra(EXTRA_ITEM_ID) && (taskId = intent.getLongExtra(EXTRA_ITEM_ID, 98876146L)) != 98876146L) {
 
-                        cursor = database.query(DATABASE_NAME, new String[]{"event_time", "reminder_time", "repeat_interval"}, "_id='" +taskId + "'" ,
-                                null, null, null, null, null);
-                        ContentValues values = new ContentValues();
+                        Task task = Task.Companion.getTask(context, taskId);
 
-                        long repeatInterval;
-                        if (cursor != null && cursor.moveToFirst()) {
-                            if ((repeatInterval = cursor.getLong(2)) == 0L) {
-                                // update the task to done
-                                values.put("done", 1);
-                            } else {
-                                long oldEventTime = cursor.getLong(0);
-                                long oldReminderTime = cursor.getLong(1);
-                                long newEventTime = oldEventTime + repeatInterval;
-                                values.put("event_time", newEventTime);
-                                if (oldReminderTime != 0) {
-                                    long newReminderTime;
-                                    if (oldEventTime == oldReminderTime) {
-                                        newReminderTime = newEventTime;
-                                    } else {
-                                        newReminderTime = oldReminderTime + repeatInterval;
-                                    }
-                                    values.put("reminder_time", newReminderTime);
-                                    AlarmHelper.setReminder(context.getApplicationContext(), taskId, newReminderTime);
-                                }
-                            }
-                        } else {
+                        if (task == null || task.getId() == null) {
                             Toast.makeText(context, R.string.error_text, Toast.LENGTH_SHORT).show();
                             break;
                         }
 
-                        database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
+                        if (task.getRepeatTime() == 0L) {
+                            // update the task to done
+                            task.setDone(true);
+                        } else {
+                            long oldEventTime = task.getEventTime().getTimeInMillis();
+                            long newEventTime = oldEventTime + task.getRepeatTime();
+                            task.getEventTime().setTimeInMillis(newEventTime);
+
+                            if (task.getReminderTime().getTimeInMillis() != 0) {
+                                long newReminderTime;
+                                if (oldEventTime == task.getReminderTime().getTimeInMillis()) {
+                                    newReminderTime = newEventTime;
+                                } else {
+                                    newReminderTime = task.getReminderTime().getTimeInMillis() + task.getRepeatTime();
+                                }
+                                task.getReminderTime().setTimeInMillis(newReminderTime);
+                                AlarmHelper.setReminder(context.getApplicationContext(), taskId, newReminderTime);
+                            }
+                        }
+
+                        task.save(context, task.getId());
                         updateTaskListWidget(context);
 
-                        if (repeatInterval != 0){
+                        if (task.getRepeatTime() != 0){
                             SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
                             if (idPref.getLong(Long.toString(taskId), 999999L) != 999999L) {
                                 intent = new Intent(context, NotificationHelper.class);
@@ -228,7 +215,6 @@ public class NotificationHelper extends BroadcastReceiver {
                         if (notificationManager != null) {
                             notificationManager.cancel((int)taskId);
                         }
-                        cursor.close();
                     }
                     break;
 

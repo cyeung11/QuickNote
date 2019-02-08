@@ -63,7 +63,7 @@ public class ListFragment extends Fragment{
     // 0 stands for note , 1 stands for task
     boolean defaultPageIsTask;
     private char currentPage;
-    private boolean showingStarred = false, sortingBytime, byUrgencyByDefault, isNotificationToolbarEnable;
+    private boolean sortingBytime, byUrgencyByDefault, isNotificationToolbarEnable;
 
     private MenuItem showStarred, search, settings, sortBy, showDone, switchTab;
     private NoteListFragment noteListFragment;
@@ -332,7 +332,12 @@ public class ListFragment extends Fragment{
 
                 } else {
                     //after finish searching and user empty the search input, reset the view
-                    noteListAdapter.updateCursor();
+                    if (noteListAdapter.showingStarred) {
+                        noteListAdapter.updateCursorForStarred();
+                    } else {
+                        noteListAdapter.updateCursor();
+                    }
+
                     if (taskListAdapter.showingDone) {
                         taskListAdapter.updateCursorForDone();
                     } else {
@@ -350,23 +355,11 @@ public class ListFragment extends Fragment{
 
             @Override
             public boolean onMenuItemActionExpand(MenuItem menuItem) {
-                noteListAdapter = noteListFragment.getNoteListAdapter();
-                taskListAdapter = taskListFragment.getTaskListAdapter();
-
                 showStarred.setVisible(false);
                 settings.setVisible(false);
                 sortBy.setVisible(false);
                 showDone.setVisible(false);
                 switchTab.setVisible(false);
-
-                showingStarred = false;
-
-                showStarred.setTitle(R.string.show_starred);
-                sortBy.setTitle(R.string.sort_by_urgency);
-
-                noteListAdapter.updateCursor();
-                noteListAdapter.notifyDataSetChanged();
-
                 return true;
             }
 
@@ -386,15 +379,13 @@ public class ListFragment extends Fragment{
 
                 noteListAdapter = noteListFragment.getNoteListAdapter();
 
-                if (!showingStarred) {
+                if (!noteListAdapter.showingStarred) {
                     // to show only starred notes
-                    showingStarred = true;
                     showStarred.setTitle(R.string.show_all_note);
                     noteListAdapter.updateCursorForStarred();
 
                 } else {
                     // to show all notes
-                    showingStarred = false;
                     showStarred.setTitle(R.string.show_starred);
                     noteListAdapter.updateCursor();
                 }
@@ -480,29 +471,28 @@ public class ListFragment extends Fragment{
 
     @Override
     public void onStop() {
-        super.onStop();
         // Clear all filter
         search.collapseActionView();
         showStarred.setTitle(R.string.show_starred);
-        showingStarred = false;
         showDone.setTitle(R.string.show_done);
         sortBy.setTitle(byUrgencyByDefault ?R.string.sort_by_time :R.string.sort_by_urgency);
         sortingBytime = !byUrgencyByDefault;
+        super.onStop();
     }
 
     private void toggleNotResultView (boolean on){
-        noteListFragment.recyclerView.setVisibility(on ?View.INVISIBLE :View.VISIBLE);
-        noteListFragment.notFoundTextView.setVisibility(on ?View.VISIBLE :View.INVISIBLE);
-        taskListFragment.recyclerView.setVisibility(on ?View.INVISIBLE :View.VISIBLE);
-        taskListFragment.notFoundTextView.setVisibility(on ?View.VISIBLE :View.INVISIBLE);
+        noteListFragment.recyclerView.setVisibility(on ? View.INVISIBLE : View.VISIBLE);
+        noteListFragment.notFoundTextView.setVisibility(on ? View.VISIBLE : View.INVISIBLE);
+        taskListFragment.recyclerView.setVisibility(on ? View.INVISIBLE : View.VISIBLE);
+        taskListFragment.notFoundTextView.setVisibility(on ? View.VISIBLE : View.INVISIBLE);
     }
 
     private void setMenuItemForPage (boolean currentPageIsNote){
-        if (showStarred!=null && showDone!=null && sortBy!=null && switchTab!=null) {
+        if (showStarred != null && showDone != null && sortBy != null && switchTab != null) {
             showStarred.setVisible(currentPageIsNote);
             showDone.setVisible(!currentPageIsNote);
             sortBy.setVisible(!currentPageIsNote);
-            switchTab.setTitle(currentPageIsNote ?R.string.switch_task :R.string.switch_note);
+            switchTab.setTitle(currentPageIsNote ? R.string.switch_task : R.string.switch_note);
         }
     }
 

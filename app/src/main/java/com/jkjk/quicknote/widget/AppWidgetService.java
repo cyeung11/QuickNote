@@ -6,23 +6,21 @@ import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.support.v7.preference.PreferenceManager;
 import android.util.TypedValue;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
-import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.listscreen.List;
+import com.jkjk.quicknote.noteeditscreen.Note;
 import com.jkjk.quicknote.noteeditscreen.NoteEdit;
 import com.jkjk.quicknote.taskeditscreen.TaskEdit;
 
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID;
 import static android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_PROVIDER;
 import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TYPE;
-import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 
 
@@ -77,13 +75,12 @@ public class AppWidgetService extends IntentService {
 
                     views[i] = new RemoteViews(getPackageName(), R.layout.note_preview_widget);
 
-                    Cursor cursorForWidget = ((MyApplication)getApplicationContext()).database.query(DATABASE_NAME, new String[]{"_id", "title", "content"}, "_id='" + noteId[i] + "'", null, null
-                            , null, null);
+                    Note note = Note.Companion.getNote(getApplicationContext(), (long) noteId[i]);
+
                     try {
-                        if (cursorForWidget != null) {
-                            cursorForWidget.moveToFirst();
-                            views[i].setTextViewText(R.id.widget_title, cursorForWidget.getString(1));
-                            views[i].setTextViewText(R.id.widget_content, cursorForWidget.getString(2));
+                        if (note != null) {
+                            views[i].setTextViewText(R.id.widget_title, note.getTitle());
+                            views[i].setTextViewText(R.id.widget_content, note.getContent());
                             views[i].setInt(R.id.widget, "setBackgroundColor", color[i]);
 
                             switch (widgetSize) {
@@ -108,13 +105,11 @@ public class AppWidgetService extends IntentService {
                                     views[i].setTextViewTextSize(R.id.widget_content, TypedValue.COMPLEX_UNIT_SP, 16);
                             }
 
-                            openNoteIntent.putExtra(EXTRA_ITEM_ID, cursorForWidget.getLong(0))
+                            openNoteIntent.putExtra(EXTRA_ITEM_ID, noteId[i])
                                     .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-                            PendingIntent openNotePI = PendingIntent.getActivity(this, (int) cursorForWidget.getLong(0), openNoteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                            PendingIntent openNotePI = PendingIntent.getActivity(this, noteId[i], openNoteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                             views[i].setOnClickPendingIntent(R.id.widget, openNotePI);
-
-                            cursorForWidget.close();
 
                         } else {
                             views[i].setTextViewText(R.id.widget_title, getResources().getString(R.string.error_loading));
