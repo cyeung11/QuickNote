@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
@@ -13,8 +12,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,20 +26,23 @@ import android.widget.Toast;
 
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
+import com.jkjk.quicknote.noteeditscreen.Note;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-
-import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 
 public class NoteListAdapter extends ItemListAdapter {
 
     private NoteListFragment fragment;
     private int selectedNotStarred, notStarredCount;
+    private boolean showingStarred = false;
+
+    private Context context;
+
+    ArrayList<Note> notes = new ArrayList<>();
 
     NoteListAdapter(NoteListFragment fragment){
         this.fragment = fragment;
-        database = ((MyApplication)fragment.getActivity().getApplication()).database;
         selectedItems = new ArrayList<>();
         // Obtain correspond value from preferences to show appropriate size for the card view
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(fragment.getContext());
@@ -66,12 +68,18 @@ public class NoteListAdapter extends ItemListAdapter {
 
     class ViewHolder extends ItemListAdapter.ViewHolder {
         TextView noteContent;
-        boolean isStarred;
+        Note note;
 
         private ViewHolder(CardView card) {
             super(card);
             noteContent = card.findViewById(R.id.note_content);
         }
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        context = recyclerView.getContext();
     }
 
     @NonNull
@@ -93,7 +101,7 @@ public class NoteListAdapter extends ItemListAdapter {
                     MenuItem starred = actionMode.getMenu().findItem(R.id.starred);
                     if (selectedItems.contains(clickPosition)) {
                         // Not all notes are selected, so set title to select all
-                        if (selectedItems.size()==itemCount){
+                        if (selectedItems.size() == notes.size()) {
                             selectAll.setTitle(fragment.getResources().getString(R.string.select_all));
                         }
                         // Item has already been selected, so deselect
@@ -101,7 +109,7 @@ public class NoteListAdapter extends ItemListAdapter {
 
                         holder.cardView.setCardBackgroundColor(Color.WHITE);
 
-                        if (!holder.isStarred){
+                        if (!holder.note.isStarred()){
                             selectedNotStarred -= 1;
                         }
                         // if all selected item are starred, set title of menu item to unstar
@@ -115,20 +123,19 @@ public class NoteListAdapter extends ItemListAdapter {
                         selectedItems.add(clickPosition);
                         holder.cardView.setCardBackgroundColor(Color.LTGRAY);
 
-                        if (!holder.isStarred){
+                        if (!holder.note.isStarred()){
                             selectedNotStarred += 1;
                             starred.setTitle(fragment.getResources().getString(R.string.starred));
                             starred.setIcon(R.drawable.sharp_flag_24);
                         }
 
                         // if all have been select, change title to deselect all
-                        if (selectedItems.size()==itemCount){
+                        if (selectedItems.size() == notes.size()) {
                             selectAll.setTitle(fragment.getResources().getString(R.string.deselect_all));
                         }
                     }
 
-                }else fragment.onNoteEdit(holder.itemId);
-
+                }else if (holder.note.getId() != null){ fragment.onNoteEdit(holder.note.getId());}
             }
         });
 
@@ -158,7 +165,7 @@ public class NoteListAdapter extends ItemListAdapter {
                             selectedItems.add(clickPosition);
 
                             MenuItem starred = menu.findItem(R.id.starred);
-                            if (holder.isStarred){
+                            if (holder.note.isStarred()){
                                 selectedNotStarred = 0;
                                 starred.setTitle(fragment.getResources().getString(R.string.unstarred));
                                 starred.setIcon(R.drawable.sharp_outlined_flag_24);
@@ -168,24 +175,20 @@ public class NoteListAdapter extends ItemListAdapter {
                                 starred.setIcon(R.drawable.sharp_flag_24);
                             }
 
-                            if (itemCount == 1){
+                            if (notes.size() == 1){
                                 menu.findItem(R.id.select_all).setTitle(fragment.getResources().getString(R.string.deselect_all));
                             }
                             holder.cardView.setCardBackgroundColor(Color.LTGRAY);
                             //change the FAB to delete
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-                                addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.sharp_delete_24));
+                                addNote.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.sharp_delete_24));
                             } else {
                                 addNote.setImageResource(R.drawable.sharp_delete_24);
                             }
                             addNote.setBackgroundTintList(ColorStateList.valueOf(fragment.getResources().getColor(R.color.alternative)));
 
                             // Get item count of not starred note
-                            Cursor checkStarredCursor = database.query(DATABASE_NAME, new String[]{"_id"}, "starred=0 AND type=0", null, null
-                                    , null, null);
-                            notStarredCount = checkStarredCursor.getCount();
-                            checkStarredCursor.close();
-
+                            notStarredCount = Note.Companion.getAllNotes(context, false).size();
                             return true;
                         }
 
@@ -198,11 +201,11 @@ public class NoteListAdapter extends ItemListAdapter {
                         public boolean onActionItemClicked(final ActionMode mode, MenuItem menuItem) {
                             switch (menuItem.getItemId()) {
                                 case R.id.select_all:
-                                    if (itemCount != selectedItems.size()){
+                                    if (notes.size() != selectedItems.size()){
                                         //select all, change title to deselect all
                                         selectedItems.clear();
                                         menuItem.setTitle(fragment.getResources().getString(R.string.deselect_all));
-                                        for (int i = 0 ; i < itemCount ; i++) {
+                                        for (int i = 0 ; i < notes.size() ; i++) {
                                             selectedItems.add(i);
                                         }
 
@@ -229,11 +232,9 @@ public class NoteListAdapter extends ItemListAdapter {
                                             // When all selected notes are starred, un-starred them
                                             values.put("starred", 0);
                                             for (int unstarredPosition : selectedItems) {
-                                                itemCursor.moveToPosition(unstarredPosition);
-                                                String unstarredId = itemCursor.getString(0);
-
-                                                //Update
-                                                database.update(DATABASE_NAME, values, "_id='" + unstarredId + "'", null);
+                                                Note toUnstar = notes.get(unstarredPosition);
+                                                toUnstar.setStarred(false);
+                                                toUnstar.save(context, toUnstar.getId());
                                             }
 
                                             updateCursor();
@@ -248,11 +249,9 @@ public class NoteListAdapter extends ItemListAdapter {
                                             values.put("starred", 1);
 
                                             for (int starredPosition : selectedItems) {
-                                                itemCursor.moveToPosition(starredPosition);
-                                                String starredId = itemCursor.getString(0);
-
-                                                //Update
-                                                database.update(DATABASE_NAME, values, "_id='" + starredId + "'", null);
+                                                Note toStar = notes.get(starredPosition);
+                                                toStar.setStarred(true);
+                                                toStar.save(context, toStar.getId());
                                             }
 
                                             updateCursor();
@@ -279,7 +278,7 @@ public class NoteListAdapter extends ItemListAdapter {
                             isInActionMode = false;
                             selectedItems.clear();
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
-                                addNote.setImageDrawable(ContextCompat.getDrawable(fragment.getContext(), R.drawable.pencil));
+                                addNote.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.pencil));
                             } else {
                                 addNote.setImageResource(R.drawable.pencil);
                             }
@@ -311,76 +310,66 @@ public class NoteListAdapter extends ItemListAdapter {
             holder.cardView.setCardBackgroundColor(Color.WHITE);
         }
 
-        //Extract data from itemCursor
-        if (itemCursor != null) {
-            try {
-                itemCursor.moveToPosition(position);
+        holder.note = notes.get(position);
 
-                holder.itemId = itemCursor.getLong(0);
+        holder.itemTitle.setText(holder.note.getTitle());
 
-                holder.itemTitle.setText(itemCursor.getString(1).trim());
+        holder.noteContent.setText(holder.note.getContent());
 
-                holder.noteContent.setText(itemCursor.getString(2).trim());
+        //Time formatting
+        long time = holder.note.getEditTime().getTimeInMillis();
+        String shownTime;
+        // Get current time from Calendar and check how long ago was the note edited
+        long timeSpan = Calendar.getInstance().getTimeInMillis() - time;
 
-                //Time formatting
-                long time = itemCursor.getLong(3);
-                String shownTime;
-                // Get current time from Calendar and check how long ago was the note edited
-                long timeSpan = Calendar.getInstance().getTimeInMillis() - time;
+        if (timeSpan < 300000L){
+            //less than 5 minutes
+            shownTime = holder.cardView.getResources().getString(R.string.just_now);
 
-                if (timeSpan < 300000L){
-                    //less than 5 minutes
-                    shownTime = holder.cardView.getResources().getString(R.string.just_now);
+        } else if (timeSpan < 3600000L){
+            //less than an hour
+            shownTime = DateUtils.getRelativeTimeSpanString(time).toString();
 
-                } else if (timeSpan < 3600000L){
-                    //less than an hour
-                    shownTime = DateUtils.getRelativeTimeSpanString(time).toString();
+        }else if (DateUtils.isToday(time)) {
+            shownTime = DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_TIME);
 
-                }else if (DateUtils.isToday(time)) {
-                    shownTime = DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_TIME);
+        } else if (isYesterday(time)){
+            shownTime = holder.cardView.getResources().getString(R.string.yesterday);
 
-                } else if (isYesterday(time)){
-                    shownTime = holder.cardView.getResources().getString(R.string.yesterday);
-
-                } else {
-                    shownTime = DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_DATE);
-                }
-                holder.itemTime.setText(shownTime);
-
-                // Show starred note
-                if (itemCursor.getInt(4) == 1) {
-                    holder.isStarred = true;
-                    holder.itemTitle.setTypeface(Typeface.SERIF, Typeface.BOLD);
-                    holder.flagIcon.setVisibility(View.VISIBLE);
-                }else {
-                    holder.isStarred = false;
-                    holder.itemTitle.setTypeface(Typeface.SERIF);
-                    holder.flagIcon.setVisibility(View.GONE);
-                }
-
-            } catch (Exception e) {
-                Toast.makeText(context, R.string.error_loading, Toast.LENGTH_SHORT).show();
-                Log.e(this.getClass().getName(), "Loading note into card view", e);
-            }
+        } else {
+            shownTime = DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_DATE);
         }
+        holder.itemTime.setText(shownTime);
 
+        // Show starred note
+        if (holder.note.isStarred()) {
+            holder.itemTitle.setTypeface(Typeface.SERIF, Typeface.BOLD);
+            holder.flagIcon.setVisibility(View.VISIBLE);
+        }else {
+            holder.itemTitle.setTypeface(Typeface.SERIF);
+            holder.flagIcon.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        return notes.size();
     }
 
     @Override
     public void updateCursor(){
-        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"},  "type = 0", null, null
-                , null, "event_time DESC");
+        showingStarred = false;
+        notes = Note.Companion.getAllNotes(context);
     }
 
     @Override
     public void updateCursorForSearch(String result){
-        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "_id in ("+result+") AND type = 0", null, null
-                , null, "event_time DESC");
+        notes = Note.Companion.getAllNotes(context, showingStarred, result);
     }
 
-    public void updateCursorForStarred(){
-        itemCursor = database.query(DATABASE_NAME, new String[]{"_id", "title", "content", "event_time","starred"}, "starred = 1 AND type = 0", null, null
-                , null, "event_time DESC");
+    void updateCursorForStarred(){
+        showingStarred = true;
+        notes = Note.Companion.getAllNotes(context, true);
     }
 
 

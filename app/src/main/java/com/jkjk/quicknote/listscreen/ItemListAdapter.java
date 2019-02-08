@@ -1,12 +1,8 @@
 package com.jkjk.quicknote.listscreen;
 
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.ActionMode;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,17 +12,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 public abstract class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> {
-    protected Cursor itemCursor;
+//    protected Cursor itemCursor;
     boolean isInActionMode = false;
     ActionMode actionMode;
     protected int cardViewInt;
     ArrayList<Integer> selectedItems;
-    int itemCount;
-    protected SQLiteDatabase database;
 
     protected abstract class ViewHolder extends RecyclerView.ViewHolder{
         public CardView cardView;
-        public long itemId;
         public TextView itemTitle, itemTime;
         public ImageView flagIcon;
 
@@ -37,26 +30,6 @@ public abstract class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapt
             itemTime = card.findViewById(R.id.item_date);
             flagIcon = card.findViewById(R.id.flag);
         }
-    }
-
-    @NonNull
-    @Override
-    public abstract ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType);
-
-    @Override
-    public abstract void onBindViewHolder(@NonNull ViewHolder holder, int position);
-
-    @Override
-    public int getItemCount() {
-        //Obtain all data from database provided from Application class and get count
-        itemCount = itemCursor.getCount();
-        return itemCount;
-    }
-
-    @Override
-    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
-        super.onDetachedFromRecyclerView(recyclerView);
-        itemCursor.close();
     }
 
     public static boolean isTomorrow(long time) {
@@ -96,10 +69,6 @@ public abstract class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapt
 
     ArrayList<Integer> getSelected (){
         return selectedItems;
-    }
-
-    Cursor getItemCursor() {
-        return itemCursor;
     }
 
     public abstract void updateCursor();

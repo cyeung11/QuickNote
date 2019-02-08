@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
@@ -31,7 +30,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
 import com.jkjk.quicknote.helper.NotificationHelper;
@@ -43,7 +41,6 @@ import java.util.Calendar;
 import static android.content.Context.MODE_PRIVATE;
 import static android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
 import static com.jkjk.quicknote.MyApplication.PINNED_NOTIFICATION_IDS;
-import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_PIN_ITEM;
 import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_TOOL_BAR;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
@@ -67,7 +64,6 @@ public class TaskListAdapter extends ItemListAdapter {
     TaskListAdapter(Context context, TaskListFragment fragment){
         this.context = context;
         this.fragment = fragment;
-        database = ((MyApplication)context.getApplicationContext()).database;
         selectedItems = new ArrayList<>();
         // Obtain correspond value from preferences to show appropriate size for the card view
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
@@ -125,7 +121,7 @@ public class TaskListAdapter extends ItemListAdapter {
                     MenuItem selectAll = actionMode.getMenu().findItem(R.id.select_all);
                     if (selectedItems.contains(clickPosition)) {
                         // Not all task are selected, so change title to select all
-                        if (selectedItems.size()==itemCount){
+                        if (selectedItems.size() == tasks.size()) {
                             selectAll.setTitle(context.getResources().getString(R.string.select_all));
                         }
                         // Item has already been selected, so deselect
@@ -139,7 +135,7 @@ public class TaskListAdapter extends ItemListAdapter {
                         holder.cardView.setCardBackgroundColor(Color.LTGRAY);
 
                         // if all have been select, change title to deselect all
-                        if (selectedItems.size()==itemCount){
+                        if (selectedItems.size() == tasks.size()) {
                             selectAll.setTitle(context.getResources().getString(R.string.deselect_all));
                         }
                     }
@@ -178,7 +174,7 @@ public class TaskListAdapter extends ItemListAdapter {
                                 markAsDone.setTitle(context.getResources().getString(R.string.mark_as_pending));
                             } else markAsDone.setTitle(context.getResources().getString(R.string.mark_as_done));
 
-                            if (itemCount == 1){
+                            if (tasks.size() == 1){
                                 menu.findItem(R.id.select_all).setTitle(context.getResources().getString(R.string.deselect_all));
                             }
 
@@ -206,11 +202,11 @@ public class TaskListAdapter extends ItemListAdapter {
                         public boolean onActionItemClicked(ActionMode mode, MenuItem menuItem) {
                             switch (menuItem.getItemId()) {
                                 case R.id.select_all:
-                                    if (itemCount != selectedItems.size()) {
+                                    if (tasks.size() != selectedItems.size()) {
                                         //select all, change title to deselect all
                                         selectedItems.clear();
                                         menuItem.setTitle(context.getResources().getString(R.string.deselect_all));
-                                        for (int i = 0; i < itemCount; i++) {
+                                        for (int i = 0; i < tasks.size(); i++) {
                                             selectedItems.add(i);
                                         }
 
@@ -263,16 +259,11 @@ public class TaskListAdapter extends ItemListAdapter {
                                                     // update the task to done
                                                     selectedTask.setDone(true);
                                                 } else {
-                                                    Cursor repeatCursor =  database.query(DATABASE_NAME, new String[]{"reminder_time"}, "_id =" + selectedTask.getId().toString(), null, null
-                                                            , null, null);
-                                                    if (repeatCursor.moveToFirst()) {
-                                                        long newEventTime = holder.task.getEventTime().getTimeInMillis() + holder.task.getRepeatTime();
-                                                        long newReminderTime = holder.task.getReminderTime().getTimeInMillis() + holder.task.getRepeatTime();
-                                                        selectedTask.getEventTime().setTimeInMillis(newEventTime);
-                                                        selectedTask.getReminderTime().setTimeInMillis(newReminderTime);
-                                                        AlarmHelper.setReminder(context.getApplicationContext(), holder.task.getId(), newReminderTime);
-                                                    }
-                                                    repeatCursor.close();
+                                                    long newEventTime = holder.task.getEventTime().getTimeInMillis() + holder.task.getRepeatTime();
+                                                    long newReminderTime = holder.task.getReminderTime().getTimeInMillis() + holder.task.getRepeatTime();
+                                                    selectedTask.getEventTime().setTimeInMillis(newEventTime);
+                                                    selectedTask.getReminderTime().setTimeInMillis(newReminderTime);
+                                                    AlarmHelper.setReminder(context.getApplicationContext(), holder.task.getId(), newReminderTime);
                                                 }
 
                                                 //Update to done

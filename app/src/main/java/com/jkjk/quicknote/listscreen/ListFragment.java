@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
@@ -38,6 +37,7 @@ import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
 import com.jkjk.quicknote.helper.NotificationHelper;
 import com.jkjk.quicknote.helper.SearchHelper;
+import com.jkjk.quicknote.noteeditscreen.Note;
 import com.jkjk.quicknote.settings.Settings;
 import com.jkjk.quicknote.taskeditscreen.Task;
 
@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import static android.content.Context.MODE_PRIVATE;
 import static com.jkjk.quicknote.MyApplication.PINNED_NOTIFICATION_IDS;
 import static com.jkjk.quicknote.helper.AlarmHelper.ITEM_TYPE;
-import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_TOOL_BAR;
 import static com.jkjk.quicknote.helper.NotificationHelper.PIN_ITEM_NOTIFICATION_ID;
 import static com.jkjk.quicknote.widget.NoteListWidget.updateNoteListWidget;
@@ -195,7 +194,7 @@ public class ListFragment extends Fragment{
 
                                     // delete note from  selectedItems
                                     ArrayList<Integer> mSelect = itemListAdapter.getSelected();
-                                    Cursor itemCursor = itemListAdapter.getItemCursor();
+
                                     SharedPreferences idPref = context.getSharedPreferences(PINNED_NOTIFICATION_IDS, MODE_PRIVATE);
                                     boolean isItemToday = false;
 
@@ -203,12 +202,12 @@ public class ListFragment extends Fragment{
                                     for (int removedPosition : mSelect) {
                                         String removedId;
                                         if (currentPageIsNote) {
-                                            itemCursor.moveToPosition(removedPosition);
-                                            removedId = itemCursor.getString(0);
+                                            Note noteToRemove = ((NoteListAdapter) itemListAdapter).notes.get(removedPosition);
+                                            if (noteToRemove.getId() != null) {
+                                                Note.Companion.delete(context, noteToRemove.getId());
+                                            }
+                                            removedId = Long.toString(noteToRemove.getId());
 
-                                            itemCursor.close();
-
-                                            database.delete(DATABASE_NAME, "_id='" + removedId + "'", null);
                                         } else  {
                                             Task taskToRemove = ((TaskListAdapter) itemListAdapter).tasks.get(removedPosition);
                                             if (taskToRemove.getId() != null) {
