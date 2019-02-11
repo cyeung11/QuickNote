@@ -18,7 +18,6 @@ public class NoteEdit extends AppCompatActivity {
 
     private static final String fragmentTag = "noteEditFragmentTag";
     private NoteEditFragment noteEditFragment;
-    private long noteId;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -28,22 +27,7 @@ public class NoteEdit extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             //Case when the activity is newly created
-
-            if (getIntent().getAction()!= null && (getIntent().getAction().equals(Intent.ACTION_SEND) || getIntent().getAction().equals(NoteIntents.ACTION_CREATE_NOTE))) {
-                //Case when activity is called by external intent
-                noteEditFragment = NoteEditFragment.newEditFragmentInstance(getIntent());
-
-            } else if (getIntent().hasExtra(EXTRA_ITEM_ID)) {
-                //Case when activity is called by note list activity after user selected existing note
-                noteId = getIntent().getLongExtra(EXTRA_ITEM_ID, 0L);
-                noteEditFragment = NoteEditFragment.newEditFragmentInstance(noteId);
-
-            } else {
-                //Case when opening a new note
-                noteEditFragment = NoteEditFragment.newEditFragmentInstance();
-            }
-            getSupportFragmentManager().beginTransaction().add(R.id.note_container, noteEditFragment,fragmentTag).commit();
-
+            handleIntent(getIntent());
         }else {
             //Case when restoring from saved instance, rotate etc.
             noteEditFragment = (NoteEditFragment) getSupportFragmentManager().findFragmentByTag(fragmentTag);
@@ -53,13 +37,17 @@ public class NoteEdit extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        if (intent.getAction()!= null && (intent.getAction().equals(Intent.ACTION_SEND) || intent.getAction().equals(NoteIntents.ACTION_CREATE_NOTE))) {
+       handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent.getAction() != null && (intent.getAction().equals(Intent.ACTION_SEND) || intent.getAction().equals(NoteIntents.ACTION_CREATE_NOTE))) {
             //Case when activity is called by external intent
             noteEditFragment = NoteEditFragment.newEditFragmentInstance(intent);
 
         } else if (intent.hasExtra(EXTRA_ITEM_ID)) {
             //Case when activity is called by note list activity after user selected existing note
-            noteId = intent.getLongExtra(EXTRA_ITEM_ID, 0L);
+            long noteId = intent.getLongExtra(EXTRA_ITEM_ID, -1L);
             noteEditFragment = NoteEditFragment.newEditFragmentInstance(noteId);
 
         } else {

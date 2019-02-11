@@ -7,8 +7,8 @@ android {
         applicationId "com.jkjk.quicknote"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 23
-        versionName "1.190209"
+        versionCode 24
+        versionName "1.190211"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -38,9 +38,8 @@ dependencies {
     implementation 'com.crashlytics.sdk.android:crashlytics:2.9.8'
     implementation 'com.google.firebase:firebase-core:16.0.6'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-
-
 }
+
 apply plugin: 'io.fabric'
 apply plugin: 'com.google.gms.google-services'
 repositories {

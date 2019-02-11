@@ -12,6 +12,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
@@ -113,8 +115,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 //                                PERMISSION_REQUEST_CODE);
 //                    }
 //                } else {
-                    // Permission has already been granted
-                    selectBackUpLocation();
+                // Permission has already been granted
+                selectBackUpLocation();
 //                }
                 return true;
             }
@@ -150,8 +152,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 //                                PERMISSION_REQUEST_CODE);
 //                    }
 //                } else {
-                    // Permission has already been granted
-                    selectRestoreLocation();
+                // Permission has already been granted
+                selectRestoreLocation();
 //                }
                 return true;
             }
@@ -208,7 +210,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                         break;
 
                     case RESTORE_REQUEST_CODE:
-                        new RestoreAysnTask(getContext()).execute(uri);
+                        new RestoreAsyncTask(getContext()).execute(uri);
                         //TODO ads related
 //                        ListFragment.isAllowedToUse = false;
                         break;
@@ -325,11 +327,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     }
 
 
-    static class RestoreAysnTask extends AsyncTask<Uri, Void, Boolean>{
+    static class RestoreAsyncTask extends AsyncTask<Uri, Void, Boolean>{
 
         private WeakReference<Context> contextReference;
 
-        RestoreAysnTask(Context context){
+        RestoreAsyncTask(Context context){
             contextReference = new WeakReference<>(context);
         }
 
@@ -434,17 +436,24 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         }
     }
 
-    private static void resultToast(WeakReference<Context> contextWeakReference, boolean result){
-        Context context = contextWeakReference.get();
-        if (context!=null) {
-            if (result) {
-                Toast.makeText(context, context.getString(R.string.restore_success), Toast.LENGTH_SHORT).show();
-                NoteWidget.updateNoteWidget(context);
-                TaskListWidget.updateTaskListWidget(context);
-                NoteListWidget.updateNoteListWidget(context);
-            } else {
-                Toast.makeText(context, context.getString(R.string.error_restore), Toast.LENGTH_SHORT).show();
-            }
+    private static void resultToast(WeakReference<Context> contextWeakReference, final boolean result){
+        final Context context = contextWeakReference.get();
+        if (context != null) {
+            new Handler(Looper.getMainLooper()).post(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            if (result) {
+                                Toast.makeText(context, context.getString(R.string.restore_success), Toast.LENGTH_SHORT).show();
+                                NoteWidget.updateNoteWidget(context);
+                                TaskListWidget.updateTaskListWidget(context);
+                                NoteListWidget.updateNoteListWidget(context);
+                            } else {
+                                Toast.makeText(context, context.getString(R.string.error_restore), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
+            );
         }
     }
 }
