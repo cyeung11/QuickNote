@@ -29,9 +29,9 @@ class Task {
 
     val isTimeSet: Boolean
         get() = eventTime.get(Calendar.MILLISECOND) != TIME_NOT_SET_MILLISECOND_INDICATOR
-                && eventTime.get(Calendar.SECOND) != TIME_NOT_SET_MINUTE_SECOND_INDICATOR
-                && eventTime.get(Calendar.MINUTE) != TIME_NOT_SET_MINUTE_SECOND_INDICATOR
-                && eventTime.get(Calendar.HOUR_OF_DAY) != TIME_NOT_SET_HOUR_INDICATOR
+                || eventTime.get(Calendar.SECOND) != TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                || eventTime.get(Calendar.MINUTE) != TIME_NOT_SET_MINUTE_SECOND_INDICATOR
+                || eventTime.get(Calendar.HOUR_OF_DAY) != TIME_NOT_SET_HOUR_INDICATOR
 
     val isReminderSet: Boolean
         get() = reminderTime.timeInMillis != 0L

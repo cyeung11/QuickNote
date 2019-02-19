@@ -222,13 +222,14 @@ public class ListFragment extends Fragment{
                                         }
                                         AlarmHelper.cancelReminder(context.getApplicationContext(), Long.valueOf(removedId));
 
-                                        if (idPref.getLong(removedId, 999999L)!=999999L) {
+                                        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+                                        if (notificationManager != null) {
+                                            notificationManager.cancel(Integer.valueOf(removedId));
                                             idPref.edit().remove(removedId).apply();
-                                            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                                            if (notificationManager != null) {
-                                                notificationManager.cancel(Integer.valueOf(removedId)*PIN_ITEM_NOTIFICATION_ID);
-                                            }
+                                            notificationManager.cancel(Integer.valueOf(removedId)*PIN_ITEM_NOTIFICATION_ID);
                                         }
+
                                     }
 
                                     itemListAdapter.updateCursor();

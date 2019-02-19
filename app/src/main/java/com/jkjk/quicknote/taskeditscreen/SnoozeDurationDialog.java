@@ -66,10 +66,15 @@ public class SnoozeDurationDialog extends AppCompatActivity {
                 if (getIntent().hasExtra(EXTRA_ITEM_ID)
                         && (taskId = getIntent().getLongExtra(EXTRA_ITEM_ID, 98876146L)) != 98876146L) {
 
-                    AlarmHelper.setReminder(getApplicationContext(), taskId, Calendar.getInstance().getTimeInMillis() + snoozeDuration);
-                    ContentValues values = new ContentValues();
-                    values.put("reminder_time", Calendar.getInstance().getTimeInMillis() + snoozeDuration);
-                    database.update(DATABASE_NAME, values, "_id='" + taskId + "'", null);
+                    long newReminderTime = Calendar.getInstance().getTimeInMillis() + snoozeDuration;
+
+                    AlarmHelper.setReminder(getApplicationContext(), taskId, newReminderTime);
+
+                    Task task = Task.Companion.getTask(getApplicationContext(), taskId);
+                    if (task != null) {
+                        task.getReminderTime().setTimeInMillis(newReminderTime);
+                        task.save(getApplicationContext(), taskId);
+                    }
 
                     NotificationManager notificationManager = (NotificationManager) SnoozeDurationDialog.this.getSystemService(Context.NOTIFICATION_SERVICE);
                     if (notificationManager != null) {

@@ -196,31 +196,25 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
 
         // Reading from database
         if (!newTask) {
-            try {
-                Task loadedTask = Task.Companion.getTask(context, taskId);
-                if (loadedTask != null) {
-                    task = loadedTask;
-                } else {
-                    Toast.makeText(context, R.string.error_loading, Toast.LENGTH_SHORT).show();
-                    hasTaskSave = true;
-                    if (getActivity() != null) {
-                        getActivity().finish();
-                    }
-                    return view;
+            Task loadedTask = Task.Companion.getTask(context, taskId);
+            if (loadedTask != null) {
+                task = loadedTask;
+                NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                if (notificationManager != null) {
+                    notificationManager.cancel((int)taskId);
                 }
-
-                titleInFragment.setText(task.getTitle());
-                remarkInFragment.setText(task.getContent());
-
-            } catch (Exception e) {
+            } else {
                 Toast.makeText(context, R.string.error_loading, Toast.LENGTH_SHORT).show();
-                Log.e(this.getClass().getName(), "loading task from cursor       ", e);
                 hasTaskSave = true;
                 if (getActivity() != null) {
                     getActivity().finish();
                 }
                 return view;
             }
+
+            titleInFragment.setText(task.getTitle());
+            remarkInFragment.setText(task.getContent());
+
         }
 
         if (task.isDateSet()) {
@@ -497,7 +491,8 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
                 reminderInFragment.setSelection(0);
             }
         } else if (task.getEventTime().getTimeInMillis() != 0) {
-            Calendar calendar = task.getEventTime();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(task.getEventTime().getTimeInMillis());
             calendar.set(Calendar.MILLISECOND, 0);
             calendar.set(Calendar.SECOND, 0);
             calendar.set(Calendar.MINUTE, 0);
