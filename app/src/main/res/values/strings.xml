@@ -170,6 +170,9 @@
     <string name="google_play_service_fail_toast">Google Play Service not available</string>
     <string name="location_cap">LOCATION</string>
     <string name="lat_lng" translatable="false">%1$s° N %2$s° W</string>
+    <string name="task_widget_include_done">Done tasks is included in widget</string>
+    <string name="task_widget_exclude_done">Done tasks is excluded in widget</string>
+    <string name="task_widget_done">Done Task in Widget</string>
 
     <plurals name="notification_title">
         <item quantity="one">You have %d To Do due today.</item>

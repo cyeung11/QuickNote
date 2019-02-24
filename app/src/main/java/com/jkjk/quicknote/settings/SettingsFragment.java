@@ -56,7 +56,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
     static final  int BACK_UP_REQUEST_CODE = 3433;
     static final  int RESTORE_REQUEST_CODE = 3449;
-    static final int PERMISSION_REQUEST_CODE = 3444;
+//    static final int PERMISSION_REQUEST_CODE = 3444;
     private Context context;
 
     public SettingsFragment() {
@@ -273,25 +273,35 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             updateTaskListWidget(getContext());
 
         } else if (key.equals(getString(R.string.default_screen))){
-            Preference defaultScreen = findPreference(getString(R.string.default_screen));
-            if (prefs.getBoolean(getString(R.string.default_screen), false)){
+            Preference defaultScreen = findPreference(key);
+            if (prefs.getBoolean(key, false)){
                 defaultScreen.setSummary(R.string.task_as_home_page);
             } else defaultScreen.setSummary(R.string.note_as_home_page);
 
 
-        } else if (key.equals(getString(R.string.change_default_sorting))){
-            Preference defaultSorting = findPreference(getString(R.string.change_default_sorting));
-            if (prefs.getBoolean(getString(R.string.change_default_sorting), false)){
+        } else if (key.equals(getString(R.string.change_default_sorting))) {
+            Preference defaultSorting = findPreference(key);
+            if (prefs.getBoolean(key, false)) {
                 defaultSorting.setSummary(R.string.default_sort_by_urgency);
-                updateTaskListWidget(getContext());
             } else {
                 defaultSorting.setSummary(R.string.default_sort_by_time);
-                updateTaskListWidget(getContext());
             }
+            updateTaskListWidget(getContext());
+
+        } else if (key.equals(getString(R.string.task_widget_done))) {
+
+            Preference doneInWidget = findPreference(key);
+            if (prefs.getBoolean(key, false)) {
+                doneInWidget.setSummary(R.string.task_widget_exclude_done);
+            } else {
+                doneInWidget.setSummary(R.string.task_widget_include_done);
+            }
+
+            updateTaskListWidget(getContext());
 
         } else if (key.equals(getString(R.string.notification_pin))){
 
-            if (prefs.getBoolean(getString(R.string.notification_pin), false)){
+            if (prefs.getBoolean(key, false)){
 
                 Intent toolBarIntent = new Intent(getContext(), NotificationHelper.class);
                 toolBarIntent.setAction(ACTION_TOOL_BAR);
@@ -311,7 +321,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             }
 
         } else if  (key.equals(getString(R.string.daily_update))){
-            if (prefs.getBoolean(getString(R.string.daily_update), false)){
+            if (prefs.getBoolean(key, false)){
                 Intent intent = new Intent(getContext(), NotificationHelper.class);
                 intent.setAction(ACTION_DAILY_UPDATE);
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(), DAILY_UPDATE_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);

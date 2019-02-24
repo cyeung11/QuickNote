@@ -2,12 +2,10 @@ package com.jkjk.quicknote.widget
 
 import android.content.Context
 import android.content.Intent
-import android.database.sqlite.SQLiteDatabase
 import android.support.v7.preference.PreferenceManager
 import android.text.format.DateUtils
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
-import com.jkjk.quicknote.MyApplication
 import com.jkjk.quicknote.R
 import com.jkjk.quicknote.listscreen.ItemListAdapter
 import com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID
@@ -20,17 +18,16 @@ class TaskListRemoteFactory internal constructor(private val context: Context) :
     private var tasks: List<Task> = listOf()
     private var widgetLayout: Int = 0
     private var noUrgencyLayout: Int = 0
-    private var database: SQLiteDatabase? = null
 
     override fun onCreate() {
-        database = (context.applicationContext as MyApplication).database
     }
 
     override fun onDataSetChanged() {
         val sharedPref = PreferenceManager.getDefaultSharedPreferences(context)
         val byUrgencyByDefault = sharedPref.getBoolean(context.getString(R.string.change_default_sorting), false)
+        val includeDoneTask = sharedPref.getBoolean(context.getString(R.string.task_widget_done), false)
 
-        tasks = Task.getAllTask(context, byUrgencyByDefault, false)
+        tasks = Task.getAllTask(context, byUrgencyByDefault, if (includeDoneTask) null else false)
 
         val widgetSize = sharedPref.getString(context.getString(R.string.font_size_widget), "m")
         when (widgetSize) {

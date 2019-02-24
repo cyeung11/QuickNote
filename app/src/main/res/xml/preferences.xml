@@ -48,6 +48,12 @@
             android:summary="@string/default_sort_by_time"
             android:defaultValue="false"/>
 
+        <SwitchPreference
+            android:key="@string/task_widget_done"
+            android:title="@string/task_widget_exclude_done"
+            android:summary="@string/task_widget_exclude_done"
+            android:defaultValue="false"/>
+
         <!--<ListPreference-->
         <!--android:key="@string/snooze_duration"-->
         <!--android:title="@string/snooze_duration"-->
