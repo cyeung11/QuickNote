@@ -260,7 +260,7 @@ public class NotificationHelper extends BroadcastReceiver {
                     }
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        NotificationChannel notificationChannel = new NotificationChannel(context.getPackageName(), context.getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_MIN);
+                        NotificationChannel notificationChannel = new NotificationChannel(context.getPackageName() + "_tool_bar", context.getString(R.string.function_bar), NotificationManager.IMPORTANCE_MIN);
                         notificationChannel.enableLights(false);
                         notificationChannel.enableVibration(false);
                         notificationManager.createNotificationChannel(notificationChannel);
@@ -313,7 +313,7 @@ public class NotificationHelper extends BroadcastReceiver {
                         }
 
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            NotificationChannel notificationChannel = new NotificationChannel(context.getPackageName(), context.getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_MIN);
+                            NotificationChannel notificationChannel = new NotificationChannel(context.getPackageName() + "_pin_item", context.getString(R.string.notification_pin), NotificationManager.IMPORTANCE_MIN);
                             notificationChannel.enableLights(false);
                             notificationChannel.enableVibration(false);
                             notificationManager.createNotificationChannel(notificationChannel);
@@ -404,7 +404,7 @@ public class NotificationHelper extends BroadcastReceiver {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel = new NotificationChannel(context.getPackageName(), context.getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationChannel notificationChannel = new NotificationChannel(context.getPackageName(), context.getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_HIGH);
             notificationManager.createNotificationChannel(notificationChannel);
             builder = new Notification.Builder(context, context.getPackageName());
         } else {

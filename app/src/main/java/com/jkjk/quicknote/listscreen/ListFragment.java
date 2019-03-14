@@ -18,6 +18,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
@@ -129,13 +130,13 @@ public class ListFragment extends Fragment{
             public void onPageSelected(int position) {
                 if (noteListFragment != null) {
                     noteListAdapter = noteListFragment.getNoteListAdapter();
-                    if (noteListAdapter.actionMode != null) {
+                    if (noteListAdapter != null && noteListAdapter.actionMode != null) {
                         noteListAdapter.actionMode.finish();
                     }
                 }
                 if (taskListFragment != null) {
                     taskListAdapter = taskListFragment.getTaskListAdapter();
-                    if (taskListAdapter.actionMode != null) {
+                    if (taskListAdapter != null && taskListAdapter.actionMode != null) {
                         taskListAdapter.actionMode.finish();
                     }
                 }
@@ -147,7 +148,11 @@ public class ListFragment extends Fragment{
                 } else if (position == 1){
                     currentPage = defaultPageIsTask ?'N' :'T';
                 }
-                ((AppCompatActivity) activity).getSupportActionBar().setTitle(currentPage == 'N' ?R.string.note :R.string.task);
+
+                ActionBar actionBar = ((AppCompatActivity) activity).getSupportActionBar();
+                if (actionBar != null) {
+                    actionBar.setTitle(currentPage == 'N' ?R.string.note :R.string.task);
+                }
                 setMenuItemForPage(currentPage == 'N');
             }
 

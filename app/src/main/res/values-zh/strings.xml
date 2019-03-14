@@ -79,6 +79,7 @@
     <string name="notification_pin">釘到通知欄</string>
     <string name="notification_unpin">從通知欄取消</string>
     <string name="notification_pin_summary">於通知欄中加入小工具</string>
+    <string name="function_bar">通知欄小工具</string>
     <string name="auto_back_up">自動備份</string>
     <string name="auto_back_up_summary">自動備份到外置儲存空間</string>
     <string name="back_up_frequency">自動備份頻率</string>
@@ -158,6 +159,9 @@
     <string name="twenty_four_hour">24小時</string>
     <string name="loading">載入中…</string>
     <string name="urgency">緊急程度</string>
+    <string name="task_widget_include_done">於小工具中顯示已完成事件</string>
+    <string name="task_widget_exclude_done">Done tasks is excluded in widget</string>
+    <string name="task_widget_done">Done Task in Widget</string>
 
     <plurals name="notification_title">
         <item quantity="other">您今天有%d件待辦事件</item>

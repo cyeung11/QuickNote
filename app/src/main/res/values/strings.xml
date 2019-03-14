@@ -81,6 +81,7 @@
     <string name="notification_pin">Pin to Notification</string>
     <string name="notification_unpin">Unpin Notification</string>
     <string name="notification_pin_summary">Pin a function bar on notification panel</string>
+    <string name="function_bar">Function Bar</string>
     <string name="auto_back_up">Auto Backup</string>
     <string name="auto_back_up_summary">Automatically backup to external storage</string>
     <string name="back_up_frequency">Auto Backup Frequency</string>

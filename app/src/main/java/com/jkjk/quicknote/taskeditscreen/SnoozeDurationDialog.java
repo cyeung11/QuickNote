@@ -21,14 +21,14 @@ import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 
 public class SnoozeDurationDialog extends AppCompatActivity {
     RadioGroup snoozeDuration;
-    private SQLiteDatabase database;
+//    private SQLiteDatabase database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.dialog_snooze_duration);
-        database = ((MyApplication)getApplication()).database;
+//        database = ((MyApplication)getApplication()).database;
         ActionBar actionBar = getActionBar();
         if (actionBar != null) {
             actionBar.setDisplayShowTitleEnabled(false);

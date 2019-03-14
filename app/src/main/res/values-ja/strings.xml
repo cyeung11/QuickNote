@@ -79,6 +79,7 @@
     <string name="font_size_editing_screen_summary">文字ファイルの文字サイズの設定</string>
     <string name="notification_pin">通知ドロワーに固定する</string>
     <string name="notification_pin_summary">の通知ドロワーに追加ツール</string>
+    <string name="function_bar">通知ツール</string>
     <string name="auto_back_up">自動バックアップ</string>
     <string name="auto_back_up_summary">sdカードに自動バックアップ</string>
     <string name="back_up_frequency">自動バックアップの頻度</string>
