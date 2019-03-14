@@ -77,6 +77,7 @@
     <string name="font_size_editing_screen_summary">設定編輯首頁文字尺寸</string>
     <string name="notification_pin">釘到通知欄</string>
     <string name="notification_pin_summary">於通知欄中加入小工具</string>
+    <string name="function_bar">通知欄小工具</string>
     <string name="auto_back_up">自動備份</string>
     <string name="auto_back_up_summary">自動備份到外置儲存空間</string>
     <string name="back_up_frequency">自動備份頻率</string>

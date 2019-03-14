@@ -79,6 +79,7 @@
     <string name="font_size_editing_screen_summary">संपादन पृष्ठ में फ़ॉन्ट आकार कॉन्फ़िगर करें</string>
     <string name="notification_pin">अधिसूचना के लिए पिन करें</string>
     <string name="notification_pin_summary">अधिसूचना पैनल पर फ़ंक्शन बार पिन करें</string>
+    <string name="function_bar">अधिसूचना उपकरण</string>
     <string name="auto_back_up">ऑटो बैकअप</string>
     <string name="auto_back_up_summary">बाहरी भंडारण के लिए स्वचालित रूप से बैक अप लें</string>
     <string name="back_up_frequency">ऑटो बैकअप फ्रीक्वेंसी</string>

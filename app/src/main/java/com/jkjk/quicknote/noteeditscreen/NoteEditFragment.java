@@ -108,8 +108,14 @@ public class NoteEditFragment extends Fragment {
 
             // Read data from external intent
             if (newNote){
-                note.setTitle(getArguments().getString(Intent.EXTRA_TEXT, ""));
-                note.setContent(getArguments().getString(NoteIntents.EXTRA_NAME, ""));
+                String title = getArguments().getString(Intent.EXTRA_TITLE, "");
+                if (title.isEmpty()) {
+                    title = getArguments().getString(NoteIntents.EXTRA_NAME, "");
+                }
+                note.setTitle(title);
+                note.setContent(getArguments().getString(Intent.EXTRA_TEXT, ""));
+                titleInFragment.setText(note.getTitle());
+                contentInFragment.setText(note.getContent());
             }
 
         } else {newNote = true;}
@@ -166,7 +172,8 @@ public class NoteEditFragment extends Fragment {
                                 shareIntent.setAction(Intent.ACTION_SEND);
                                 shareIntent.setType("text/plain");
                                 shareIntent.putExtra(Intent.EXTRA_TEXT, (titleInFragment.getText() + "\n\n" + contentInFragment.getText()).trim());
-                                shareIntent.putExtra(Intent.EXTRA_TITLE, titleInFragment.getText());
+                                shareIntent.putExtra(Intent.EXTRA_TITLE, titleInFragment.getText().toString());
+                                shareIntent.putExtra(NoteIntents.EXTRA_NAME, titleInFragment.getText().toString());
                                 Intent chooser = Intent.createChooser(shareIntent, getString(R.string.share));
                                 startActivity(chooser);
                                 return true;
@@ -414,9 +421,13 @@ public class NoteEditFragment extends Fragment {
         NoteEditFragment fragment = new NoteEditFragment();
         Bundle bundle = new Bundle();
         try {
-            bundle.putString(Intent.EXTRA_TEXT, intent.getStringExtra(Intent.EXTRA_TEXT));
-            if (intent.hasExtra(NoteIntents.EXTRA_NAME)){
-                bundle.putString(NoteIntents.EXTRA_NAME, intent.getStringExtra(NoteIntents.EXTRA_NAME));
+            if (intent.hasExtra(Intent.EXTRA_TEXT)) {
+                bundle.putString(Intent.EXTRA_TEXT, intent.getStringExtra(Intent.EXTRA_TEXT));
+            }
+            if (intent.hasExtra(Intent.EXTRA_TITLE)){
+                bundle.putString(Intent.EXTRA_TITLE, intent.getStringExtra(Intent.EXTRA_TITLE));
+            } else if (intent.hasExtra(NoteIntents.EXTRA_NAME)){
+                bundle.putString(Intent.EXTRA_TITLE, intent.getStringExtra(NoteIntents.EXTRA_NAME));
             }
         } catch (Exception e){
             Toast.makeText(fragment.getContext(),R.string.error_loading,Toast.LENGTH_SHORT).show();
