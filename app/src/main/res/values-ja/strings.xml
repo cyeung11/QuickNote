@@ -159,6 +159,9 @@
     <string name="twenty_four_hour">24時間</string>
     <string name="loading">読み込み中…</string>
     <string name="urgency">緊急事態</string>
+    <string name="task_widget_include_done">表示完成し事件</string>
+    <string name="task_widget_exclude_done">表示完成し事件しない</string>
+    <string name="task_widget_done">ウィジェットで表示完成し事件</string>
     <string-array name="font_size">
         <item>小</item>
         <item>中</item>
@@ -213,4 +216,5 @@
     <string name="location_hint">未設定場所</string>
     <string name="google_play_service_fail_toast">Google Play Service使用不可</string>
     <string name="location_permission_msg">gps権限を開いてください</string>
+    <string name="privacy_policy">個人情報保護方針</string>
 </resources>

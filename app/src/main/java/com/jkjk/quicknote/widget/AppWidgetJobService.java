@@ -51,7 +51,7 @@ public class AppWidgetJobService extends JobIntentService {
                 , startAppIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent newItemIntent = new Intent(context, itemIsNote ?NoteEdit.class :TaskEdit.class);
-        newItemIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP| Intent.FLAG_ACTIVITY_NEW_TASK);
+        newItemIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent newItemPendingIntent = PendingIntent.getActivity(context, 0, newItemIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent listWidgetAdapterIntent = new Intent(context, itemIsNote ?NoteListWidgetRemoteService.class :TaskListWidgetRemoteService.class);
@@ -59,7 +59,7 @@ public class AppWidgetJobService extends JobIntentService {
         PendingIntent pendingIntentTemplate = PendingIntent.getActivity(context, 455463, itemIntentTemplate, PendingIntent.FLAG_UPDATE_CURRENT);
 
         for (int i = 0; i < appWidgetIds.length; i++) {
-            views[i] = new RemoteViews(context.getPackageName(), itemIsNote ?R.layout.note_list_widget :R.layout.task_list_widget);
+            views[i] = new RemoteViews(context.getPackageName(), itemIsNote ? R.layout.note_list_widget : R.layout.task_list_widget);
             views[i].setOnClickPendingIntent(R.id.app_bar, startAppPendingIntent);
             views[i].setOnClickPendingIntent(R.id.add_button, newItemPendingIntent);
 

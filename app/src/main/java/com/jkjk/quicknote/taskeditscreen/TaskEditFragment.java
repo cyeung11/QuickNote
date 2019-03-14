@@ -1037,6 +1037,7 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
         updateTaskListWidget(context);
         updateToolbar();
         Toast.makeText(getActivity(), R.string.saved_task, Toast.LENGTH_SHORT).show();
+
     }
 
     private String getLocationText(LatLng latLng) {

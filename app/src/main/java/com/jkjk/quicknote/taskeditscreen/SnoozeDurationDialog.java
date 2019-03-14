@@ -2,33 +2,27 @@ package com.jkjk.quicknote.taskeditscreen;
 
 import android.app.ActionBar;
 import android.app.NotificationManager;
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
-import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
 
 import java.util.Calendar;
 
-import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 
 public class SnoozeDurationDialog extends AppCompatActivity {
     RadioGroup snoozeDuration;
-    private SQLiteDatabase database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.dialog_snooze_duration);
-        database = ((MyApplication)getApplication()).database;
         ActionBar actionBar = getActionBar();
         if (actionBar != null) {
             actionBar.setDisplayShowTitleEnabled(false);
@@ -42,19 +36,19 @@ public class SnoozeDurationDialog extends AppCompatActivity {
 
                 long snoozeDuration;
                 if (i == findViewById(R.id.five_minute).getId()){
-                    snoozeDuration = 300000;
+                    snoozeDuration = 300000L;
                 } else if (i == findViewById(R.id.fifthteen_minute).getId()) {
-                    snoozeDuration = 900000;
+                    snoozeDuration = 900000L;
                 } else if (i == findViewById(R.id.thirty_minute).getId()) {
-                    snoozeDuration = 1800000;
+                    snoozeDuration = 1800000L;
                 } else if (i == findViewById(R.id.one_hour).getId()) {
-                    snoozeDuration = 3600000;
+                    snoozeDuration = 3600000L;
                 } else if (i == findViewById(R.id.three_hour).getId()) {
-                    snoozeDuration = 10800000;
+                    snoozeDuration = 10800000L;
                 } else if (i == findViewById(R.id.twelve_hours).getId()) {
-                    snoozeDuration = 43200000;
+                    snoozeDuration = 43200000L;
                 } else if (i == findViewById(R.id.twenty_four_hour).getId()) {
-                    snoozeDuration = 86400000;
+                    snoozeDuration = 86400000L;
                 } else {
                     Toast.makeText(SnoozeDurationDialog.this, R.string.error_text, Toast.LENGTH_SHORT).show();
                     SnoozeDurationDialog.this.finish();

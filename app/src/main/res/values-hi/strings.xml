@@ -159,6 +159,9 @@
     <string name="twenty_four_hour">1 दिन</string>
     <string name="loading">लदान…</string>
     <string name="urgency">तात्कालिकता</string>
+    <string name="task_widget_include_done">विजेट में किए गए कार्य शामिल हैं</string>
+    <string name="task_widget_exclude_done">विजेट में किए गए कार्य शामिल नहीं हैं</string>
+    <string name="task_widget_done">विजेट में कार्य किया</string>
     <string-array name="font_size">
         <item>छोटा</item>
         <item>मध्यम</item>
@@ -213,4 +216,5 @@
     <string name="location">स्थान</string>
     <string name="location_hint">स्थान सेट नहीं है</string>
     <string name="location_permission_msg">फ़ंक्शन को सक्षम करने के लिए स्थान अनुमति चालू करें।</string>
+    <string name="privacy_policy">गोपनीयता नीति</string>
 </resources>

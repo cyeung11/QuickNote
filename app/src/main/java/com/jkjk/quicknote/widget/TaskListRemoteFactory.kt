@@ -2,6 +2,7 @@ package com.jkjk.quicknote.widget
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Paint
 import android.support.v7.preference.PreferenceManager
 import android.text.format.DateUtils
 import android.widget.RemoteViews
@@ -13,9 +14,11 @@ import com.jkjk.quicknote.taskeditscreen.Task
 import com.jkjk.quicknote.taskeditscreen.TaskEditFragment.*
 import java.util.*
 
+
+
 class TaskListRemoteFactory internal constructor(private val context: Context) : RemoteViewsService.RemoteViewsFactory {
 
-    private var tasks: List<Task> = listOf()
+    private var tasks = arrayListOf<Task>()
     private var widgetLayout: Int = 0
     private var noUrgencyLayout: Int = 0
 
@@ -25,9 +28,14 @@ class TaskListRemoteFactory internal constructor(private val context: Context) :
     override fun onDataSetChanged() {
         val sharedPref = PreferenceManager.getDefaultSharedPreferences(context)
         val byUrgencyByDefault = sharedPref.getBoolean(context.getString(R.string.change_default_sorting), false)
-        val includeDoneTask = sharedPref.getBoolean(context.getString(R.string.task_widget_done), false)
 
-        tasks = Task.getAllTask(context, byUrgencyByDefault, if (includeDoneTask) null else false)
+        tasks = Task.getAllTask(context, byUrgencyByDefault, false)
+
+        val includeDoneTask = sharedPref.getBoolean(context.getString(R.string.task_widget_done), false)
+        if (includeDoneTask) {
+            val doneTask = Task.getAllTask(context, byUrgencyByDefault, true)
+            tasks.addAll(doneTask)
+        }
 
         val widgetSize = sharedPref.getString(context.getString(R.string.font_size_widget), "m")
         when (widgetSize) {
@@ -69,25 +77,29 @@ class TaskListRemoteFactory internal constructor(private val context: Context) :
             return remoteViews
         }
 
-        val task = tasks.get(i)
+        val task = tasks[i]
 
-        when (task.urgency) {
-            2 -> {
-                remoteViews = RemoteViews(context.packageName, widgetLayout)
-                remoteViews.setTextColor(R.id.task_urgency, context.resources.getColor(R.color.colorPrimary))
-                remoteViews.setTextViewText(R.id.task_urgency, context.getString(R.string.asap))
+        if (!task.isDone) {
+            when (task.urgency) {
+                2 -> {
+                    remoteViews = RemoteViews(context.packageName, widgetLayout)
+                    remoteViews.setTextColor(R.id.task_urgency, context.resources.getColor(R.color.colorPrimary))
+                    remoteViews.setTextViewText(R.id.task_urgency, context.getString(R.string.asap))
+                }
+                1 -> {
+                    remoteViews = RemoteViews(context.packageName, widgetLayout)
+                    remoteViews.setTextColor(R.id.task_urgency, context.resources.getColor(R.color.darkGrey))
+                    remoteViews.setTextViewText(R.id.task_urgency, context.getString(R.string.important))
+                }
+                0 -> remoteViews = RemoteViews(context.packageName, noUrgencyLayout)
+                else -> {
+                    remoteViews = RemoteViews(context.packageName, R.layout.list_widget_loading)
+                    remoteViews.setTextViewText(R.id.text, context.getString(R.string.error_loading))
+                    return remoteViews
+                }
             }
-            1 -> {
-                remoteViews = RemoteViews(context.packageName, widgetLayout)
-                remoteViews.setTextColor(R.id.task_urgency, context.resources.getColor(R.color.darkGrey))
-                remoteViews.setTextViewText(R.id.task_urgency, context.getString(R.string.important))
-            }
-            0 -> remoteViews = RemoteViews(context.packageName, noUrgencyLayout)
-            else -> {
-                remoteViews = RemoteViews(context.packageName, R.layout.list_widget_loading)
-                remoteViews.setTextViewText(R.id.text, context.getString(R.string.error_loading))
-                return remoteViews
-            }
+        } else {
+            remoteViews = RemoteViews(context.packageName, noUrgencyLayout)
         }
 
         val time = task.eventTime.timeInMillis
@@ -113,7 +125,7 @@ class TaskListRemoteFactory internal constructor(private val context: Context) :
                 remoteViews.setTextViewText(R.id.item_date, context.getString(R.string.tomorrow))
             } else {
                 remoteViews.setTextViewText(R.id.item_date, DateUtils.formatDateTime(context, time, DateUtils.FORMAT_SHOW_DATE))
-                if (Calendar.getInstance().timeInMillis > time) {
+                if (!task.isDone && System.currentTimeMillis() > time) {
                     remoteViews.setTextColor(R.id.item_date, context.resources.getColor(R.color.alternative))
                 }
             }
@@ -122,6 +134,13 @@ class TaskListRemoteFactory internal constructor(private val context: Context) :
         }
 
         remoteViews.setTextViewText(R.id.item_title, task.title)
+        if (task.isDone) {
+            remoteViews.setInt(R.id.item_title, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG)
+            remoteViews.setTextColor(R.id.item_title, context.resources.getColor(R.color.darkGrey))
+        } else {
+            remoteViews.setInt(R.id.item_title, "setPaintFlags", Paint.ANTI_ALIAS_FLAG)
+            remoteViews.setTextColor(R.id.item_title, context.resources.getColor(android.R.color.black))
+        }
 
         val openTaskIntent = Intent()
         openTaskIntent.putExtra(EXTRA_ITEM_ID, task.id)
@@ -139,7 +158,7 @@ class TaskListRemoteFactory internal constructor(private val context: Context) :
     }
 
     override fun getItemId(i: Int): Long {
-       return tasks.get(i).id ?: 0
+       return tasks[i].id ?: 0
     }
 
     override fun hasStableIds(): Boolean {

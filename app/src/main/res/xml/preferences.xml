@@ -50,7 +50,7 @@
 
         <SwitchPreference
             android:key="@string/task_widget_done"
-            android:title="@string/task_widget_exclude_done"
+            android:title="@string/task_widget_done"
             android:summary="@string/task_widget_exclude_done"
             android:defaultValue="false"/>
 
@@ -115,8 +115,12 @@
 
     </PreferenceCategory>
 
-    <!--<PreferenceCategory-->
-        <!--android:title="@string/other_cap">-->
+    <PreferenceCategory
+        android:title="@string/other_cap">
+
+        <Preference android:title="@string/privacy_policy"
+            android:summary="@string/privacy_policy"
+            android:key="@string/privacy_policy"/>
 
         <!--<Preference android:title="@string/report"-->
         <!--android:summary="@string/report_summary">-->
@@ -124,7 +128,7 @@
         <!--android:data="mailto:cyeung11@gmail.com" />-->
         <!--</Preference>-->
 
-    <!--</PreferenceCategory>-->
+    </PreferenceCategory>
 
 
 </PreferenceScreen>

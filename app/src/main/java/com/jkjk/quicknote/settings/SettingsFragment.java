@@ -52,7 +52,7 @@ import static com.jkjk.quicknote.widget.NoteWidget.updateNoteWidget;
 import static com.jkjk.quicknote.widget.TaskListWidget.updateTaskListWidget;
 
 
-public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener{
+public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
 
     static final  int BACK_UP_REQUEST_CODE = 3433;
     static final  int RESTORE_REQUEST_CODE = 3449;
@@ -86,11 +86,15 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             defaultSorting.setSummary(R.string.default_sort_by_urgency);
         } else defaultSorting.setSummary(R.string.default_sort_by_time);
 
-        Preference backup = findPreference(getString(R.string.back_up));
-        backup.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
+        findPreference(getString(R.string.back_up)).setOnPreferenceClickListener(this);
+        findPreference(getString(R.string.restore)).setOnPreferenceClickListener(this);
+        findPreference(getString(R.string.privacy_policy)).setOnPreferenceClickListener(this);
 
+    }
+
+    @Override
+    public boolean onPreferenceClick(Preference preference) {
+        if (preference.getKey().equals(getString(R.string.back_up))){
 //                if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
 //                        != PackageManager.PERMISSION_GRANTED) {
 //
@@ -115,17 +119,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 //                                PERMISSION_REQUEST_CODE);
 //                    }
 //                } else {
-                // Permission has already been granted
-                selectBackUpLocation();
+            // Permission has already been granted
+            selectBackUpLocation();
 //                }
-                return true;
-            }
-        });
-
-        Preference restore = findPreference(getString(R.string.restore));
-        restore.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
+            return true;
+        } else if (preference.getKey().equals(getString(R.string.restore))) {
 
 //                //Check permission
 //                if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -152,15 +150,15 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 //                                PERMISSION_REQUEST_CODE);
 //                    }
 //                } else {
-                // Permission has already been granted
-                selectRestoreLocation();
+            // Permission has already been granted
+            selectRestoreLocation();
 //                }
-                return true;
-            }
-        });
-
+            return true;
+        } else if (preference.getKey().equals(getString(R.string.privacy_policy))) {
+            getActivity().startActivity(new Intent(context, PrivacyActivity.class));
+        }
+        return false;
     }
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -292,9 +290,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
             Preference doneInWidget = findPreference(key);
             if (prefs.getBoolean(key, false)) {
-                doneInWidget.setSummary(R.string.task_widget_exclude_done);
-            } else {
                 doneInWidget.setSummary(R.string.task_widget_include_done);
+            } else {
+                doneInWidget.setSummary(R.string.task_widget_exclude_done);
             }
 
             updateTaskListWidget(getContext());
