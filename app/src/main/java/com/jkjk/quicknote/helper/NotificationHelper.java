@@ -40,8 +40,8 @@ import static com.jkjk.quicknote.widget.TaskListWidget.updateTaskListWidget;
 public class NotificationHelper extends BroadcastReceiver {
 
     public static final String ACTION_TOOL_BAR = "showToolBar";
-    public static final String ACTION_PIN_ITEM = "pinItemToNofification";
-    public static final String ACTION_POST_REMINDER = "postReminderToNofification";
+    public static final String ACTION_PIN_ITEM = "pinItemToNotification";
+    public static final String ACTION_POST_REMINDER = "postReminderToNotification";
     public static final String ACTION_DAILY_UPDATE = "updateDailyPendingTask";
     public static final String ACTION_MARK_AS_DONE = "markTaskAsDone";
     public static final int TOOL_BAR_NOTIFICATION_ID = 3221;
@@ -260,11 +260,12 @@ public class NotificationHelper extends BroadcastReceiver {
                     }
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        NotificationChannel notificationChannel = new NotificationChannel(context.getPackageName() + "_tool_bar", context.getString(R.string.function_bar), NotificationManager.IMPORTANCE_MIN);
+                        String channelId = context.getPackageName() + "_tool_bar";
+                        NotificationChannel notificationChannel = new NotificationChannel(channelId, context.getString(R.string.function_bar), NotificationManager.IMPORTANCE_MIN);
                         notificationChannel.enableLights(false);
                         notificationChannel.enableVibration(false);
                         notificationManager.createNotificationChannel(notificationChannel);
-                        builder = new Notification.Builder(context, context.getPackageName());
+                        builder = new Notification.Builder(context, channelId);
                     } else {
                         builder = new Notification.Builder(context);
                         builder.setPriority(Notification.PRIORITY_MIN).setSound(null).setVibrate(null);
@@ -313,11 +314,12 @@ public class NotificationHelper extends BroadcastReceiver {
                         }
 
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            NotificationChannel notificationChannel = new NotificationChannel(context.getPackageName() + "_pin_item", context.getString(R.string.notification_pin), NotificationManager.IMPORTANCE_MIN);
+                            String channelId = context.getPackageName() + "_pin_item";
+                            NotificationChannel notificationChannel = new NotificationChannel(channelId, context.getString(R.string.notification_pin), NotificationManager.IMPORTANCE_MIN);
                             notificationChannel.enableLights(false);
                             notificationChannel.enableVibration(false);
                             notificationManager.createNotificationChannel(notificationChannel);
-                            builder = new Notification.Builder(context, context.getPackageName());
+                            builder = new Notification.Builder(context, channelId);
                         } else {
                             builder = new Notification.Builder(context);
                             builder.setPriority(Notification.PRIORITY_MIN).setSound(null).setVibrate(null);
