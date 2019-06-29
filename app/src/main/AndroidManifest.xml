@@ -122,6 +122,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".settings.Settings" />
+        <activity android:name=".taskeditscreen.LocationAct" />
         <activity
             android:name=".taskeditscreen.TaskEdit"
             android:exported="true"

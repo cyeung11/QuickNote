@@ -49,8 +49,7 @@
     <string name="add_shortcut_short_label">背景色</string>
     <string name="color_default_title">背景色を設定する</string>
     <string name="search_hint">検索</string>
-    <string name="note_not_found">見つからない</string>
-    <string name="task_not_found">見つからない</string>
+    <string name="not_found">見つからない</string>
     <string name="menu">オプション</string>
     <string name="new_note">新しいノート</string>
     <string name="new_to_do">新しTodo</string>
@@ -163,6 +162,8 @@
     <string name="task_widget_include_done">表示完成し事件</string>
     <string name="task_widget_exclude_done">表示完成し事件しない</string>
     <string name="task_widget_done">ウィジェットで表示完成し事件</string>
+    <string name="my_location">私の位置</string>
+
     <string-array name="font_size">
         <item>小</item>
         <item>中</item>

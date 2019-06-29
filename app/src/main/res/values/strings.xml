@@ -48,8 +48,7 @@
     <string name="add_shortcut_short_label">Background Color</string>
     <string name="color_default_title">Select Background Color</string>
     <string name="search_hint">Search note</string>
-    <string name="note_not_found">Nothing found</string>
-    <string name="task_not_found">Nothing found</string>
+    <string name="not_found">Nothing found</string>
     <string name="new_note">New note</string>
     <string name="new_to_do">New To Do</string>
     <string name="menu">Menu</string>
@@ -175,6 +174,7 @@
     <string name="task_widget_exclude_done">Done tasks excluded</string>
     <string name="task_widget_done">Done Task in Widget</string>
     <string name="privacy_policy">Privacy Policy</string>
+    <string name="my_location">My Location</string>
 
     <plurals name="notification_title">
         <item quantity="one">You have %d To Do due today.</item>

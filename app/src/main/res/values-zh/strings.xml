@@ -48,8 +48,7 @@
     <string name="add_shortcut_short_label">背景顏色</string>
     <string name="color_default_title">選擇背景顏色</string>
     <string name="search_hint">搜尋</string>
-    <string name="note_not_found">未找到資料</string>
-    <string name="task_not_found">未找到資料</string>
+    <string name="not_found">未找到資料</string>
     <string name="new_note">新筆記</string>
     <string name="new_to_do">新待辦事件</string>
     <string name="menu">選項</string>
@@ -162,6 +161,7 @@
     <string name="task_widget_include_done">顯示完成事件</string>
     <string name="task_widget_exclude_done">隱藏完成事件</string>
     <string name="task_widget_done">於小工具顯示完成事件</string>
+    <string name="my_location">我的位置</string>
 
     <plurals name="notification_title">
         <item quantity="other">您今天有%d件待辦事件</item>

@@ -1,7 +1,6 @@
 package com.jkjk.quicknote.taskeditscreen;
 
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.NotificationManager;
@@ -50,11 +49,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.maps.android.SphericalUtil;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
 import com.jkjk.quicknote.helper.NotificationHelper;
@@ -75,6 +72,7 @@ import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_TOOL_BAR;
 import static com.jkjk.quicknote.helper.NotificationHelper.PIN_ITEM_NOTIFICATION_ID;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.DEFAULT_NOTE_ID;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
+import static com.jkjk.quicknote.taskeditscreen.LocationAct.EXTRA_LOCATION_LAT_LNG;
 import static com.jkjk.quicknote.widget.TaskListWidget.updateTaskListWidget;
 
 public class TaskEditFragment extends Fragment implements View.OnClickListener {
@@ -627,13 +625,14 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == LOCATION_PICKER_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            Place place = PlacePicker.getPlace(context, data);
-            task.setLatLng(place.getLatLng());
-            String name = (String) place.getName();
+
+            LatLng resultLatLng = data.getParcelableExtra(LocationAct.EXTRA_LOCATION_LAT_LNG);
+            String name = data.getStringExtra(LocationAct.EXTRA_LOCATION_NAME);
+            task.setLatLng(resultLatLng);
 
             // Check if the name is coordinate. If so, check if geo coder can return a readable name
             if (name.contains("\"") && name.contains("\'") && name.contains("°") && name.contains(".")) {
-                task.setPlaceName(getLocationText(place.getLatLng()));
+                task.setPlaceName(getLocationText(resultLatLng));
             } else {
                 task.setPlaceName(name);
             }
@@ -913,34 +912,22 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
                 break;
 
             case R.id.item_location:
-                if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                        showPermissionDialog();
-                    } else {
-                        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
-                    }
-                } else {
-                    FragmentActivity fragmentActivity = getActivity();
-                    if (fragmentActivity != null) {
-                        PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-                        LatLng latLng = task.getLatLng();
-                        if (latLng != null) {
-                            LatLngBounds.Builder latLngBoundsBuilder = LatLngBounds.builder().include(latLng);
-                            //Make sure the zoom scale is appropriate
-                            latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 0));
-                            latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 90));
-                            latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 180));
-                            latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 270));
-                            builder.setLatLngBounds(latLngBoundsBuilder.build());
-                        }
-                        try {
-                            startActivityForResult(builder.build(fragmentActivity), LOCATION_PICKER_REQUEST_CODE);
-                        } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
-                            Toast.makeText(context, R.string.google_play_service_fail_toast, Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
-                        }
-                    }
-                }
+//                LatLng latLng = task.getLatLng();
+//                LatLngBounds.Builder latLngBoundsBuilder = LatLngBounds.builder();
+//                if (latLng != null) {
+//                    latLngBoundsBuilder.include(latLng);
+//                    //Make sure the zoom scale is appropriate
+//                    latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 0));
+//                    latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 90));
+//                    latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 180));
+//                    latLngBoundsBuilder.include(SphericalUtil.computeOffset(latLng, LOCATION_PICKER_ZOOM_OUT_METER, 270));
+//                } else {
+//                    latLngBoundsBuilder.include(new LatLng(0.0, 0.0));
+//                }
+
+                startActivityForResult(new Intent(context, LocationAct.class)
+                        .putExtra(EXTRA_LOCATION_LAT_LNG, task.getLatLng())
+                        , LOCATION_PICKER_REQUEST_CODE);
                 break;
             case R.id.save_fab:
                 saveTask();

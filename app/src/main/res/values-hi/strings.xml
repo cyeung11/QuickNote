@@ -49,8 +49,7 @@
     <string name="add_shortcut_short_label">पीछे का रंग</string>
     <string name="color_default_title">पृष्ठभूमि रंग का चयन करें</string>
     <string name="search_hint">खोज</string>
-    <string name="note_not_found">कुछ भी नहीं मिला है</string>
-    <string name="task_not_found">कुछ भी नहीं मिला हैा</string>
+    <string name="not_found">कुछ भी नहीं मिला है</string>
     <string name="new_note">नया नोट</string>
     <string name="new_to_do">नया चेकलिस्ट</string>
     <string name="menu">मेन्यू</string>
@@ -163,6 +162,7 @@
     <string name="task_widget_include_done">विजेट में किए गए कार्य शामिल हैं</string>
     <string name="task_widget_exclude_done">विजेट में किए गए कार्य शामिल नहीं हैं</string>
     <string name="task_widget_done">विजेट में कार्य किया</string>
+    <string name="my_location">मेरा स्थान</string>
     <string-array name="font_size">
         <item>छोटा</item>
         <item>मध्यम</item>
