@@ -95,6 +95,10 @@
             android:summary="@string/restore_summary"
             android:key="@string/restore"/>
 
+        <Preference android:title="Auto backup"
+            android:summary="@string/back_up_summary"
+            android:key="Autobackup"/>
+
         <!--<SwitchPreference-->
         <!--android:key="@string/auto_back_up"-->
         <!--android:title="@string/auto_back_up"-->

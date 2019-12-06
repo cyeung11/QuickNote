@@ -10,22 +10,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.location.Address;
 import android.location.Geocoder;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.preference.PreferenceManager;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -47,11 +36,15 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.location.places.ui.PlacePicker;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
+
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
 import com.jkjk.quicknote.helper.NotificationHelper;
@@ -82,9 +75,7 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
     public static final int TIME_NOT_SET_MINUTE_SECOND_INDICATOR = 59;
     public static final int TIME_NOT_SET_HOUR_INDICATOR = 23;
     public static final long DATE_NOT_SET_INDICATOR = 9999999999999L;
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 0;
     private static final int LOCATION_PICKER_REQUEST_CODE = 1;
-    private static final int LOCATION_PICKER_ZOOM_OUT_METER = 500;
 
     boolean hasTaskSave = false;
 
@@ -275,7 +266,7 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
                                 if (repeatArray.size() > repeatPresetSize) {
                                     repeatArray.remove(0);
                                 }
-                                repeatArray.add(0, Integer.toString(newValue) + " " + getString(R.string.day));
+                                repeatArray.add(0, newValue + " " + getString(R.string.day));
                                 repeatAdapter.notifyDataSetChanged();
                                 repeatSelectByUser = false;
                                 repeatInFragment.setSelection(0);
@@ -351,7 +342,7 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
         } else if (task.getRepeatTime() == 31104000000L) {
             repeatInFragment.setSelection(4);
         } else {
-            repeatArray.add(0, Long.toString(task.getRepeatTime() / 86400000L) + " " + getString(R.string.day));
+            repeatArray.add(0, task.getRepeatTime() / 86400000L + " " + getString(R.string.day));
             repeatAdapter.notifyDataSetChanged();
             repeatInFragment.setSelection(0);
         }
@@ -599,27 +590,6 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
         });
 
         return view;
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                FragmentActivity fragmentActivity = getActivity();
-                if (fragmentActivity != null) {
-                    PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-                    if (task.getLatLng() != null) {
-                        builder.setLatLngBounds(LatLngBounds.builder().include(task.getLatLng()).build());
-                    }
-                    try {
-                        startActivityForResult(builder.build(fragmentActivity), LOCATION_PICKER_REQUEST_CODE);
-                    } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
-                        Toast.makeText(context, R.string.google_play_service_fail_toast, Toast.LENGTH_SHORT).show();
-                        e.printStackTrace();
-                    }
-                }
-            } else showPermissionDialog();
-        } else super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -1059,20 +1029,6 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
             DecimalFormat decimalFormat = new DecimalFormat("#.00000");
             return getString(R.string.lat_lng, decimalFormat.format(latLng.latitude), decimalFormat.format(latLng.longitude));
         }
-    }
-
-    private void showPermissionDialog() {
-        new AlertDialog.Builder(context).setTitle(R.string.permission_required).setMessage(R.string.location_permission_msg).
-                setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                        Uri uri = Uri.fromParts("package", context.getPackageName(), null);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        intent.setData(uri);
-                        startActivity(intent);
-                    }
-                }).setNegativeButton(R.string.cancel, null).show();
     }
 
     private void pinTaskToNotification() {

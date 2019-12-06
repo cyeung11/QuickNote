@@ -7,12 +7,12 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.preference.PreferenceManager;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
+import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.format.DateUtils;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -135,7 +135,7 @@ public class NoteListAdapter extends ItemListAdapter {
                         }
                     }
 
-                }else if (holder.note.getId() != null){ fragment.onNoteEdit(holder.note.getId());}
+                }else if (holder.note.getId() != null){ fragment.onItemEdit(holder.note.getId());}
             }
         });
 

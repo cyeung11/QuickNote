@@ -6,10 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -55,7 +55,7 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity {
 
         setContentView(R.layout.note_widget_configure);
 
-        android.support.v7.widget.Toolbar widgetMenu = findViewById(R.id.widget_config_menu);
+        androidx.appcompat.widget.Toolbar widgetMenu = findViewById(R.id.widget_config_menu);
         setSupportActionBar(widgetMenu);
 
         recyclerViewForWidget = findViewById(R.id.recycler_view_widget);
@@ -79,7 +79,6 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity {
         searchView.setQueryHint(getResources().getString(R.string.search_hint));
         searchView.setSubmitButtonEnabled(false);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            SearchHelper searchHelper = new SearchHelper();
 
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -89,7 +88,7 @@ public class NoteWidgetConfigureActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(String newText) {
 
-                String result = searchHelper.searchResult(database, newText);
+                String result = SearchHelper.searchResult(database, newText);
 
                 //If search result is not empty, update the cursor to show result
                 if (!result.equals("")) {

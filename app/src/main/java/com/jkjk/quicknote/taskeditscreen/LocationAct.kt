@@ -12,11 +12,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.support.annotation.RequiresApi
-import android.support.v4.content.ContextCompat
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.SearchView
+import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.appcompat.widget.SearchView
 import android.view.Menu
 import android.view.MenuItem
 import com.google.android.gms.location.LocationCallback
@@ -86,6 +86,7 @@ class LocationAct : AppCompatActivity(),
         setSupportActionBar(menu)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
+
         supportActionBar?.setTitle(R.string.location)
 
 
@@ -134,6 +135,16 @@ class LocationAct : AppCompatActivity(),
             }
         })
         return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                onBackPressed()
+                true
+            }
+            else -> false
+        }
     }
 
     override fun onMapReady(map: GoogleMap?) {
@@ -331,7 +342,7 @@ class LocationAct : AppCompatActivity(),
                 )
             }
         }.setCancelable(true)
-                .setNegativeButton(R.string.cancel, null).setMessage(R.string.location_permission_msg).show()
+                .setNegativeButton(R.string.cancel, null).setTitle(R.string.permission_required).setMessage(R.string.location_permission_msg).show()
 
     }
 

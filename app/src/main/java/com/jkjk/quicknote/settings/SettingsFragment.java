@@ -15,9 +15,9 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
-import android.support.v7.preference.Preference;
-import android.support.v7.preference.PreferenceFragmentCompat;
-import android.support.v7.preference.PreferenceManager;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
 import android.widget.Toast;
 
 import com.jkjk.quicknote.MyApplication;
@@ -156,12 +156,23 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             return true;
         } else if (preference.getKey().equals(getString(R.string.privacy_policy))) {
             getActivity().startActivity(new Intent(context, PrivacyActivity.class));
+        } else if (preference.getKey().equals("Autobackup")) {
+            if (gDriveHelper == null) {
+                gDriveHelper = new GDriveHelper(getContext(), this);
+            }
+            gDriveHelper.requestSignIn();
         }
         return false;
     }
 
+    private GDriveHelper gDriveHelper;
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (gDriveHelper != null && gDriveHelper.onActivityResult(requestCode, resultCode, intent)) {
+            return;
+        }
+
         if (resultCode == RESULT_OK) {
             Uri uri;
             if (intent != null) {
@@ -174,6 +185,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                 switch (requestCode){
                     case BACK_UP_REQUEST_CODE:
                         try {
+                            SQLiteDatabase db = ((MyApplication)getContext().getApplicationContext()).database;
+                            String dbPath = db.getPath();
+
+
                             ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "w");
                             if (pfd == null) {
                                 Toast.makeText(getActivity(),R.string.error_back_up,Toast.LENGTH_SHORT).show();
@@ -181,10 +196,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                             }
                             FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
 
-                            File dataPath = Environment.getDataDirectory();
-                            String dbPath = "//data//"+context.getPackageName()+"//databases//"+DATABASE_NAME+"_db";
-                            File db = new File(dataPath, dbPath);
-                            FileInputStream fileInputStream = new FileInputStream(db);
+                            File dbFile = new File(dbPath);
+                            FileInputStream fileInputStream = new FileInputStream(dbFile);
 
                             byte[] buffer = new byte[1024];
                             int length;

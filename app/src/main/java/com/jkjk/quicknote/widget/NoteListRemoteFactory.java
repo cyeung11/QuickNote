@@ -3,7 +3,7 @@ package com.jkjk.quicknote.widget;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.v7.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.RemoteViews;

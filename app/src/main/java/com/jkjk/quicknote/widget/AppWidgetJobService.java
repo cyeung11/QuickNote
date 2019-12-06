@@ -7,9 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.support.annotation.NonNull;
-import android.support.v4.app.JobIntentService;
-import android.support.v7.preference.PreferenceManager;
+import androidx.annotation.NonNull;
+import androidx.core.app.JobIntentService;
+import androidx.preference.PreferenceManager;
 import android.util.TypedValue;
 import android.widget.RemoteViews;
 

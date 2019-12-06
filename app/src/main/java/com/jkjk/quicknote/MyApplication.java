@@ -5,7 +5,9 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.v7.preference.PreferenceManager;
+
+import androidx.multidex.MultiDexApplication;
+import androidx.preference.PreferenceManager;
 
 import com.jkjk.quicknote.helper.DatabaseHelper;
 import com.jkjk.quicknote.helper.NotificationHelper;
@@ -17,7 +19,7 @@ import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_TOOL_BAR;
 import static com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID;
 
 
-public class MyApplication extends Application {
+public class MyApplication extends MultiDexApplication {
 
     public static final String PINNED_NOTIFICATION_IDS = "pinned_notification_ids";
     public SQLiteDatabase database;

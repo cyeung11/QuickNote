@@ -2,11 +2,11 @@ package com.jkjk.quicknote.listscreen;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v7.preference.PreferenceManager;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.preference.PreferenceManager;
 
 import com.jkjk.quicknote.R;
 
@@ -15,6 +15,9 @@ public class ListPageAdapter extends FragmentPagerAdapter {
 
     private Context context;
     private boolean defaultScreenIsTask;
+
+    TaskListFragment taskListFragment;
+    NoteListFragment noteListFragment;
 
     ListPageAdapter(Context context, FragmentManager fragmentManager){
         super(fragmentManager);
@@ -39,16 +42,30 @@ public class ListPageAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        switch (position){
-            case 0:
-                return defaultScreenIsTask ?new TaskListFragment() :new NoteListFragment();
-            case 1:
-                return defaultScreenIsTask ?new NoteListFragment() :new TaskListFragment();
-            default:
-                return null;
+        return getItemListFragment(position);
+    }
+
+    public ItemListFragment getItemListFragment(int position) {
+        if (position == 0) {
+            return defaultScreenIsTask ? getTaskListFragment() : getNoteListFragment();
+        } else {
+            return defaultScreenIsTask ? getNoteListFragment() : getTaskListFragment();
         }
     }
 
+    private TaskListFragment getTaskListFragment(){
+        if (taskListFragment == null) {
+            taskListFragment = new TaskListFragment();
+        }
+        return taskListFragment;
+    }
+
+    private NoteListFragment getNoteListFragment(){
+        if (noteListFragment == null) {
+            noteListFragment = new NoteListFragment();
+        }
+        return noteListFragment;
+    }
 
     @Override
     public int getCount() {

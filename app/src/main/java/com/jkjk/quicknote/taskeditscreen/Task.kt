@@ -3,6 +3,7 @@ package com.jkjk.quicknote.taskeditscreen
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
+import com.google.android.gms.maps.model.LatLng
 import com.jkjk.quicknote.MyApplication
 import com.jkjk.quicknote.helper.DatabaseHelper
 import com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME

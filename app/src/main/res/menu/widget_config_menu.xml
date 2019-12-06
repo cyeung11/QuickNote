@@ -12,6 +12,6 @@
         android:icon="@drawable/sharp_search_24"
         android:title="@string/search"
         app:showAsAction="ifRoom|collapseActionView"
-        app:actionViewClass="android.support.v7.widget.SearchView"/>
+        app:actionViewClass="androidx.appcompat.widget.SearchView"/>
 
 </menu>
