@@ -219,4 +219,5 @@
     <string name="google_play_service_fail_toast">Google Play Service使用不可</string>
     <string name="location_permission_msg">gps権限を開いてください</string>
     <string name="privacy_policy">個人情報保護方針</string>
+    <string name="latest_version_needed_for_restore">復元するには、最新バージョンをインストールする必要があります。</string>
 </resources>

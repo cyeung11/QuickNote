@@ -57,6 +57,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.jkjk.quicknote.MyApplication.PINNED_NOTIFICATION_IDS;
@@ -262,7 +263,7 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
                         NumberPickerDialog numberPickerDialog = new NumberPickerDialog(context, new NumberPicker.OnValueChangeListener() {
                             @Override
                             public void onValueChange(NumberPicker numberPicker, int oldValue, int newValue) {
-                                task.setRepeatTime(newValue * 86400000L);
+                                task.setRepeatTime(TimeUnit.DAYS.toMillis(newValue));
                                 if (repeatArray.size() > repeatPresetSize) {
                                     repeatArray.remove(0);
                                 }
@@ -287,16 +288,16 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
                                 task.setRepeatTime(0L);
                                 break;
                             case 2:
-                                task.setRepeatTime(86400000L);
+                                task.setRepeatTime(TimeUnit.DAYS.toMillis(1));
                                 break;
                             case 3:
-                                task.setRepeatTime(604800000L);
+                                task.setRepeatTime(TimeUnit.DAYS.toMillis(7));
                                 break;
                             case 4:
-                                task.setRepeatTime(2592000000L);
+                                task.setRepeatTime(TimeUnit.DAYS.toMillis(30));
                                 break;
                             case 5:
-                                task.setRepeatTime(31104000000L);
+                                task.setRepeatTime(TimeUnit.DAYS.toMillis(365));
                                 break;
                         }
                         // As we remove item and mess with the position before spinner show what is selected, we need to set the selection to correct position
@@ -308,16 +309,16 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
                                 task.setRepeatTime(0L);
                                 break;
                             case 1:
-                                task.setRepeatTime(86400000L);
+                                task.setRepeatTime(TimeUnit.DAYS.toMillis(1));
                                 break;
                             case 2:
-                                task.setRepeatTime(604800000L);
+                                task.setRepeatTime(TimeUnit.DAYS.toMillis(7));
                                 break;
                             case 3:
-                                task.setRepeatTime(2592000000L);
+                                task.setRepeatTime(TimeUnit.DAYS.toMillis(30));
                                 break;
                             case 4:
-                                task.setRepeatTime(31104000000L);
+                                task.setRepeatTime(TimeUnit.DAYS.toMillis(365));
                                 break;
                         }
                     }
@@ -333,16 +334,16 @@ public class TaskEditFragment extends Fragment implements View.OnClickListener {
         repeatSelectByUser = false;
         if (task.getRepeatTime() == 0) {
             repeatInFragment.setSelection(0);
-        } else if (task.getRepeatTime() == 86400000L) {
+        } else if (task.getRepeatTime() == TimeUnit.DAYS.toMillis(1)) {
             repeatInFragment.setSelection(1);
-        } else if (task.getRepeatTime() == 604800000) {
+        } else if (task.getRepeatTime() == TimeUnit.DAYS.toMillis(7)) {
             repeatInFragment.setSelection(2);
-        } else if (task.getRepeatTime() == 2592000000L) {
+        } else if (task.getRepeatTime() == TimeUnit.DAYS.toMillis(30)) {
             repeatInFragment.setSelection(3);
-        } else if (task.getRepeatTime() == 31104000000L) {
+        } else if (task.getRepeatTime() == TimeUnit.DAYS.toMillis(365)) {
             repeatInFragment.setSelection(4);
         } else {
-            repeatArray.add(0, task.getRepeatTime() / 86400000L + " " + getString(R.string.day));
+            repeatArray.add(0, task.getRepeatTime() / TimeUnit.DAYS.toMillis(1) + " " + getString(R.string.day));
             repeatAdapter.notifyDataSetChanged();
             repeatInFragment.setSelection(0);
         }

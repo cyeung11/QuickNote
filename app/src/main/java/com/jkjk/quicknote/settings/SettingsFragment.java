@@ -1,9 +1,11 @@
 package com.jkjk.quicknote.settings;
 
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -15,23 +17,31 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
+import android.widget.Toast;
+
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
-import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.jkjk.quicknote.MyApplication;
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.helper.AlarmHelper;
 import com.jkjk.quicknote.helper.DatabaseHelper;
 import com.jkjk.quicknote.helper.NotificationHelper;
+import com.jkjk.quicknote.helper.backup.BackupModel;
 import com.jkjk.quicknote.widget.NoteListWidget;
 import com.jkjk.quicknote.widget.NoteWidget;
 import com.jkjk.quicknote.widget.TaskListWidget;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -40,8 +50,6 @@ import java.util.Locale;
 
 import static android.app.Activity.RESULT_OK;
 import static com.jkjk.quicknote.helper.DatabaseHelper.CURRENT_DB_VER;
-import static com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME;
-import static com.jkjk.quicknote.helper.DatabaseHelper.dbColumn;
 import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_DAILY_UPDATE;
 import static com.jkjk.quicknote.helper.NotificationHelper.ACTION_TOOL_BAR;
 import static com.jkjk.quicknote.helper.NotificationHelper.DAILY_UPDATE_REQUEST_CODE;
@@ -89,6 +97,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         findPreference(getString(R.string.back_up)).setOnPreferenceClickListener(this);
         findPreference(getString(R.string.restore)).setOnPreferenceClickListener(this);
         findPreference(getString(R.string.privacy_policy)).setOnPreferenceClickListener(this);
+        // findPreference("Autobackup").setOnPreferenceClickListener(this);
 
     }
 
@@ -156,22 +165,22 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             return true;
         } else if (preference.getKey().equals(getString(R.string.privacy_policy))) {
             getActivity().startActivity(new Intent(context, PrivacyActivity.class));
-        } else if (preference.getKey().equals("Autobackup")) {
-            if (gDriveHelper == null) {
-                gDriveHelper = new GDriveHelper(getContext(), this);
-            }
-            gDriveHelper.requestSignIn();
+//        } else if (preference.getKey().equals("Autobackup")) {
+//            if (googleDriveHelper == null) {
+//                googleDriveHelper = new GoogleDriveHelper(getContext(), this);
+//            }
+//            googleDriveHelper.requestSignIn();
         }
         return false;
     }
 
-    private GDriveHelper gDriveHelper;
+//    private GoogleDriveHelper googleDriveHelper;
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        if (gDriveHelper != null && gDriveHelper.onActivityResult(requestCode, resultCode, intent)) {
-            return;
-        }
+//        if (googleDriveHelper != null && googleDriveHelper.onActivityResult(requestCode, resultCode, intent)) {
+//            return;
+//        }
 
         if (resultCode == RESULT_OK) {
             Uri uri;
@@ -185,32 +194,58 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                 switch (requestCode){
                     case BACK_UP_REQUEST_CODE:
                         try {
-                            SQLiteDatabase db = ((MyApplication)getContext().getApplicationContext()).database;
-                            String dbPath = db.getPath();
+                            Context context = getContext();
+                            if (context != null) {
+                                String backupString = new Gson().toJson(BackupModel.Companion.fromDb(context));
+
+                                ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "w");
+                                if (pfd == null) {
+                                    Toast.makeText(getActivity(),R.string.error_back_up,Toast.LENGTH_SHORT).show();
+                                    break;
+                                }
+                                FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
+
+                                OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
+                                outputStreamWriter.write(backupString);
 
 
-                            ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "w");
-                            if (pfd == null) {
-                                Toast.makeText(getActivity(),R.string.error_back_up,Toast.LENGTH_SHORT).show();
-                                break;
+                                Toast.makeText(getActivity(),R.string.backup_success,Toast.LENGTH_SHORT).show();
+
+                                try {
+                                    fileOutputStream.flush();
+                                    outputStreamWriter.close();
+                                    fileOutputStream.close();
+                                    pfd.close();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                             }
-                            FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
 
-                            File dbFile = new File(dbPath);
-                            FileInputStream fileInputStream = new FileInputStream(dbFile);
+//                            SQLiteDatabase db = ((MyApplication)getContext().getApplicationContext()).database;
+//                            String dbPath = db.getPath();
 
-                            byte[] buffer = new byte[1024];
-                            int length;
-                            while ((length = fileInputStream.read(buffer))>0){
-                                fileOutputStream.write(buffer, 0, length);
-                            }
 
-                            fileOutputStream.flush();
-                            fileInputStream.close();
-                            fileOutputStream.close();
-                            pfd.close();
+//                            ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "w");
+//                            if (pfd == null) {
+//                                Toast.makeText(getActivity(),R.string.error_back_up,Toast.LENGTH_SHORT).show();
+//                                break;
+//                            }
+//                            FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
 
-                            Toast.makeText(getActivity(),R.string.backup_success,Toast.LENGTH_SHORT).show();
+//                            File dbFile = new File(dbPath);
+//                            FileInputStream fileInputStream = new FileInputStream(dbFile);
+
+//                            byte[] buffer = new byte[1024];
+//                            int length;
+//                            while ((length = fileInputStream.read(buffer))>0){
+//                                fileOutputStream.write(buffer, 0, length);
+//                            }
+//
+//                            fileOutputStream.flush();
+//                            fileInputStream.close();
+//                            fileOutputStream.close();
+//                            pfd.close();
+
 
                         }catch (Exception e){
                             e.printStackTrace();
@@ -242,21 +277,43 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         super.onStop();
     }
 
-    void selectBackUpLocation(){
-        //Define back up file name
-        String backUpName = getString(R.string.back_up_name)+new SimpleDateFormat("yyMMddHHmmss", Locale.getDefault()).format(new Date())+"_db";
+    private boolean checkReminder(){
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean shouldRemind = sharedPref.getBoolean("MUST_UPDATE_TO_BACKUP", true);
 
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        if (shouldRemind) {
+            new AlertDialog.Builder(context).setMessage(R.string.latest_version_needed_for_restore)
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            sharedPref.edit().putBoolean("MUST_UPDATE_TO_BACKUP", false).commit();
+                            selectBackUpLocation();
+                        }
+                    })
+                    .show();
+            return false;
+        } else {
+            return true;
+        }
+    }
 
-        // Filter to only show results that can be "opened", such as
-        // a file (as opposed to a list of contacts or timezones).
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
+    private void selectBackUpLocation(){
+        if (checkReminder()) {
+            //Define back up file name
+            String backUpName = getString(R.string.back_up_name)+new SimpleDateFormat("yyMMddHHmmss", Locale.getDefault()).format(new Date())+"_db";
 
-        // Create a file with the requested MIME type.
-        intent.setType("application/octet-stream");
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra(Intent.EXTRA_TITLE, backUpName);
-        startActivityForResult(intent, BACK_UP_REQUEST_CODE);
+            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+
+            // Filter to only show results that can be "opened", such as
+            // a file (as opposed to a list of contacts or timezones).
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+            // Create a file with the requested MIME type.
+            intent.setType("application/octet-stream");
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.putExtra(Intent.EXTRA_TITLE, backUpName);
+            startActivityForResult(intent, BACK_UP_REQUEST_CODE);
+        }
     }
 
     void selectRestoreLocation(){
@@ -367,12 +424,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         }
     }
 
-
-    private static boolean restoreWithResult(WeakReference<Context> contextWeakReference, Uri uri){
-        File dataPath = Environment.getDataDirectory();
+    private static boolean restoreWithResultDeprecated(WeakReference<Context> contextWeakReference, Uri uri){
         Context context = contextWeakReference.get();
-        if (context==null) return false;
+        if (context == null) {
+            return false;
+        }
 
+        File dataPath = Environment.getDataDirectory();
         String verifyPath = "//data//"+context.getPackageName()+"//databases//verify_db";
         File verifydb = new File(dataPath, verifyPath);
 
@@ -399,9 +457,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             DatabaseHelper helper  = new DatabaseHelper(context.getApplicationContext(), "verify_db", null, CURRENT_DB_VER);
             SQLiteDatabase databaseToBeRestore = helper.getWritableDatabase();
 
-            Cursor verifyCursor = databaseToBeRestore.rawQuery("SELECT * FROM '" + DATABASE_NAME + "' LIMIT 1", null);
+            Cursor verifyCursor = databaseToBeRestore.rawQuery("SELECT * FROM '" + DatabaseHelper.DATABASE_NAME + "' LIMIT 1", null);
 
-            if (databaseToBeRestore.isDatabaseIntegrityOk() && Arrays.equals(verifyCursor.getColumnNames(), dbColumn)
+            if (databaseToBeRestore.isDatabaseIntegrityOk() && Arrays.equals(verifyCursor.getColumnNames(), DatabaseHelper.dbColumn)
                     && verifyCursor.moveToFirst() && verifyCursor.getType(0) == Cursor.FIELD_TYPE_INTEGER
                     && verifyCursor.getType(1) == Cursor.FIELD_TYPE_STRING && verifyCursor.getType(2) == Cursor.FIELD_TYPE_STRING
                     && verifyCursor.getType(3) == Cursor.FIELD_TYPE_INTEGER && verifyCursor.getType(4) == Cursor.FIELD_TYPE_INTEGER
@@ -416,10 +474,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                 SQLiteDatabase currentDatabase = ((MyApplication)context.getApplicationContext()).database;
 
                 // Create a copy of database column without the id
-                String[] columnToBeCopied = new String[dbColumn.length-1];
-                System.arraycopy(dbColumn, 1, columnToBeCopied, 0, columnToBeCopied.length);
+                String[] columnToBeCopied = new String[DatabaseHelper.dbColumn.length-1];
+                System.arraycopy(DatabaseHelper.dbColumn, 1, columnToBeCopied, 0, columnToBeCopied.length);
 
-                verifyCursor = databaseToBeRestore.query(DATABASE_NAME, columnToBeCopied, null, null, null
+                verifyCursor = databaseToBeRestore.query(DatabaseHelper.DATABASE_NAME, columnToBeCopied, null, null, null
                         , null, null);
                 if (verifyCursor!=null && verifyCursor.moveToFirst()) {
                     do {
@@ -434,7 +492,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                         values.put(columnToBeCopied[8], verifyCursor.getLong(8));
                         values.put(columnToBeCopied[9], verifyCursor.getString(9));
                         values.put(columnToBeCopied[10], verifyCursor.getString(10));
-                        currentDatabase.insert(DATABASE_NAME, "", values);
+                        currentDatabase.insert(DatabaseHelper.DATABASE_NAME, "", values);
                     } while (verifyCursor.moveToNext());
                 }
 
@@ -455,6 +513,44 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         }finally {
             SQLiteDatabase.deleteDatabase(verifydb);
         }
+    }
+
+    private static boolean restoreWithResult(WeakReference<Context> contextWeakReference, Uri uri){
+        Context context = contextWeakReference.get();
+        if (context != null) {
+            try {
+                ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "r");
+                if (pfd == null) return false;
+                FileInputStream fileInputStream = new FileInputStream(pfd.getFileDescriptor());
+
+                InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                String receiveString = "";
+                StringBuilder stringBuilder = new StringBuilder();
+
+                while ((receiveString = bufferedReader.readLine()) != null) {
+                    stringBuilder.append(receiveString);
+                }
+
+                fileInputStream.close();
+                String result = stringBuilder.toString();
+
+                try {
+                    BackupModel backup = new Gson().fromJson(result, BackupModel.class);
+                    if (backup.getNotes() != null || backup.getTasks() != null) {
+                            backup.saveToDb(context);
+                            return true;
+                    }
+                } catch (JsonSyntaxException e) {
+                    return restoreWithResultDeprecated(contextWeakReference, uri);
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return false;
     }
 
     private static void resultToast(WeakReference<Context> contextWeakReference, final boolean result){

@@ -21,14 +21,12 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.preference.PreferenceManager;
 import androidx.viewpager.widget.ViewPager;
 
@@ -359,10 +357,18 @@ public class ListFragment extends Fragment implements MenuItem.OnMenuItemClickLi
     @Override
     public void onStop() {
         // Clear all filter
-        search.collapseActionView();
-        showStarred.setTitle(R.string.show_starred);
-        showDone.setTitle(R.string.show_done);
-        sortBy.setTitle(byUrgencyByDefault ?R.string.sort_by_time :R.string.sort_by_urgency);
+        if (search != null) {
+            search.collapseActionView();
+        }
+        if (showStarred != null) {
+            showStarred.setTitle(R.string.show_starred);
+        }
+        if (showDone != null) {
+            showDone.setTitle(R.string.show_done);
+        }
+        if (sortBy != null) {
+            sortBy.setTitle(byUrgencyByDefault ?R.string.sort_by_time :R.string.sort_by_urgency);
+        }
         sortingBytime = !byUrgencyByDefault;
         super.onStop();
     }

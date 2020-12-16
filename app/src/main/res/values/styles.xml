@@ -9,7 +9,7 @@
         <item name="autoCompleteTextViewStyle">@style/cursorColor</item>
     </style>
 
-    <style name="AppTheme.parent" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme.parent" parent="Theme.AppCompat.DayNight.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="windowActionModeOverlay">true</item>
         <item name="windowActionBarOverlay">true</item>
@@ -29,33 +29,6 @@
 
     <style name="cursorColor" parent="Widget.AppCompat.AutoCompleteTextView">
         <item name="android:textCursorDrawable">@drawable/cursor</item>
-    </style>
-
-    <style name="ColorRadioButtonStyle" parent="@android:style/Widget.CompoundButton.RadioButton">
-    </style>
-
-    <style name="GreenRadioButtonStyle" parent="ColorRadioButtonStyle">
-        <item name="android:button">@drawable/green_radio</item>
-    </style>
-
-    <style name="YellowRadioButtonStyle" parent="ColorRadioButtonStyle">
-        <item name="android:button">@drawable/yellow_radio</item>
-    </style>
-
-    <style name="BlueRadioButtonStyle" parent="ColorRadioButtonStyle">
-        <item name="android:button">@drawable/blue_radio</item>
-    </style>
-
-    <style name="WhiteRadioButtonStyle" parent="ColorRadioButtonStyle">
-        <item name="android:button">@drawable/white_radio</item>
-    </style>
-
-    <style name="GreyRadioButtonStyle" parent="ColorRadioButtonStyle">
-        <item name="android:button">@drawable/grey_radio</item>
-    </style>
-
-    <style name="RedRadioButtonStyle" parent="ColorRadioButtonStyle">
-        <item name="android:button">@drawable/red_radio</item>
     </style>
 
 </resources>

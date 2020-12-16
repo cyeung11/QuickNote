@@ -2,11 +2,13 @@ package com.jkjk.quicknote.widget
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
+import android.graphics.Color
 import android.graphics.Paint
-import androidx.preference.PreferenceManager
 import android.text.format.DateUtils
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
+import androidx.preference.PreferenceManager
 import com.jkjk.quicknote.R
 import com.jkjk.quicknote.listscreen.ItemListAdapter
 import com.jkjk.quicknote.noteeditscreen.NoteEditFragment.EXTRA_ITEM_ID
@@ -15,17 +17,22 @@ import com.jkjk.quicknote.taskeditscreen.TaskEditFragment.*
 import java.util.*
 
 
-
 class TaskListRemoteFactory internal constructor(private val context: Context) : RemoteViewsService.RemoteViewsFactory {
 
     private var tasks = arrayListOf<Task>()
     private var widgetLayout: Int = 0
     private var noUrgencyLayout: Int = 0
 
+    private var darkMode = false
+
     override fun onCreate() {
     }
 
     override fun onDataSetChanged() {
+
+        val currentNightMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        darkMode = currentNightMode == Configuration.UI_MODE_NIGHT_YES
+
         val sharedPref = PreferenceManager.getDefaultSharedPreferences(context)
         val byUrgencyByDefault = sharedPref.getBoolean(context.getString(R.string.change_default_sorting), false)
 
@@ -136,10 +143,10 @@ class TaskListRemoteFactory internal constructor(private val context: Context) :
         remoteViews.setTextViewText(R.id.item_title, task.title)
         if (task.isDone) {
             remoteViews.setInt(R.id.item_title, "setPaintFlags", Paint.STRIKE_THRU_TEXT_FLAG)
-            remoteViews.setTextColor(R.id.item_title, context.resources.getColor(R.color.darkGrey))
+            remoteViews.setTextColor(R.id.item_title, Color.DKGRAY)
         } else {
             remoteViews.setInt(R.id.item_title, "setPaintFlags", Paint.ANTI_ALIAS_FLAG)
-            remoteViews.setTextColor(R.id.item_title, context.resources.getColor(android.R.color.black))
+            remoteViews.setTextColor(R.id.item_title, if (darkMode) Color.WHITE else Color.BLACK)
         }
 
         val openTaskIntent = Intent()

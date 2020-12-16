@@ -175,6 +175,7 @@
     <string name="task_widget_done">Done Task in Widget</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="my_location">My Location</string>
+    <string name="latest_version_needed_for_restore">You must install the latest version to restore from the file.</string>
 
     <plurals name="notification_title">
         <item quantity="one">You have %d To Do due today.</item>

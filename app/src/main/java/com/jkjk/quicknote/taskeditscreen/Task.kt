@@ -5,7 +5,6 @@ import android.content.Context
 import android.database.Cursor
 import com.google.android.gms.maps.model.LatLng
 import com.jkjk.quicknote.MyApplication
-import com.jkjk.quicknote.helper.DatabaseHelper
 import com.jkjk.quicknote.helper.DatabaseHelper.DATABASE_NAME
 import com.jkjk.quicknote.helper.DatabaseHelper.dbColumn
 import com.jkjk.quicknote.taskeditscreen.TaskEditFragment.*
@@ -83,15 +82,17 @@ class Task {
 
     companion object {
 
-        val urgentComparator = Comparator<Task> { o1, o2 ->
-            val firstCompare = -o1.urgency.compareTo(o2.urgency)
-            if (firstCompare == 0) {
-                timeComparator.compare(o1, o2)
-            } else
-                firstCompare
-        }
+        private val urgentComparator : Comparator<Task>
+            get() = Comparator<Task> { o1, o2 ->
+                val firstCompare = -o1.urgency.compareTo(o2.urgency)
+                if (firstCompare == 0) {
+                    timeComparator.compare(o1, o2)
+                } else
+                    firstCompare
+            }
 
-        val timeComparator = Comparator<Task> { o1, o2 -> o1.eventTime.timeInMillis.compareTo(o2.eventTime.timeInMillis) }
+        private val timeComparator : Comparator<Task>
+            get() = Comparator<Task> { o1, o2 -> o1.eventTime.timeInMillis.compareTo(o2.eventTime.timeInMillis) }
 
         fun delete(context: Context, id: Long) {
             val database = (context.applicationContext as MyApplication).database
@@ -106,7 +107,7 @@ class Task {
                     "${ if (queryResult != null) {"_id in ($queryResult) AND "} else ""}${dbColumn[5]}= 1", null, null, null, null, null)
             if (taskCursor.moveToFirst()) {
                 do {
-                    Task.createFromCursor(taskCursor)?.let {
+                    createFromCursor(taskCursor)?.let {
                         results.add(it)
                     }
                 } while (taskCursor.moveToNext())
@@ -132,7 +133,7 @@ class Task {
                     "${dbColumn[0]}= $taskId", null, null, null, null, null)
             var loadedTask: Task? = null
             if (taskCursor.moveToFirst()) {
-                loadedTask = Task.createFromCursor(taskCursor)
+                loadedTask = createFromCursor(taskCursor)
                 loadedTask?.id = taskId
             }
             taskCursor.close()
@@ -144,7 +145,7 @@ class Task {
             val names = cursor.columnNames
             val result = Task()
 
-            val idIndex = names.indexOf(DatabaseHelper.dbColumn[0])
+            val idIndex = names.indexOf(dbColumn[0])
             if (idIndex >= 0) {
                 try {
                     result.id = cursor.getLong(idIndex)
@@ -153,7 +154,7 @@ class Task {
                 }
             }
 
-            val titleIndex = names.indexOf(DatabaseHelper.dbColumn[1])
+            val titleIndex = names.indexOf(dbColumn[1])
             if (titleIndex >= 0) {
                 try {
                     result.title = cursor.getString(titleIndex)
@@ -162,7 +163,7 @@ class Task {
                 }
             }
 
-            val contentIndex = names.indexOf(DatabaseHelper.dbColumn[2])
+            val contentIndex = names.indexOf(dbColumn[2])
             if (contentIndex >= 0) {
                 try {
                     result.content = cursor.getString(contentIndex)
@@ -171,7 +172,7 @@ class Task {
                 }
             }
 
-            val eventTimeIndex = names.indexOf(DatabaseHelper.dbColumn[3])
+            val eventTimeIndex = names.indexOf(dbColumn[3])
             if (eventTimeIndex >= 0) {
                 try {
                     val eT = cursor.getLong(eventTimeIndex)
@@ -181,7 +182,7 @@ class Task {
                 }
             }
 
-            val urgencyIndex = names.indexOf(DatabaseHelper.dbColumn[6])
+            val urgencyIndex = names.indexOf(dbColumn[6])
             if (urgencyIndex >= 0) {
                 try {
                     result.urgency = cursor.getInt(urgencyIndex)
@@ -190,7 +191,7 @@ class Task {
                 }
             }
 
-            val doneIndex = names.indexOf(DatabaseHelper.dbColumn[7])
+            val doneIndex = names.indexOf(dbColumn[7])
             if (doneIndex >= 0) {
                 try {
                     result.isDone = cursor.getInt(doneIndex) == 1
@@ -199,7 +200,7 @@ class Task {
                 }
             }
 
-            val remindIndex = names.indexOf(DatabaseHelper.dbColumn[8])
+            val remindIndex = names.indexOf(dbColumn[8])
             if (remindIndex >= 0) {
                 try {
                     val rT = cursor.getLong(remindIndex)
@@ -209,7 +210,7 @@ class Task {
                 }
             }
 
-            val repeatIndex = names.indexOf(DatabaseHelper.dbColumn[9])
+            val repeatIndex = names.indexOf(dbColumn[9])
             if (repeatIndex >= 0) {
                 try {
                     result.repeatTime = cursor.getLong(repeatIndex)
@@ -218,7 +219,7 @@ class Task {
                 }
             }
 
-            val latLngIndex = names.indexOf(DatabaseHelper.dbColumn[10])
+            val latLngIndex = names.indexOf(dbColumn[10])
             if (latLngIndex >= 0) {
                 try {
                     val latLngString = cursor.getString(latLngIndex)
@@ -233,7 +234,7 @@ class Task {
                 }
             }
 
-            val placeIndex = names.indexOf(DatabaseHelper.dbColumn[11])
+            val placeIndex = names.indexOf(dbColumn[11])
             if (placeIndex >= 0) {
                 try {
                     result.placeName = cursor.getString(placeIndex)

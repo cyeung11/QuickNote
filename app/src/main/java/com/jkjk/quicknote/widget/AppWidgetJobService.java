@@ -6,12 +6,14 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Color;
+import android.util.TypedValue;
+import android.widget.RemoteViews;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
 import androidx.preference.PreferenceManager;
-import android.util.TypedValue;
-import android.widget.RemoteViews;
 
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.listscreen.List;
@@ -58,10 +60,15 @@ public class AppWidgetJobService extends JobIntentService {
         Intent itemIntentTemplate = new Intent(context, itemIsNote ?NoteEdit.class :TaskEdit.class);
         PendingIntent pendingIntentTemplate = PendingIntent.getActivity(context, 455463, itemIntentTemplate, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        int currentNightMode = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        boolean darkModeOn = currentNightMode == Configuration.UI_MODE_NIGHT_YES;
+
         for (int i = 0; i < appWidgetIds.length; i++) {
             views[i] = new RemoteViews(context.getPackageName(), itemIsNote ? R.layout.note_list_widget : R.layout.task_list_widget);
             views[i].setOnClickPendingIntent(R.id.app_bar, startAppPendingIntent);
             views[i].setOnClickPendingIntent(R.id.add_button, newItemPendingIntent);
+
+            views[i].setInt(R.id.background, "setBackgroundColor", darkModeOn ? Color.DKGRAY : Color.WHITE);
 
             views[i].setRemoteAdapter(R.id.container, listWidgetAdapterIntent);
             views[i].setPendingIntentTemplate(R.id.container, pendingIntentTemplate);

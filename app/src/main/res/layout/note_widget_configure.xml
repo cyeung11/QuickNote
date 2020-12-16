@@ -69,7 +69,7 @@
                 android:layout_marginEnd="4dp"
                 android:layout_weight="1"
                 android:checked="true"
-                style="@style/WhiteRadioButtonStyle"/>
+                android:button="@drawable/white_radio"/>
 
             <RadioButton
                 android:layout_width="wrap_content"
@@ -78,7 +78,7 @@
                 android:onClick="onColorSelected"
                 android:layout_marginEnd="4dp"
                 android:layout_weight="1"
-                style="@style/RedRadioButtonStyle"/>
+                android:button="@drawable/red_radio"/>
 
             <RadioButton
                 android:layout_width="wrap_content"
@@ -87,7 +87,7 @@
                 android:onClick="onColorSelected"
                 android:layout_marginEnd="4dp"
                 android:layout_weight="1"
-                style="@style/YellowRadioButtonStyle"/>
+                android:button="@drawable/yellow_radio"/>
 
             <RadioButton
                 android:layout_width="wrap_content"
@@ -96,7 +96,7 @@
                 android:onClick="onColorSelected"
                 android:layout_marginEnd="4dp"
                 android:layout_weight="1"
-                style="@style/GreenRadioButtonStyle"/>
+                android:button="@drawable/green_radio"/>
 
             <RadioButton
                 android:layout_width="wrap_content"
@@ -105,7 +105,7 @@
                 android:onClick="onColorSelected"
                 android:layout_marginEnd="4dp"
                 android:layout_weight="1"
-                style="@style/BlueRadioButtonStyle"/>
+                android:button="@drawable/blue_radio"/>
 
             <RadioButton
                 android:layout_width="wrap_content"
@@ -113,7 +113,7 @@
                 android:id="@+id/color_grey"
                 android:onClick="onColorSelected"
                 android:layout_weight="1"
-                style="@style/GreyRadioButtonStyle"/>
+                android:button="@drawable/grey_radio"/>
 
         </RadioGroup>
 

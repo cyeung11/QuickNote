@@ -223,4 +223,5 @@
     <string name="google_play_service_fail_toast">Google Play服務不可用</string>
     <string name="location_cap">地點</string>
     <string name="privacy_policy">私隱政策</string>
+    <string name="latest_version_needed_for_restore">你需安裝最新版本以回復備份</string>
 </resources>

@@ -222,4 +222,5 @@
     <string name="location_permission_msg">请开启位置权限以使用功能</string>
     <string name="location_hint">未设定地点</string>
     <string name="privacy_policy">隐私政策</string>
+    <string name="latest_version_needed_for_restore">你需安装最新版本以回复备份</string>
 </resources>

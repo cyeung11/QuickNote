@@ -3,11 +3,14 @@ package com.jkjk.quicknote.widget;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import androidx.preference.PreferenceManager;
+import android.content.res.Configuration;
+import android.graphics.Color;
 import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
+
+import androidx.preference.PreferenceManager;
 
 import com.jkjk.quicknote.R;
 import com.jkjk.quicknote.noteeditscreen.Note;
@@ -25,6 +28,8 @@ public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFact
 
     private ArrayList<Note> notes = new ArrayList<>();
 
+    private boolean darkMode = false;
+
     NoteListRemoteFactory(Context context) {
         this.context = context;
     }
@@ -35,6 +40,10 @@ public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFact
 
     @Override
     public void onDataSetChanged() {
+
+        int currentNightMode = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        darkMode = currentNightMode == Configuration.UI_MODE_NIGHT_YES;
+
         notes = Note.Companion.getAllNotes(context);
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         String widgetSize = sharedPref.getString(context.getString(R.string.font_size_widget), "m");
@@ -78,6 +87,7 @@ public class NoteListRemoteFactory implements RemoteViewsService.RemoteViewsFact
         Note note = notes.get(i);
 
         remoteViews.setTextViewText(R.id.item_title, note.getTitle());
+        remoteViews.setTextColor(R.id.item_title, darkMode ? Color.WHITE : Color.BLACK);
 
         remoteViews.setTextViewText(R.id.note_content, note.getContent());
 
