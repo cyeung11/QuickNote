@@ -436,7 +436,7 @@ public class ListFragment extends Fragment implements MenuItem.OnMenuItemClickLi
         if (isItemToday){
             Intent toolBarIntent = new Intent(context, NotificationHelper.class);
             toolBarIntent.setAction(ACTION_TOOL_BAR);
-            PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(context, 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(context, 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
             try {
                 toolbarPendingIntent.send();
             } catch (PendingIntent.CanceledException e) {

@@ -5,7 +5,7 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
 import com.jkjk.quicknote.R
-import kotlinx.android.synthetic.main.item_location_result.view.*
+import com.jkjk.quicknote.databinding.ItemLocationResultBinding
 
 /**
  *Created by chrisyeung on 6/6/2019.
@@ -16,7 +16,7 @@ class LocationAdapter(private val act: AppCompatActivity,
 
     var locationList = listOf<String>()
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
+    inner class ViewHolder(val binding: ItemLocationResultBinding) : RecyclerView.ViewHolder(binding.root), View.OnClickListener {
         var location: String? = null
 
         init {
@@ -29,7 +29,7 @@ class LocationAdapter(private val act: AppCompatActivity,
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(act.layoutInflater.inflate(R.layout.item_location_result, parent, false))
+        return ViewHolder(ItemLocationResultBinding.inflate(act.layoutInflater, parent, false))
     }
 
     override fun getItemCount(): Int {
@@ -39,15 +39,15 @@ class LocationAdapter(private val act: AppCompatActivity,
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (position == 0) {
             holder.location = null
-            holder.itemView.txtLocation.setText(R.string.my_location)
-            holder.itemView.txtLocation.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.my_location, 0)
+            holder.binding.txtLocation.setText(R.string.my_location)
+            holder.binding.txtLocation.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.my_location, 0)
         } else {
             holder.location = locationList[position - 1]
-            holder.itemView.txtLocation.text = holder.location
-            holder.itemView.txtLocation.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, 0, 0)
+            holder.binding.txtLocation.text = holder.location
+            holder.binding.txtLocation.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, 0, 0)
         }
 
-        holder.itemView.vDivider.visibility = if (position == itemCount - 1) View.GONE else View.VISIBLE
+        holder.binding.vDivider.visibility = if (position == itemCount - 1) View.GONE else View.VISIBLE
     }
 
     interface OnLocationSelectListener {

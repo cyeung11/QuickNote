@@ -373,7 +373,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
                 Intent toolBarIntent = new Intent(getContext(), NotificationHelper.class);
                 toolBarIntent.setAction(ACTION_TOOL_BAR);
-                PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(getContext(), 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(getContext(), 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
                 try {
                     toolbarPendingIntent.send();
                 } catch (PendingIntent.CanceledException e) {
@@ -392,7 +392,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             if (prefs.getBoolean(key, false)){
                 Intent intent = new Intent(getContext(), NotificationHelper.class);
                 intent.setAction(ACTION_DAILY_UPDATE);
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(), DAILY_UPDATE_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(), DAILY_UPDATE_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
                 try {
                     pendingIntent.send();
                 } catch (PendingIntent.CanceledException e) {

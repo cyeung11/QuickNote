@@ -3,7 +3,9 @@
     package="com.jkjk.quicknote">
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <!--<uses-permission android:name="android.permission.READ_CONTACTS"/>-->
     <!--<uses-permission android:name="android.permission.GET_ACCOUNTS"/>-->
 
@@ -41,7 +43,8 @@
         <activity
             android:name=".listscreen.List"
             android:launchMode="singleTop"
-            android:theme="@style/SplashTheme">
+            android:theme="@style/SplashTheme"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -54,7 +57,8 @@
         </activity>
         <activity
             android:name=".widget.NewNoteShortcuts"
-            android:label="@string/new_note">
+            android:label="@string/new_note"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_SHORTCUT" />
 
@@ -63,7 +67,8 @@
         </activity>
         <activity
             android:name=".widget.NewToDoShortcuts"
-            android:label="@string/new_to_do">
+            android:label="@string/new_to_do"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_SHORTCUT" />
 
@@ -73,7 +78,8 @@
 
         <receiver
             android:name=".widget.NoteWidget"
-            android:label="@string/note_preview">
+            android:label="@string/note_preview"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -84,7 +90,8 @@
         </receiver>
         <receiver
             android:name=".widget.TaskListWidget"
-            android:label="@string/todo_list_widget_label">
+            android:label="@string/todo_list_widget_label"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -118,7 +125,8 @@
             android:name=".helper.WidgetUpdateHelper"
             android:exported="false"/>
 
-        <activity android:name=".widget.NoteWidgetConfigureActivity">
+        <activity android:name=".widget.NoteWidgetConfigureActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
@@ -139,7 +147,8 @@
 
         <receiver
             android:name=".widget.NoteListWidget"
-            android:label="@string/note_list_widget_label">
+            android:label="@string/note_list_widget_label"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>

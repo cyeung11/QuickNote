@@ -50,7 +50,7 @@ public class NoteWidget extends AppWidgetProvider {
         } else {
             Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, resultIds)
                     .putExtra(EXTRA_APPWIDGET_PROVIDER, new ComponentName(context, NoteWidget.class));
-            PendingIntent pendingIntent = PendingIntent.getService(context, NOTE_WIDGET_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pendingIntent = PendingIntent.getService(context, NOTE_WIDGET_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
             try {
                 pendingIntent.send();
             } catch (Exception e) {
@@ -82,7 +82,7 @@ public class NoteWidget extends AppWidgetProvider {
         } else {
             Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, appWidgetIds)
                     .putExtra(EXTRA_APPWIDGET_PROVIDER, name);
-            PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
             try {
                 pendingIntent.send();
             } catch (Exception e) {

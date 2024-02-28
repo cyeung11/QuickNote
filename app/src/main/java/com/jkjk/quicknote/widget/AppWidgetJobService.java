@@ -50,15 +50,15 @@ public class AppWidgetJobService extends JobIntentService {
         startAppIntent.putExtra(ITEM_TYPE, itemIsNote ?'N' :'T');
         PendingIntent startAppPendingIntent = PendingIntent.getActivity(context
                 , itemIsNote ? AppWidgetService.NOTE_LIST_WIDGET_START_APP_REQUEST_CODE : AppWidgetService.TASK_LIST_WIDGET_START_APP_REQUEST_CODE
-                , startAppIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                , startAppIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
         Intent newItemIntent = new Intent(context, itemIsNote ?NoteEdit.class :TaskEdit.class);
         newItemIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        PendingIntent newItemPendingIntent = PendingIntent.getActivity(context, 0, newItemIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent newItemPendingIntent = PendingIntent.getActivity(context, 0, newItemIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
         Intent listWidgetAdapterIntent = new Intent(context, itemIsNote ?NoteListWidgetRemoteService.class :TaskListWidgetRemoteService.class);
         Intent itemIntentTemplate = new Intent(context, itemIsNote ?NoteEdit.class :TaskEdit.class);
-        PendingIntent pendingIntentTemplate = PendingIntent.getActivity(context, 455463, itemIntentTemplate, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntentTemplate = PendingIntent.getActivity(context, 455463, itemIntentTemplate, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
         int currentNightMode = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
         boolean darkModeOn = currentNightMode == Configuration.UI_MODE_NIGHT_YES;
@@ -142,7 +142,7 @@ public class AppWidgetJobService extends JobIntentService {
                             openNoteIntent.putExtra(EXTRA_ITEM_ID, noteId[i])
                                     .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-                            PendingIntent openNotePI = PendingIntent.getActivity(context, (int) noteId[i], openNoteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                            PendingIntent openNotePI = PendingIntent.getActivity(context, (int) noteId[i], openNoteIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
                             views[i].setOnClickPendingIntent(R.id.widget, openNotePI);
 
                         } else {

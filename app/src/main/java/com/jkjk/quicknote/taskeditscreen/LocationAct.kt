@@ -12,13 +12,13 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.appcompat.widget.SearchView
 import android.view.Menu
 import android.view.MenuItem
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -32,7 +32,7 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PointOfInterest
 import com.jkjk.quicknote.R
-import kotlinx.android.synthetic.main.activity_location.*
+import com.jkjk.quicknote.databinding.ActivityLocationBinding
 import java.io.IOException
 
 
@@ -40,7 +40,6 @@ import java.io.IOException
  *Created by chrisyeung on 21/11/2018.
  */
 
-@SuppressLint("MissingPermission")
 class LocationAct : AppCompatActivity(),
 //        View.OnClickListener,
         OnMapReadyCallback,
@@ -56,10 +55,13 @@ class LocationAct : AppCompatActivity(),
         LocationAdapter(this, this)
     }
 
+    private lateinit var binding: ActivityLocationBinding
+
     // life cycle
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_location)
+        binding = ActivityLocationBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         selectedLatLng = intent?.getParcelableExtra(EXTRA_LOCATION_LAT_LNG)
 
         obtainLocationPermission(false)
@@ -83,7 +85,7 @@ class LocationAct : AppCompatActivity(),
     // UI Present
     fun setupBody() {
 
-        setSupportActionBar(menu)
+        setSupportActionBar(binding.menu)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
@@ -92,8 +94,8 @@ class LocationAct : AppCompatActivity(),
 
         ((supportFragmentManager.findFragmentById(R.id.map)) as SupportMapFragment).getMapAsync(this)
 
-        rvLocation?.layoutManager = LinearLayoutManager(this)
-        rvLocation?.adapter = adapter
+        binding.rvLocation.layoutManager = LinearLayoutManager(this)
+        binding.rvLocation.adapter = adapter
     }
 
 
@@ -147,17 +149,17 @@ class LocationAct : AppCompatActivity(),
         }
     }
 
-    override fun onMapReady(map: GoogleMap?) {
-        if (mMap == null && map != null) {
+    override fun onMapReady(map: GoogleMap) {
+        if (mMap == null) {
             mMap = map
             mMap!!.uiSettings.isMapToolbarEnabled = false
-            mMap!!.isMyLocationEnabled = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+            mMap!!.isMyLocationEnabled = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
             mMap!!.setOnMapClickListener(this)
             mMap!!.setOnPoiClickListener(this)
 
-            if (selectedLatLng != null) {
-                mMap!!.addMarker(MarkerOptions().draggable(false).position(selectedLatLng!!).anchor(0.5f, 1f))
-                mMap!!.moveCamera(CameraUpdateFactory.newLatLngZoom(selectedLatLng, 14f))
+            selectedLatLng?.let {
+                mMap!!.addMarker(MarkerOptions().draggable(false).position(it).anchor(0.5f, 1f))
+                mMap!!.moveCamera(CameraUpdateFactory.newLatLngZoom(it, 14f))
             }
 
         }
@@ -184,24 +186,19 @@ class LocationAct : AppCompatActivity(),
     }
 
     // Map related
-    override fun onMapClick(latLng: LatLng?) {
-        if (latLng != null) {
-            val selectedLocationNames = getNamesOfLocation(latLng)
-            presentNamesOfLatLng(selectedLocationNames, latLng)
-        }
+    override fun onMapClick(latLng: LatLng) {
+        val selectedLocationNames = getNamesOfLocation(latLng)
+        presentNamesOfLatLng(selectedLocationNames, latLng)
     }
 
-    override fun onPoiClick(poi: PointOfInterest?) {
-        if (poi?.latLng != null) {
-            val selectedLocationNames = arrayListOf<String>()
-            if (poi.name != null) {
-                selectedLocationNames.add(poi.name)
-            }
-            selectedLocationNames.addAll(getNamesOfLocation(poi.latLng))
-            presentNamesOfLatLng(selectedLocationNames, poi.latLng)
-        }
+    override fun onPoiClick(poi: PointOfInterest) {
+        val selectedLocationNames = arrayListOf<String>()
+        selectedLocationNames.add(poi.name)
+        selectedLocationNames.addAll(getNamesOfLocation(poi.latLng))
+        presentNamesOfLatLng(selectedLocationNames, poi.latLng)
     }
 
+    @SuppressLint("MissingPermission")
     override fun onLocationSelect(location: String?) {
         if (location == null) {
             if (obtainLocationPermission(true)) {
@@ -209,7 +206,7 @@ class LocationAct : AppCompatActivity(),
                 mFusedLocationClient.requestLocationUpdates(LocationRequest.create()
                         .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)
                         .setInterval(60000L), object : LocationCallback() {
-                    override fun onLocationResult(locationResult: LocationResult?) {
+                    override fun onLocationResult(locationResult: LocationResult) {
                         val current = locationResult?.lastLocation ?: return
                         val currentLatLng = LatLng(current.latitude, current.longitude)
                         val selectedLocationNames = getNamesOfLocation(currentLatLng)
@@ -255,7 +252,7 @@ class LocationAct : AppCompatActivity(),
         try {
             val addressList = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 10)
 
-            addressList.forEach { address ->
+            addressList?.forEach { address ->
                 if (address.maxAddressLineIndex > -1) {
                     val stringBuilder = StringBuilder()
                     for (i in 0 until address.maxAddressLineIndex + 1) {
@@ -292,7 +289,7 @@ class LocationAct : AppCompatActivity(),
      */
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && requestCode == LOCATION_REQUEST_CODE) {
-            val targetIndex = permissions.indexOf(Manifest.permission.ACCESS_FINE_LOCATION)
+            val targetIndex = permissions.indexOf(Manifest.permission.ACCESS_COARSE_LOCATION)
             if (targetIndex >= 0 && grantResults[targetIndex] == PackageManager.PERMISSION_GRANTED) {
                 mMap?.isMyLocationEnabled = true
             } else {
@@ -303,7 +300,7 @@ class LocationAct : AppCompatActivity(),
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == LOCATION_REQUEST_CODE) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mMap?.isMyLocationEnabled = true
             }
         } else super.onActivityResult(requestCode, resultCode, data)
@@ -311,15 +308,15 @@ class LocationAct : AppCompatActivity(),
 
     private fun obtainLocationPermission(showPrompt: Boolean): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)) {
                     // Permission has been reject
                     if (showPrompt) {
                         showLocationPermissionDialog()
                     }
                 } else {
                     // Permission has not been asked / Don't ask again has been checked
-                    requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
                             LOCATION_REQUEST_CODE
                     )
                 }
@@ -331,8 +328,8 @@ class LocationAct : AppCompatActivity(),
     @RequiresApi(Build.VERSION_CODES.M)
     private fun showLocationPermissionDialog() {
         AlertDialog.Builder(this).setPositiveButton(R.string.ok) { _, _ ->
-            if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
                         LOCATION_REQUEST_CODE
                 )
             } else {

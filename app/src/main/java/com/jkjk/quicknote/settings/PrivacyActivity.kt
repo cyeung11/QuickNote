@@ -4,20 +4,23 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.MenuItem
 import com.jkjk.quicknote.R
-import kotlinx.android.synthetic.main.activity_privacy.*
+import com.jkjk.quicknote.databinding.ActivityPrivacyBinding
 
 class PrivacyActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityPrivacyBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_privacy)
+        binding = ActivityPrivacyBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        setSupportActionBar(menu)
+        setSupportActionBar(binding.menu)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setTitle(R.string.privacy_policy)
 
-        webview?.loadUrl("file:///android_res/raw/privacy_policy.html")
+        binding.webview.loadUrl("file:///android_res/raw/privacy_policy.html")
 
     }
 

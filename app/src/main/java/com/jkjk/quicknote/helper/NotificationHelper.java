@@ -93,17 +93,17 @@ public class NotificationHelper extends BroadcastReceiver {
                         Intent openItemIntent = new Intent();
                         openItemIntent.setClass(context, TaskEdit.class);
                         openItemIntent.putExtra(EXTRA_ITEM_ID, taskId);
-                        PendingIntent startPendingIntent = PendingIntent.getActivity(context, (int)taskId, openItemIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                        PendingIntent startPendingIntent = PendingIntent.getActivity(context, (int)taskId, openItemIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
                         // Intent for snoozing
                         Intent snoozeIntent = new Intent(context, SnoozeDurationDialog.class);
                         snoozeIntent.putExtra(EXTRA_ITEM_ID, taskId);
                         // Distinguish snooze & open item
-                        PendingIntent snoozePendingIntent = PendingIntent.getActivity(context, (int)taskId, snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                        PendingIntent snoozePendingIntent = PendingIntent.getActivity(context, (int)taskId, snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
                         Intent markAsDoneIntent = new Intent(context, NotificationHelper.class);
                         markAsDoneIntent.setAction(ACTION_MARK_AS_DONE).putExtra(EXTRA_ITEM_ID, taskId);
-                        PendingIntent markAsDonePendingIntent = PendingIntent.getBroadcast(context, (int)taskId, markAsDoneIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                        PendingIntent markAsDonePendingIntent = PendingIntent.getBroadcast(context, (int)taskId, markAsDoneIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
                         builder.setContentTitle(task.getTitle()).setSmallIcon(R.drawable.ic_stat_name)
                                 .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher_round))
@@ -202,7 +202,7 @@ public class NotificationHelper extends BroadcastReceiver {
                                 intent = new Intent(context, NotificationHelper.class);
                                 intent.setAction(ACTION_PIN_ITEM);
                                 intent.putExtra(EXTRA_ITEM_ID, taskId);
-                                PendingIntent pinNotificationPI = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                PendingIntent pinNotificationPI = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
                                 try {
                                     pinNotificationPI.send();
                                 } catch (PendingIntent.CanceledException e) {
@@ -221,13 +221,13 @@ public class NotificationHelper extends BroadcastReceiver {
                 case ACTION_TOOL_BAR: {
                     Intent startNoteActivity = new Intent(context, NoteEdit.class);
                     startNoteActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    PendingIntent notePendingIntent = PendingIntent.getActivity(context, 0, startNoteActivity, PendingIntent.FLAG_UPDATE_CURRENT);
+                    PendingIntent notePendingIntent = PendingIntent.getActivity(context, 0, startNoteActivity, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
                     Intent startTaskActivity = new Intent(context, TaskEdit.class);
                     startTaskActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    PendingIntent taskPendingIntent = PendingIntent.getActivity(context, 0, startTaskActivity, PendingIntent.FLAG_UPDATE_CURRENT);
+                    PendingIntent taskPendingIntent = PendingIntent.getActivity(context, 0, startTaskActivity, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
                     Intent startMainActivity = new Intent(context, List.class);
                     startMainActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    PendingIntent mainPendingIntent = PendingIntent.getActivity(context, 0, startMainActivity, PendingIntent.FLAG_UPDATE_CURRENT);
+                    PendingIntent mainPendingIntent = PendingIntent.getActivity(context, 0, startMainActivity, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
                     // Get task due today and expired
                     Calendar calendar = Calendar.getInstance();
@@ -333,7 +333,7 @@ public class NotificationHelper extends BroadcastReceiver {
                             openItemIntent.setClass(context, NoteEdit.class);
                         }
                         openItemIntent.putExtra(EXTRA_ITEM_ID, itemId);
-                        PendingIntent startPendingIntent = PendingIntent.getActivity(context, (int)itemId, openItemIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                        PendingIntent startPendingIntent = PendingIntent.getActivity(context, (int)itemId, openItemIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
                         builder.setContentTitle(cursor.getString(0)).setSmallIcon(R.drawable.ic_stat_name).setAutoCancel(false).setContentIntent(startPendingIntent)
                                 .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher_round));
@@ -396,7 +396,7 @@ public class NotificationHelper extends BroadcastReceiver {
 
         Intent startTaskActivity = new Intent(context, List.class);
         startTaskActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent taskPendingIntent = PendingIntent.getActivity(context, 0, startTaskActivity, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent taskPendingIntent = PendingIntent.getActivity(context, 0, startTaskActivity, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
         Notification.Builder builder;
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

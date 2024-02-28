@@ -28,7 +28,7 @@ public class NoteListWidget extends AppWidgetProvider {
         } else {
             Intent intent = new Intent(context, AppWidgetService.class).putExtra(EXTRA_APPWIDGET_ID, appWidgetIds)
                     .putExtra(EXTRA_APPWIDGET_PROVIDER, new ComponentName(context, NoteListWidget.class));
-            PendingIntent pendingIntent = PendingIntent.getService(context, NOTE_LIST_WIDGET_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pendingIntent = PendingIntent.getService(context, NOTE_LIST_WIDGET_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
             try {
                 pendingIntent.send();
             } catch (Exception e) {

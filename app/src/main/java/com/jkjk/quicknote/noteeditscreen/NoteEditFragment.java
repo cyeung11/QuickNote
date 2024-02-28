@@ -389,7 +389,7 @@ public class NoteEditFragment extends Fragment {
         Intent intent = new Intent(context, NotificationHelper.class);
         intent.setAction(ACTION_PIN_ITEM);
         intent.putExtra(EXTRA_ITEM_ID, noteId);
-        PendingIntent pinNotificationPI = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pinNotificationPI = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
         try {
             pinNotificationPI.send();
         } catch (PendingIntent.CanceledException e) {

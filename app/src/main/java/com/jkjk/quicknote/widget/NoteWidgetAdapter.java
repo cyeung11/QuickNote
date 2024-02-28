@@ -129,7 +129,7 @@ public class NoteWidgetAdapter extends ItemListAdapter {
                 Intent startAppIntent = new Intent(activity, NoteEdit.class);
                 startAppIntent.putExtra(EXTRA_ITEM_ID, holder.note.getId())
                         .setFlags(FLAG_ACTIVITY_CLEAR_TOP | FLAG_ACTIVITY_SINGLE_TOP);
-                PendingIntent pendingIntent = PendingIntent.getActivity(activity, holder.note.getId().intValue(), startAppIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent pendingIntent = PendingIntent.getActivity(activity, holder.note.getId().intValue(), startAppIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
                 remoteViews.setOnClickPendingIntent(R.id.widget, pendingIntent);
 
 

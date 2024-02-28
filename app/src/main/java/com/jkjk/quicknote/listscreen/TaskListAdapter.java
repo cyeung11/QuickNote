@@ -240,7 +240,7 @@ public class TaskListAdapter extends ItemListAdapter {
                                             if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.notification_pin), false)){
                                                 Intent toolBarIntent = new Intent(context, NotificationHelper.class);
                                                 toolBarIntent.setAction(ACTION_TOOL_BAR);
-                                                PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(context, 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                                PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(context, 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
                                                 try {
                                                     toolbarPendingIntent.send();
                                                 } catch (PendingIntent.CanceledException e) {
@@ -274,7 +274,7 @@ public class TaskListAdapter extends ItemListAdapter {
                                                         Intent intent = new Intent(context, NotificationHelper.class);
                                                         intent.setAction(ACTION_PIN_ITEM);
                                                         intent.putExtra(EXTRA_ITEM_ID, selectedTask.getId());
-                                                        PendingIntent pinNotificationPI = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                                        PendingIntent pinNotificationPI = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
                                                         try {
                                                             pinNotificationPI.send();
                                                         } catch (PendingIntent.CanceledException e) {
@@ -291,7 +291,7 @@ public class TaskListAdapter extends ItemListAdapter {
                                             if (isNotificationToolbarEnable){
                                                 Intent toolBarIntent = new Intent(context, NotificationHelper.class);
                                                 toolBarIntent.setAction(ACTION_TOOL_BAR);
-                                                PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(context, 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                                PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(context, 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
                                                 try {
                                                     toolbarPendingIntent.send();
                                                 } catch (PendingIntent.CanceledException e) {
@@ -364,7 +364,7 @@ public class TaskListAdapter extends ItemListAdapter {
                                         Intent intent = new Intent(context, NotificationHelper.class);
                                         intent.setAction(ACTION_PIN_ITEM);
                                         intent.putExtra(EXTRA_ITEM_ID, holder.task.getId());
-                                        PendingIntent pinNotificationPI = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                        PendingIntent pinNotificationPI = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
                                         try {
                                             pinNotificationPI.send();
                                         } catch (PendingIntent.CanceledException e) {
@@ -389,7 +389,7 @@ public class TaskListAdapter extends ItemListAdapter {
                         if (isNotificationToolbarEnable){
                             Intent toolBarIntent = new Intent(context, NotificationHelper.class);
                             toolBarIntent.setAction(ACTION_TOOL_BAR);
-                            PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(context, 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                            PendingIntent toolbarPendingIntent = PendingIntent.getBroadcast(context, 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
                             try {
                                 toolbarPendingIntent.send();
                             } catch (PendingIntent.CanceledException e) {

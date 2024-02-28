@@ -25,7 +25,7 @@ class MyApplication : MultiDexApplication() {
         if (sharedPref.getBoolean(getString(R.string.notification_pin), false)) {
             val toolBarIntent = Intent(this, NotificationHelper::class.java)
             toolBarIntent.action = NotificationHelper.ACTION_TOOL_BAR
-            val toolbarPendingIntent = PendingIntent.getBroadcast(this, 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+            val toolbarPendingIntent = PendingIntent.getBroadcast(this, 0, toolBarIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
             try {
                 toolbarPendingIntent.send()
             } catch (e: CanceledException) {
@@ -38,7 +38,7 @@ class MyApplication : MultiDexApplication() {
             val intent = Intent(this, NotificationHelper::class.java)
             intent.action = NotificationHelper.ACTION_PIN_ITEM
             intent.putExtra(NoteEditFragment.EXTRA_ITEM_ID, pinnedItem[key] as Long?)
-            val pinNotificationPI = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+            val pinNotificationPI = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
             try {
                 pinNotificationPI.send()
             } catch (e: CanceledException) {

@@ -2,8 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/QuickNote.iml" filepath="$PROJECT_DIR$/QuickNote.iml" group="QuickNote" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="QuickNote/app" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/QuickNote.iml" filepath="$PROJECT_DIR$/.idea/modules/QuickNote.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/QuickNote.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/QuickNote.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/QuickNote.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/QuickNote.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/QuickNote.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/QuickNote.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/QuickNote.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/QuickNote.app.unitTest.iml" />
     </modules>
   </component>
 </project>
